@@ -1,6 +1,12 @@
 "use client";
 import { useParams } from "next/navigation";
 
+// For static export: pre-generate no paths and disable dynamic params
+export const dynamicParams = false;
+export async function generateStaticParams() {
+  return [] as { id: string }[];
+}
+
 export default function ReceiptDetailPage() {
   const params = useParams();
   const id = params?.id as string;
