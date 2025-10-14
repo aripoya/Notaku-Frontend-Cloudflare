@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Receipt,
   ZoomIn,
@@ -68,9 +68,9 @@ interface ReceiptData {
 }
 
 export default function ReceiptDetailPage() {
-  const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const receiptId = params.id as string;
+  const receiptId = searchParams.get("id") || "unknown";
 
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

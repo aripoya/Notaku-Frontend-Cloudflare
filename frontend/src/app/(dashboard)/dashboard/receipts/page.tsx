@@ -103,7 +103,7 @@ export default function ReceiptsPage() {
     });
 
   const handleViewReceipt = (id: string) => {
-    router.push(`/receipts/${id}`);
+    router.push(`/dashboard/receipts/detail?id=${id}`);
   };
 
   const handleEditReceipt = (id: string) => {
