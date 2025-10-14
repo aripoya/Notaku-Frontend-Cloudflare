@@ -187,7 +187,7 @@ export default function RegisterPage() {
               {/* Login */}
               <p className="text-center text-sm text-slate-600">
                 Sudah punya akun?{" "}
-                <Link href="/auth/login" className="text-blue-600 hover:underline">
+                <Link href="/login" className="text-blue-600 hover:underline">
                   Masuk sekarang
                 </Link>
               </p>
