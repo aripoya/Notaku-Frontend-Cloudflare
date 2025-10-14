@@ -1,7 +1,9 @@
 "use client";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Receipt, PieChart, ArrowUp, ArrowDown } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, Receipt, PieChart as PieChartIcon, ArrowUp, Upload, MessageSquare, BarChart3, Eye, Edit } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, PieChart, Pie, Cell, Legend } from "recharts";
 
 // Generate 30 days of spending data
 const spendingData = Array.from({ length: 30 }, (_, i) => ({
@@ -9,12 +11,28 @@ const spendingData = Array.from({ length: 30 }, (_, i) => ({
   amount: Math.floor(Math.random() * 300000) + 200000,
 }));
 
+// Summary data
+const summaryData = {
+  totalSpending: 12450000,
+  receiptCount: 127,
+  topCategory: { name: "Bahan Baku", amount: 5200000, percentage: 42 },
+  changeVsPrevious: { amount: 1200000, percentage: 18 },
+};
+
 const recentReceipts = [
   { id: "1", supplier: "Toko Sumber Rezeki", total: 250000, date: "Hari ini" },
   { id: "2", supplier: "Gudang Bahan", total: 780000, date: "Hari ini" },
   { id: "3", supplier: "PT Kertas", total: 120000, date: "Kemarin" },
   { id: "4", supplier: "CV Plastik Jaya", total: 450000, date: "Kemarin" },
   { id: "5", supplier: "PT Transport", total: 330000, date: "2 hari lalu" },
+];
+
+// Category breakdown data
+const categoryData = [
+  { name: "Bahan Baku", value: 42, amount: 5200000, color: "#3b82f6" },
+  { name: "Operasional", value: 25, amount: 3100000, color: "#10b981" },
+  { name: "Marketing", value: 19, amount: 2360000, color: "#a855f7" },
+  { name: "Transportasi", value: 14, amount: 1740000, color: "#f97316" },
 ];
 
 export default function DashboardPage() {
@@ -132,27 +150,141 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Recent Receipts */}
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Nota Terbaru</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {recentReceipts.map((receipt) => (
-              <div key={receipt.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                <div>
-                  <p className="font-medium">{receipt.supplier}</p>
-                  <p className="text-xs text-muted-foreground">{receipt.date}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">Rp {receipt.total.toLocaleString("id-ID")}</p>
-                </div>
+      {/* Section 3: Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left Column: Recent Receipts (60%) */}
+        <div className="lg:col-span-3">
+          <Card className="shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Nota Terbaru</CardTitle>
+              <Link href="/dashboard/receipts">
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                  Lihat Semua
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {recentReceipts.map((receipt) => (
+                  <div key={receipt.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div className="flex-1">
+                      <p className="font-medium">{receipt.supplier}</p>
+                      <p className="text-xs text-muted-foreground">{receipt.date}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <p className="font-semibold">Rp {receipt.total.toLocaleString("id-ID")}</p>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Category Breakdown (40%) */}
+        <div className="lg:col-span-2">
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle>Breakdown Kategori</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${value}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number, name: string, props: any) => [
+                        `${value}% (Rp ${props.payload.amount.toLocaleString("id-ID")})`,
+                        props.payload.name,
+                      ]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 space-y-2">
+                {categoryData.map((category) => (
+                  <div key={category.name} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
+                      <span>{category.name}</span>
+                    </div>
+                    <span className="font-medium">{category.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Section 4: Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Upload Nota Baru */}
+        <Link href="/dashboard/upload">
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:scale-105 transition-transform duration-200 shadow-lg cursor-pointer">
+            <CardContent className="flex flex-col items-center justify-center p-6 text-center space-y-3">
+              <div className="p-3 bg-white/20 rounded-full">
+                <Upload className="h-8 w-8" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Upload Nota Baru</h3>
+                <p className="text-sm text-blue-100 mt-1">Scan dan ekstrak data nota</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Tanya AI */}
+        <Link href="/dashboard/chat">
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white hover:scale-105 transition-transform duration-200 shadow-lg cursor-pointer">
+            <CardContent className="flex flex-col items-center justify-center p-6 text-center space-y-3">
+              <div className="p-3 bg-white/20 rounded-full">
+                <MessageSquare className="h-8 w-8" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Tanya AI</h3>
+                <p className="text-sm text-purple-100 mt-1">Konsultasi keuangan bisnis</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Lihat Laporan */}
+        <Link href="/dashboard/analytics">
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white hover:scale-105 transition-transform duration-200 shadow-lg cursor-pointer">
+            <CardContent className="flex flex-col items-center justify-center p-6 text-center space-y-3">
+              <div className="p-3 bg-white/20 rounded-full">
+                <BarChart3 className="h-8 w-8" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Lihat Laporan</h3>
+                <p className="text-sm text-green-100 mt-1">Analisis detail pengeluaran</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
     </div>
   );
 }
