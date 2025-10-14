@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Menu, Moon, Sun, LogOut, User } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,14 @@ export default function Header() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+
+  // Hydrate on mount
+  useEffect(() => {
+    useAuth.persist.rehydrate();
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();

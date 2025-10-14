@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
@@ -8,10 +8,19 @@ import { Loader2 } from "lucide-react";
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, isLoading, checkAuth } = useAuth();
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate Zustand store from localStorage
+  useEffect(() => {
+    useAuth.persist.rehydrate();
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    if (hydrated) {
+      checkAuth();
+    }
+  }, [hydrated, checkAuth]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -19,7 +28,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading) {
+  if (!hydrated || isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center space-y-4">
