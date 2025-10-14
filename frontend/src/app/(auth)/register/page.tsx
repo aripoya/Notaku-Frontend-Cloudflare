@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, Quote } from "lucide-react";
-import { mockApi } from "@/lib/mockApi";
+import { useAuth } from "@/hooks/useAuth";
 
 const registerSchema = z
   .object({
@@ -36,7 +36,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { register: registerUser, isLoading } = useAuth();
 
   const {
     register,
@@ -49,19 +49,13 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      setIsLoading(true);
-
-      // Call mock API
-      const result = await mockApi.register({
+      // Call auth store register
+      await registerUser({
         email: data.email,
         password: data.password,
         name: data.name,
         businessName: data.businessName,
       });
-
-      // Store credentials
-      localStorage.setItem("auth_token", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
 
       // Success
       toast.success("Akun berhasil dibuat!", {
@@ -76,8 +70,6 @@ export default function RegisterPage() {
       toast.error("Pendaftaran gagal", {
         description: error?.message || "Terjadi kesalahan",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

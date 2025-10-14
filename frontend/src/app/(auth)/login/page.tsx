@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, Quote } from "lucide-react";
-import { mockApi } from "@/lib/mockApi";
+import { useAuth } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.string().email("Email tidak valid"),
@@ -24,7 +24,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuth();
 
   const {
     register,
@@ -34,16 +34,22 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      setIsLoading(true);
-      const result = await mockApi.login(data.email, data.password);
-      localStorage.setItem("auth_token", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
-      toast.success("Login berhasil!", { description: "Mengalihkan ke dashboard..." });
-      setTimeout(() => router.push("/dashboard"), 1000);
+      // Call auth store login
+      await login(data.email, data.password);
+
+      // Success
+      toast.success("Login berhasil!", {
+        description: "Mengalihkan ke dashboard...",
+      });
+
+      // Redirect to dashboard
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
     } catch (error: any) {
-      toast.error("Login gagal", { description: error?.message || "Email atau password salah" });
-    } finally {
-      setIsLoading(false);
+      toast.error("Login gagal", {
+        description: error?.message || "Email atau password salah",
+      });
     }
   };
 
