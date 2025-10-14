@@ -50,18 +50,32 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setIsLoading(true);
+
+      // Call mock API
       const result = await mockApi.register({
         email: data.email,
         password: data.password,
         name: data.name,
         businessName: data.businessName,
       });
+
+      // Store credentials
       localStorage.setItem("auth_token", result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
-      toast.success("Registrasi berhasil!", { description: "Mengalihkan ke dashboard..." });
-      setTimeout(() => router.push("/dashboard"), 1000);
+
+      // Success
+      toast.success("Akun berhasil dibuat!", {
+        description: "Selamat datang di NotaKu 🎉",
+      });
+
+      // Redirect to dashboard
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
     } catch (error: any) {
-      toast.error("Registrasi gagal", { description: error?.message || "Terjadi kesalahan" });
+      toast.error("Pendaftaran gagal", {
+        description: error?.message || "Terjadi kesalahan",
+      });
     } finally {
       setIsLoading(false);
     }
