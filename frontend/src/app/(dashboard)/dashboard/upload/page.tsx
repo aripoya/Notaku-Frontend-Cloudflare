@@ -117,16 +117,16 @@ export default function UploadPage() {
         }
 
         try {
-          const receipt = await mockApi.getReceipt(uploadResult.jobId);
+          const receiptJob = await mockApi.getReceipt(uploadResult.jobId);
           
-          if (receipt.status === "completed") {
+          if (receiptJob.status === "completed" && receiptJob.receipt) {
             clearInterval(pollInterval);
-            setResult(receipt);
+            setResult(receiptJob.receipt);
             setStage("result");
             toast.success("Berhasil!", { description: "Nota berhasil diproses" });
-          } else if (receipt.status === "failed") {
+          } else if (receiptJob.status === "failed") {
             clearInterval(pollInterval);
-            setError("Gagal memproses nota. Silakan coba lagi.");
+            setError(receiptJob.error || "Gagal memproses nota. Silakan coba lagi.");
             setStage("select");
             toast.error("Gagal", { description: "Tidak dapat memproses nota" });
           }
