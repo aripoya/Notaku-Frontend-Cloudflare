@@ -24,6 +24,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
   // Hydrate on mount
@@ -41,7 +42,17 @@ export default function Header({ onMenuToggle }: HeaderProps) {
     <header className="w-full border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button className="md:hidden" aria-label="Toggle menu" onClick={onMenuToggle}>
+          <button 
+            className="md:hidden" 
+            aria-label="Toggle menu" 
+            onClick={() => {
+              if (isAuthenticated && onMenuToggle) {
+                onMenuToggle();
+              } else {
+                setMobileMenuOpen(!mobileMenuOpen);
+              }
+            }}
+          >
             <Menu className="w-6 h-6" />
           </button>
           <Link href="/" className="font-bold text-lg">
@@ -107,6 +118,34 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         </div>
       </div>
 
+      {/* Mobile Menu for Non-Authenticated Users */}
+      {!isAuthenticated && mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <nav className="px-4 py-3 space-y-3">
+            <Link 
+              href="/pricing" 
+              className="block py-2 text-sm hover:text-blue-600"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Harga
+            </Link>
+            <Link 
+              href="/about" 
+              className="block py-2 text-sm hover:text-blue-600"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Tentang
+            </Link>
+            <Link 
+              href="/login" 
+              className="block py-2 text-sm text-blue-600 font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Masuk
+            </Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
