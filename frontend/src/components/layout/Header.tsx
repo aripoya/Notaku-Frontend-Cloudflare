@@ -16,10 +16,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export default function Header() {
+interface HeaderProps {
+  onMenuToggle?: () => void;
+}
+
+export default function Header({ onMenuToggle }: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
@@ -38,7 +41,7 @@ export default function Header() {
     <header className="w-full border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button className="sm:hidden" aria-label="Toggle menu" onClick={() => setOpen(!open)}>
+          <button className="md:hidden" aria-label="Toggle menu" onClick={onMenuToggle}>
             <Menu className="w-6 h-6" />
           </button>
           <Link href="/" className="font-bold text-lg">
@@ -104,37 +107,6 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {open && (
-        <div className="sm:hidden border-t border-slate-200 dark:border-slate-700 px-4 py-3 space-y-2">
-          {isAuthenticated && user ? (
-            <>
-              <div className="pb-2 border-b border-slate-200 dark:border-slate-700">
-                <p className="text-sm font-medium">{user.name || "User"}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
-              </div>
-              <Link href="/dashboard/settings" className="block py-2">
-                Pengaturan
-              </Link>
-              <button onClick={handleLogout} className="block py-2 text-red-600 w-full text-left">
-                Keluar
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/pricing" className="block">
-                Harga
-              </Link>
-              <Link href="/about" className="block">
-                Tentang
-              </Link>
-              <Link href="/login" className="block text-blue-600 font-medium">
-                Masuk
-              </Link>
-            </>
-          )}
-        </div>
-      )}
     </header>
   );
 }
