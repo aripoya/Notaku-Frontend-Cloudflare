@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
-    await page.goto('/examples/login');
+    await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
@@ -16,7 +16,7 @@ test.describe('Dashboard', () => {
     await page.waitForTimeout(2000);
     
     // Navigate to dashboard
-    await page.goto('/examples/dashboard');
+    await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
   });
 
@@ -63,13 +63,13 @@ test.describe('Dashboard', () => {
 
 test.describe('Dashboard Navigation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/login');
+    await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForTimeout(2000);
-    await page.goto('/examples/dashboard');
+    await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
   });
 
@@ -98,7 +98,7 @@ test.describe('Dashboard Responsiveness', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     
     // Login
-    await page.goto('/examples/login');
+    await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
@@ -106,7 +106,7 @@ test.describe('Dashboard Responsiveness', () => {
     await page.waitForTimeout(2000);
     
     // Navigate to dashboard
-    await page.goto('/examples/dashboard');
+    await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
     
     // Dashboard should still be visible
@@ -120,7 +120,7 @@ test.describe('Dashboard Responsiveness', () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     
     // Login
-    await page.goto('/examples/login');
+    await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
@@ -128,7 +128,7 @@ test.describe('Dashboard Responsiveness', () => {
     await page.waitForTimeout(2000);
     
     // Navigate to dashboard
-    await page.goto('/examples/dashboard');
+    await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
     
     // Dashboard should be visible

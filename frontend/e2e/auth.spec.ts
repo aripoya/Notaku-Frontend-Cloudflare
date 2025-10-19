@@ -7,8 +7,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to login example page
-    await page.goto('/examples/login');
+    // Navigate to login page
+    await page.goto('/login');
     await page.waitForLoadState('networkidle');
   });
 
@@ -121,7 +121,7 @@ test.describe('Authentication Flow', () => {
 test.describe('Logout Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
-    await page.goto('/examples/login');
+    await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
