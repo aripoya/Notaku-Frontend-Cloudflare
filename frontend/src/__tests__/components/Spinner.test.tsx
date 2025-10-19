@@ -13,7 +13,10 @@ describe('Spinner Component', () => {
   it('renders with custom text', () => {
     render(<Spinner text="Loading data..." />);
     
-    expect(screen.getByText('Loading data...')).toBeInTheDocument();
+    // Use getAllByText since text appears twice (visible + screen reader)
+    const texts = screen.getAllByText('Loading data...');
+    expect(texts.length).toBeGreaterThan(0);
+    expect(texts[0]).toBeInTheDocument();
   });
 
   it('applies correct size classes for small size', () => {

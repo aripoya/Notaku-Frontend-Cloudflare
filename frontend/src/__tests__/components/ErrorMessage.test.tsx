@@ -26,7 +26,7 @@ describe('ErrorMessage Component', () => {
 
     render(<ErrorMessage error={error} onRetry={onRetry} />);
 
-    const retryButton = screen.getByRole('button', { name: /try again/i });
+    const retryButton = screen.getByRole('button', { name: /retry action/i });
     await user.click(retryButton);
 
     expect(onRetry).toHaveBeenCalledTimes(1);
