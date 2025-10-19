@@ -11,8 +11,8 @@ test.describe('Dashboard', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/^password$/i).fill('password123');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByLabel(/password/i).fill('password123');
+    await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     
     // Navigate to dashboard
@@ -66,8 +66,8 @@ test.describe('Dashboard Navigation', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/^password$/i).fill('password123');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByLabel(/password/i).fill('password123');
+    await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
@@ -101,8 +101,8 @@ test.describe('Dashboard Responsiveness', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/^password$/i).fill('password123');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByLabel(/password/i).fill('password123');
+    await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     
     // Navigate to dashboard
@@ -123,8 +123,8 @@ test.describe('Dashboard Responsiveness', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/^password$/i).fill('password123');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByLabel(/password/i).fill('password123');
+    await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     
     // Navigate to dashboard

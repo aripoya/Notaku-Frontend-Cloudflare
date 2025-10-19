@@ -29,8 +29,8 @@ test.describe('Smoke Tests', () => {
     
     // Login first
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/^password$/i).fill('password123');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByLabel(/password/i).fill('password123');
+    await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     
     // Try to navigate to dashboard

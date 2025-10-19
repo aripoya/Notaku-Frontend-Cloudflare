@@ -2,11 +2,42 @@
 
 ```yaml
 - generic [active] [ref=e1]:
-  - generic [ref=e3]:
-    - heading "404" [level=1] [ref=e4]
-    - heading "This page could not be found." [level=2] [ref=e6]
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: NotaKu
+        - generic [ref=e7]: Masuk ke Akun Anda
+        - paragraph [ref=e8]: Kelola keuangan bisnis dengan lebih mudah
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - text: Email
+          - textbox "Email" [ref=e12]:
+            - /placeholder: nama@bisnis.com
+        - generic [ref=e13]:
+          - text: Password
+          - generic [ref=e14]:
+            - textbox "Password" [ref=e15]:
+              - /placeholder: Masukkan password
+            - button "Tampilkan password" [ref=e16]:
+              - img [ref=e17]
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - checkbox "Ingat saya" [checked] [ref=e22]
+            - generic [ref=e23]: Ingat saya
+          - link "Lupa password?" [ref=e24] [cursor=pointer]:
+            - /url: /forgot-password
+        - button "Masuk" [ref=e25]
+        - generic [ref=e28]: atau
+        - paragraph [ref=e30]:
+          - text: Belum punya akun?
+          - link "Daftar sekarang" [ref=e31] [cursor=pointer]:
+            - /url: /register
+    - generic [ref=e34]:
+      - img [ref=e35]
+      - paragraph [ref=e38]: NotaKu menghemat 10+ jam per minggu untuk pembukuan UMKM
+      - paragraph [ref=e39]: — 2,500+ UMKM Indonesia
   - region "Notifications alt+T"
-  - button "Open Next.js Dev Tools" [ref=e12] [cursor=pointer]:
-    - img [ref=e13]
-  - alert [ref=e16]
+  - button "Open Next.js Dev Tools" [ref=e45] [cursor=pointer]:
+    - img [ref=e46]
+  - alert [ref=e49]
 ```
