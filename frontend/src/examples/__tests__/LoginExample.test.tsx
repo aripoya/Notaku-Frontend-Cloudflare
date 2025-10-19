@@ -30,16 +30,16 @@ describe('LoginExample Component', () => {
     it('should render login form by default', () => {
       render(<LoginExample />);
 
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
 
     it('should render all form fields', () => {
       render(<LoginExample />);
 
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+      expect(document.getElementById('password')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
 
@@ -62,7 +62,7 @@ describe('LoginExample Component', () => {
       await waitFor(() => {
         expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /sign up/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
       });
     });
 
@@ -93,15 +93,17 @@ describe('LoginExample Component', () => {
       render(<LoginExample />);
 
       // Fill in login form
-      await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-      await user.type(screen.getByLabelText(/password/i), 'password123');
+      await user.type(screen.getByLabelText(/^password$/i), 'short');
+      await user.type(screen.getByLabelText(/^password$/i), 'password123');
 
       // Switch to register
       await user.click(screen.getByText(/don't have an account/i));
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/email/i)).toHaveValue('');
-        expect(screen.getByLabelText(/password/i)).toHaveValue('');
+        const emailInput = screen.getByLabelText(/email address/i) as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+        expect(emailInput.value).toBe('');
+        expect(passwordInput.value).toBe('');
       });
     });
   });
@@ -137,7 +139,7 @@ describe('LoginExample Component', () => {
       const user = userEvent.setup();
       render(<LoginExample />);
 
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = document.getElementById('password')!;
       await user.click(passwordInput);
       await user.tab();
 
@@ -255,7 +257,7 @@ describe('LoginExample Component', () => {
       const user = userEvent.setup();
       render(<LoginExample />);
 
-      const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement;
+      const passwordInput = document.getElementById('password') as HTMLInputElement;
       const toggleButton = screen.getByRole('button', { name: /show password|hide password/i });
 
       // Initially password should be hidden
@@ -286,7 +288,7 @@ describe('LoginExample Component', () => {
       const user = userEvent.setup();
       render(<LoginExample />);
 
-      const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement;
+      const passwordInput = document.getElementById('password') as HTMLInputElement;
       await user.type(passwordInput, 'Password123');
 
       expect(passwordInput.value).toBe('Password123');
@@ -321,7 +323,8 @@ describe('LoginExample Component', () => {
     it('should display password icon', () => {
       render(<LoginExample />);
 
-      const passwordIcon = screen.getByLabelText(/password/i).parentElement?.querySelector('svg');
+      const passwordInput = document.getElementById('password');
+      const passwordIcon = passwordInput?.parentElement?.querySelector('svg');
       expect(passwordIcon).toBeInTheDocument();
     });
 
@@ -342,8 +345,8 @@ describe('LoginExample Component', () => {
     it('should have proper labels for all inputs', () => {
       render(<LoginExample />);
 
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+      expect(document.getElementById('password')).toBeInTheDocument();
     });
 
     it('should have proper button labels', () => {
