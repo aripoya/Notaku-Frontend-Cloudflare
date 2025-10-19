@@ -16,13 +16,13 @@ test.describe('Authentication Flow', () => {
     // Check for login elements
     await expect(page.getByText(/masuk/i)).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel(/password/i)).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toBeVisible();
   });
 
   test('should login with valid credentials', async ({ page }) => {
     // Fill login form
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/^password$/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     
     // Click sign in button
     await page.getByRole('button', { name: /masuk/i }).click();
@@ -63,7 +63,7 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should toggle password visibility', async ({ page }) => {
-    const passwordInput = page.getByLabel(/password/i);
+    const passwordInput = page.locator('input#password');
     
     // Password should be hidden by default
     await expect(passwordInput).toHaveAttribute('type', 'password');
@@ -86,7 +86,7 @@ test.describe('Authentication Flow', () => {
   test('should validate email format', async ({ page }) => {
     // Enter invalid email
     await page.getByLabel(/email/i).fill('invalid-email');
-    await page.getByLabel(/password/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     
     // Try to submit
     await page.getByRole('button', { name: /masuk/i }).click();
@@ -102,7 +102,7 @@ test.describe('Logout Flow', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/^password$/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
   });

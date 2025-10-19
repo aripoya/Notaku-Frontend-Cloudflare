@@ -11,7 +11,7 @@ test.describe('Dashboard', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/password/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     
@@ -66,7 +66,7 @@ test.describe('Dashboard Navigation', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/password/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     await page.goto('/dashboard');
@@ -101,7 +101,7 @@ test.describe('Dashboard Responsiveness', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/password/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     
@@ -123,7 +123,7 @@ test.describe('Dashboard Responsiveness', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/password/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     

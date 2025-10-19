@@ -19,7 +19,7 @@ test.describe('Smoke Tests', () => {
     
     // Should have login elements
     await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel(/password/i)).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toBeVisible();
   });
 
   test('should navigate to dashboard', async ({ page }) => {
@@ -29,7 +29,7 @@ test.describe('Smoke Tests', () => {
     
     // Login first
     await page.getByLabel(/email/i).fill('demo@example.com');
-    await page.getByLabel(/password/i).fill('password123');
+    await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /masuk/i }).click();
     await page.waitForTimeout(2000);
     
