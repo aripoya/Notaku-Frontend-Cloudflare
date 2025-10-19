@@ -9,8 +9,8 @@ test.describe('Smoke Tests', () => {
   test('should load home page', async ({ page }) => {
     await page.goto('/');
     
-    // Page should load
-    await expect(page).toHaveTitle(/Expense|AI|Platform/i);
+    // Page should load with NotaKu title
+    await expect(page).toHaveTitle(/NotaKu/i);
   });
 
   test('should have login form', async ({ page }) => {

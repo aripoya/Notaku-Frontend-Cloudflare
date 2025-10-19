@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
+- generic [active] [ref=e1]:
   - generic [ref=e2]:
     - generic [ref=e4]:
       - generic [ref=e5]:
@@ -11,9 +11,8 @@
       - generic [ref=e10]:
         - generic [ref=e11]:
           - text: Email
-          - textbox "Email" [active] [ref=e12]:
+          - textbox "Email" [ref=e12]:
             - /placeholder: nama@bisnis.com
-            - text: demo@example.com
         - generic [ref=e13]:
           - text: Password
           - generic [ref=e14]:
@@ -41,4 +40,5 @@
   - button "Open Next.js Dev Tools" [ref=e45] [cursor=pointer]:
     - img [ref=e46]
   - alert [ref=e49]
+  - generic [ref=e50]: Rp 0K
 ```

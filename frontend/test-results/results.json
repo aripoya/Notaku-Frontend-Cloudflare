@@ -97,7 +97,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 1579,
+                      "duration": 1574,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/masuk/i)\nExpected: visible\nError: strict mode violation: getByText(/masuk/i) resolved to 2 elements:\n    1) <div class=\"font-semibold tracking-tight text-2xl\">Masuk ke Akun Anda</div> aka getByText('Masuk ke Akun Anda')\n    2) <button type=\"submit\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full\">Masuk</button> aka getByRole('button', { name: 'Masuk' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/masuk/i)\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/masuk/i)\nExpected: visible\nError: strict mode violation: getByText(/masuk/i) resolved to 2 elements:\n    1) <div class=\"font-semibold tracking-tight text-2xl\">Masuk ke Akun Anda</div> aka getByText('Masuk ke Akun Anda')\n    2) <button type=\"submit\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full\">Masuk</button> aka getByRole('button', { name: 'Masuk' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/masuk/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:17:44",
@@ -106,7 +106,7 @@
                           "column": 44,
                           "line": 17
                         },
-                        "snippet": "\u001b[0m \u001b[90m 15 |\u001b[39m   test(\u001b[32m'should display login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 16 |\u001b[39m     \u001b[90m// Check for login elements\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 17 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/masuk/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 19 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 20 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 15 |\u001b[39m   test(\u001b[32m'should display login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 16 |\u001b[39m     \u001b[90m// Check for login elements\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 17 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/masuk/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 19 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[type=\"password\"]'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 20 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
@@ -115,13 +115,13 @@
                             "column": 44,
                             "line": 17
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/masuk/i)\nExpected: visible\nError: strict mode violation: getByText(/masuk/i) resolved to 2 elements:\n    1) <div class=\"font-semibold tracking-tight text-2xl\">Masuk ke Akun Anda</div> aka getByText('Masuk ke Akun Anda')\n    2) <button type=\"submit\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full\">Masuk</button> aka getByRole('button', { name: 'Masuk' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/masuk/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 15 |\u001b[39m   test(\u001b[32m'should display login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 16 |\u001b[39m     \u001b[90m// Check for login elements\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 17 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/masuk/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 19 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 20 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:17:44\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/masuk/i)\nExpected: visible\nError: strict mode violation: getByText(/masuk/i) resolved to 2 elements:\n    1) <div class=\"font-semibold tracking-tight text-2xl\">Masuk ke Akun Anda</div> aka getByText('Masuk ke Akun Anda')\n    2) <button type=\"submit\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full\">Masuk</button> aka getByRole('button', { name: 'Masuk' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/masuk/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 15 |\u001b[39m   test(\u001b[32m'should display login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 16 |\u001b[39m     \u001b[90m// Check for login elements\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 17 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/masuk/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 19 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[type=\"password\"]'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 20 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:17:44\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:17.643Z",
+                      "startTime": "2025-10-19T21:13:38.392Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -171,12 +171,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3740,
+                      "duration": 3729,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:17.656Z",
+                      "startTime": "2025-10-19T21:13:38.379Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -205,12 +205,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 3574,
+                      "duration": 3578,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:17.643Z",
+                      "startTime": "2025-10-19T21:13:38.365Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -239,12 +239,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1579,
+                      "duration": 1563,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:17.653Z",
+                      "startTime": "2025-10-19T21:13:38.381Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -273,12 +273,12 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1576,
+                      "duration": 1559,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:17.633Z",
+                      "startTime": "2025-10-19T21:13:38.367Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -293,7 +293,7 @@
             },
             {
               "title": "should toggle password visibility",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -306,58 +306,18 @@
                     {
                       "workerIndex": 4,
                       "parallelIndex": 4,
-                      "status": "failed",
-                      "duration": 1069,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel(/password/i)\nExpected: \u001b[32m\"password\"\u001b[39m\nError: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel(/password/i)\nExpected: \u001b[32m\"password\"\u001b[39m\nError: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:69:33",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                          "column": 33,
-                          "line": 69
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 67 |\u001b[39m     \n \u001b[90m 68 |\u001b[39m     \u001b[90m// Password should be hidden by default\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m expect(passwordInput)\u001b[33m.\u001b[39mtoHaveAttribute(\u001b[32m'type'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'password'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m     \n \u001b[90m 71 |\u001b[39m     \u001b[90m// Click show password button\u001b[39m\n \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/tampilkan password/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                            "column": 33,
-                            "line": 69
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel(/password/i)\nExpected: \u001b[32m\"password\"\u001b[39m\nError: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 67 |\u001b[39m     \n \u001b[90m 68 |\u001b[39m     \u001b[90m// Password should be hidden by default\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m expect(passwordInput)\u001b[33m.\u001b[39mtoHaveAttribute(\u001b[32m'type'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'password'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m     \n \u001b[90m 71 |\u001b[39m     \u001b[90m// Click show password button\u001b[39m\n \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/tampilkan password/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:69:33\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 1211,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:19.530Z",
+                      "startTime": "2025-10-19T21:13:40.318Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Authentication-Flow-should-toggle-password-visibility-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Authentication-Flow-should-toggle-password-visibility-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Authentication-Flow-should-toggle-password-visibility-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                        "column": 33,
-                        "line": 69
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "d748ac400d08b85935ef-8b29cfa056e63fb2f02e",
@@ -381,7 +341,7 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "failed",
-                      "duration": 1153,
+                      "duration": 1226,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid|minimal/i)\nExpected: visible\nError: strict mode violation: getByText(/email tidak valid|minimal/i) resolved to 2 elements:\n    1) <p class=\"text-sm text-red-600\">Email tidak valid</p> aka getByText('Email tidak valid')\n    2) <p class=\"text-sm text-red-600\">Password minimal 8 karakter</p> aka getByText('Password minimal 8 karakter')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid|minimal/i)\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid|minimal/i)\nExpected: visible\nError: strict mode violation: getByText(/email tidak valid|minimal/i) resolved to 2 elements:\n    1) <p class=\"text-sm text-red-600\">Email tidak valid</p> aka getByText('Email tidak valid')\n    2) <p class=\"text-sm text-red-600\">Password minimal 8 karakter</p> aka getByText('Password minimal 8 karakter')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid|minimal/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:83:64",
@@ -405,7 +365,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:19.531Z",
+                      "startTime": "2025-10-19T21:13:40.320Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -455,31 +415,31 @@
                       "workerIndex": 5,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 946,
+                      "duration": 3152,
                       "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:89:40",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:95:56",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                          "column": 40,
-                          "line": 89
+                          "column": 56,
+                          "line": 95
                         },
-                        "snippet": "\u001b[0m \u001b[90m 87 |\u001b[39m     \u001b[90m// Enter invalid email\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'invalid-email'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 89 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 90 |\u001b[39m     \n \u001b[90m 91 |\u001b[39m     \u001b[90m// Try to submit\u001b[39m\n \u001b[90m 92 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 93 |\u001b[39m     \n \u001b[90m 94 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 95 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 96 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 97 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 98 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                            "column": 40,
-                            "line": 89
+                            "column": 56,
+                            "line": 95
                           },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 87 |\u001b[39m     \u001b[90m// Enter invalid email\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'invalid-email'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 89 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 90 |\u001b[39m     \n \u001b[90m 91 |\u001b[39m     \u001b[90m// Try to submit\u001b[39m\n \u001b[90m 92 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:89:40\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 93 |\u001b[39m     \n \u001b[90m 94 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 95 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 96 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 97 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 98 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:95:56\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:20.066Z",
+                      "startTime": "2025-10-19T21:13:40.883Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -500,8 +460,8 @@
                       ],
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                        "column": 40,
-                        "line": 89
+                        "column": 56,
+                        "line": 95
                       }
                     }
                   ],
@@ -534,10 +494,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
+                      "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 30385,
+                      "duration": 30136,
                       "error": {
                         "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
@@ -558,7 +518,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:21.036Z",
+                      "startTime": "2025-10-19T21:13:41.540Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -617,34 +577,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 6,
                       "parallelIndex": 3,
                       "status": "failed",
-                      "duration": 1146,
+                      "duration": 9933,
                       "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:27:7",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 14
+                          "column": 7,
+                          "line": 27
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 25 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 26 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome|dashboard/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 27 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 28 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m\n \u001b[90m 30 |\u001b[39m   test(\u001b[32m'should show user welcome message'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 14
+                            "column": 7,
+                            "line": 27
                           },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 25 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 26 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome|dashboard/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 27 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 28 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m\n \u001b[90m 30 |\u001b[39m   test(\u001b[32m'should show user welcome message'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:27:7\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:21.128Z",
+                      "startTime": "2025-10-19T21:13:42.061Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -665,8 +625,8 @@
                       ],
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 14
+                        "column": 7,
+                        "line": 27
                       }
                     }
                   ],
@@ -691,34 +651,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "failed",
-                      "duration": 1133,
+                      "duration": 10000,
                       "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome back/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome back/i)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome back/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome back/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:34:7",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 14
+                          "column": 7,
+                          "line": 34
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 33 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome back/i\u001b[39m)\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 34 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 35 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 36 |\u001b[39m\n \u001b[90m 37 |\u001b[39m   test(\u001b[32m'should display stats cards'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 14
+                            "column": 7,
+                            "line": 34
                           },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome back/i)\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome back/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 33 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome back/i\u001b[39m)\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 34 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 35 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 36 |\u001b[39m\n \u001b[90m 37 |\u001b[39m   test(\u001b[32m'should display stats cards'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:34:7\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:21.812Z",
+                      "startTime": "2025-10-19T21:13:42.338Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -739,8 +699,8 @@
                       ],
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 14
+                        "column": 7,
+                        "line": 34
                       }
                     }
                   ],
@@ -765,34 +725,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "failed",
-                      "duration": 1085,
+                      "duration": 10078,
                       "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/notes/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/notes/i).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/notes/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/notes/i).first()\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:44:9",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 14
+                          "column": 9,
+                          "line": 44
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 42 |\u001b[39m       \u001b[36mawait\u001b[39m expect(\n \u001b[90m 43 |\u001b[39m         page\u001b[33m.\u001b[39mgetByText(statText)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 44 |\u001b[39m       )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 45 |\u001b[39m     }\n \u001b[90m 46 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 47 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 14
+                            "column": 9,
+                            "line": 44
                           },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/notes/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/notes/i).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 42 |\u001b[39m       \u001b[36mawait\u001b[39m expect(\n \u001b[90m 43 |\u001b[39m         page\u001b[33m.\u001b[39mgetByText(statText)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 44 |\u001b[39m       )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 45 |\u001b[39m     }\n \u001b[90m 46 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 47 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:44:9\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:21.526Z",
+                      "startTime": "2025-10-19T21:13:42.493Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -813,8 +773,8 @@
                       ],
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 14
+                        "column": 9,
+                        "line": 44
                       }
                     }
                   ],
@@ -839,34 +799,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 1173,
+                      "duration": 9054,
                       "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/api|healthy|status/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/api|healthy|status/i).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/api|healthy|status/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/api|healthy|status/i).first()\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:52:7",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 14
+                          "column": 7,
+                          "line": 52
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 50 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 51 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/api|healthy|status/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 52 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 53 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 54 |\u001b[39m\n \u001b[90m 55 |\u001b[39m   test(\u001b[32m'should have interactive elements'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 14
+                            "column": 7,
+                            "line": 52
                           },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/api|healthy|status/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/api|healthy|status/i).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 50 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 51 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/api|healthy|status/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 52 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 53 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 54 |\u001b[39m\n \u001b[90m 55 |\u001b[39m   test(\u001b[32m'should have interactive elements'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:52:7\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:21.691Z",
+                      "startTime": "2025-10-19T21:13:44.557Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -887,8 +847,8 @@
                       ],
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 14
+                        "column": 7,
+                        "line": 52
                       }
                     }
                   ],
@@ -902,7 +862,7 @@
             },
             {
               "title": "should have interactive elements",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -913,60 +873,20 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 8,
                       "parallelIndex": 3,
-                      "status": "failed",
-                      "duration": 1204,
-                      "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 14
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 14
-                          },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:14:40\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 4006,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:22.892Z",
+                      "startTime": "2025-10-19T21:13:52.588Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-should-have-interactive-elements-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-should-have-interactive-elements-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-should-have-interactive-elements-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 14
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "90cda532ab82d274b30b-a8b0e5f8009cf082379a",
@@ -984,7 +904,41 @@
           "specs": [
             {
               "title": "should navigate to different sections",
-              "ok": false,
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4134,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T21:13:52.860Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90cda532ab82d274b30b-15e83be5a97187208615",
+              "file": "dashboard.spec.ts",
+              "line": 76,
+              "column": 7
+            },
+            {
+              "title": "should display recent activity",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -996,133 +950,19 @@
                   "results": [
                     {
                       "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "failed",
-                      "duration": 1048,
-                      "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:69:40",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 69
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 67 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 68 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/dashboard'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 69
-                          },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 67 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 68 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/dashboard'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:69:40\u001b[22m"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-19T20:01:23.106Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-Naviga-fa59b-igate-to-different-sections-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-Naviga-fa59b-igate-to-different-sections-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-Naviga-fa59b-igate-to-different-sections-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 69
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "90cda532ab82d274b30b-15e83be5a97187208615",
-              "file": "dashboard.spec.ts",
-              "line": 76,
-              "column": 7
-            },
-            {
-              "title": "should display recent activity",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 11,
                       "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 976,
-                      "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:69:40",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 69
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 67 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 68 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/dashboard'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 69
-                          },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 67 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 68 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/dashboard'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:69:40\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 4382,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:23.547Z",
+                      "startTime": "2025-10-19T21:13:53.133Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-Naviga-0b76c-uld-display-recent-activity-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-Naviga-0b76c-uld-display-recent-activity-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-Naviga-0b76c-uld-display-recent-activity-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 69
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "90cda532ab82d274b30b-6c6b3f08d836a5252ee0",
@@ -1151,34 +991,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 12,
+                      "workerIndex": 11,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 1012,
+                      "duration": 9034,
                       "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:104:40",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:115:7",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 104
+                          "column": 7,
+                          "line": 115
                         },
-                        "snippet": "\u001b[0m \u001b[90m 102 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 103 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 104 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 105 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 106 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 107 |\u001b[39m     \u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 113 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 114 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome|dashboard/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 115 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 116 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 117 |\u001b[39m\n \u001b[90m 118 |\u001b[39m   test(\u001b[32m'should work on tablet viewport'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 104
+                            "column": 7,
+                            "line": 115
                           },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 102 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 103 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 104 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 105 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 106 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 107 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:104:40\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 113 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 114 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome|dashboard/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 115 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 116 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 117 |\u001b[39m\n \u001b[90m 118 |\u001b[39m   test(\u001b[32m'should work on tablet viewport'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:115:7\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:23.761Z",
+                      "startTime": "2025-10-19T21:13:54.208Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1199,8 +1039,8 @@
                       ],
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 104
+                        "column": 7,
+                        "line": 115
                       }
                     }
                   ],
@@ -1225,34 +1065,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 13,
+                      "workerIndex": 8,
                       "parallelIndex": 3,
                       "status": "failed",
-                      "duration": 1300,
+                      "duration": 8989,
                       "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:126:40",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:137:7",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 40,
-                          "line": 126
+                          "column": 7,
+                          "line": 137
                         },
-                        "snippet": "\u001b[0m \u001b[90m 124 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 126 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 127 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 129 |\u001b[39m     \u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 135 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 136 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome|dashboard/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 137 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 138 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 139 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 140 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 40,
-                            "line": 126
+                            "column": 7,
+                            "line": 137
                           },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 124 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 126 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 127 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 129 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:126:40\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/welcome|dashboard/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/welcome|dashboard/i).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 135 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 136 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/welcome|dashboard/i\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 137 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 138 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 139 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 140 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:137:7\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:24.673Z",
+                      "startTime": "2025-10-19T21:13:56.716Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1273,8 +1113,8 @@
                       ],
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 40,
-                        "line": 126
+                        "column": 7,
+                        "line": 137
                       }
                     }
                   ],
@@ -1316,10 +1156,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 9,
                       "parallelIndex": 2,
                       "status": "failed",
-                      "duration": 5755,
+                      "duration": 5482,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Expense|AI|Platform/i\u001b[39m\nReceived string:  \u001b[31m\"NotaKu\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"NotaKu\"\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Expense|AI|Platform/i\u001b[39m\nReceived string:  \u001b[31m\"NotaKu\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"NotaKu\"\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts:13:24",
@@ -1343,7 +1183,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:24.750Z",
+                      "startTime": "2025-10-19T21:13:57.141Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1379,7 +1219,7 @@
             },
             {
               "title": "should have login form",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -1390,60 +1230,20 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 15,
+                      "workerIndex": 10,
                       "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 980,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel(/password/i)\nExpected: visible\nError: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel(/password/i)\nExpected: visible\nError: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts:22:48",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts",
-                          "column": 48,
-                          "line": 22
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 20 |\u001b[39m     \u001b[90m// Should have login elements\u001b[39m\n \u001b[90m 21 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m\n \u001b[90m 25 |\u001b[39m   test(\u001b[32m'should navigate to dashboard'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts",
-                            "column": 48,
-                            "line": 22
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel(/password/i)\nExpected: visible\nError: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 20 |\u001b[39m     \u001b[90m// Should have login elements\u001b[39m\n \u001b[90m 21 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m\n \u001b[90m 25 |\u001b[39m   test(\u001b[32m'should navigate to dashboard'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts:22:48\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 1158,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:25.440Z",
+                      "startTime": "2025-10-19T21:13:57.673Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/smoke-Smoke-Tests-should-have-login-form-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/smoke-Smoke-Tests-should-have-login-form-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/smoke-Smoke-Tests-should-have-login-form-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts",
-                        "column": 48,
-                        "line": 22
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "4219922fea2e2bd3c691-6c9905140d66d4b4b6bf",
@@ -1453,7 +1253,7 @@
             },
             {
               "title": "should navigate to dashboard",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -1464,60 +1264,20 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 16,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 1115,
-                      "error": {
-                        "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n",
-                        "stack": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts:32:40",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts",
-                          "column": 40,
-                          "line": 32
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 30 |\u001b[39m     \u001b[90m// Login first\u001b[39m\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts",
-                            "column": 40,
-                            "line": 32
-                          },
-                          "message": "Error: locator.fill: Error: strict mode violation: getByLabel(/password/i) resolved to 2 elements:\n    1) <input id=\"password\" type=\"password\" name=\"password\" aria-invalid=\"false\" placeholder=\"Masukkan password\" class=\"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm\"/> aka getByRole('textbox', { name: 'Password' })\n    2) <button type=\"button\" aria-label=\"Tampilkan password\" class=\"absolute inset-y-0 right-2 flex items-center text-slate-500 hover:text-slate-700\">…</button> aka getByRole('button', { name: 'Tampilkan password' })\n\nCall log:\n\u001b[2m  - waiting for getByLabel(/password/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 30 |\u001b[39m     \u001b[90m// Login first\u001b[39m\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/email/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'demo@example.com'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'password123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/masuk/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts:32:40\u001b[22m"
-                        }
-                      ],
+                      "workerIndex": 10,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3829,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:25.668Z",
+                      "startTime": "2025-10-19T21:13:58.838Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/smoke-Smoke-Tests-should-navigate-to-dashboard-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/smoke-Smoke-Tests-should-navigate-to-dashboard-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/smoke-Smoke-Tests-should-navigate-to-dashboard-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/smoke.spec.ts",
-                        "column": 40,
-                        "line": 32
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "4219922fea2e2bd3c691-fb1c3a2051e7c7cf3f22",
@@ -1538,15 +1298,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 17,
-                      "parallelIndex": 3,
+                      "workerIndex": 12,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 567,
+                      "duration": 479,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T20:01:26.606Z",
+                      "startTime": "2025-10-19T21:14:02.978Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1566,11 +1326,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-19T20:01:16.816Z",
-    "duration": 34772.244,
-    "expected": 5,
+    "startTime": "2025-10-19T21:13:37.498Z",
+    "duration": 34214.659999999996,
+    "expected": 11,
     "skipped": 0,
-    "unexpected": 17,
+    "unexpected": 11,
     "flaky": 0
   }
 }

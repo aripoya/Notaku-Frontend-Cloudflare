@@ -14,7 +14,7 @@ test.describe('Authentication Flow', () => {
 
   test('should display login page', async ({ page }) => {
     // Check for login elements
-    await expect(page.getByText(/masuk/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Masuk' })).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();
   });
@@ -79,8 +79,12 @@ test.describe('Authentication Flow', () => {
     // Try to submit without filling fields
     await page.getByRole('button', { name: /masuk/i }).click();
     
-    // Should show validation errors
-    await expect(page.getByText(/email tidak valid|minimal/i)).toBeVisible({ timeout: 2000 });
+    // Should show validation errors (check for either one)
+    const emailError = page.getByText('Email tidak valid');
+    const passwordError = page.getByText(/Password minimal/i);
+    
+    // At least one error should be visible
+    await expect(emailError.or(passwordError)).toBeVisible({ timeout: 2000 });
   });
 
   test('should validate email format', async ({ page }) => {
