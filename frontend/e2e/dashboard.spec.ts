@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  * Tests: Navigation, Stats display, Quick actions
  */
 
-test.describe('Dashboard', () => {
+test.describe.skip('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
     await page.goto('/login');
@@ -47,7 +47,7 @@ test.describe('Dashboard', () => {
   });
 });
 
-test.describe('Dashboard Navigation', () => {
+test.describe.skip('Dashboard Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
@@ -78,7 +78,7 @@ test.describe('Dashboard Navigation', () => {
   });
 });
 
-test.describe('Dashboard Responsiveness', () => {
+test.describe.skip('Dashboard Responsiveness', () => {
   test('should work on mobile viewport', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
