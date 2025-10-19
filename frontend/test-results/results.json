@@ -97,12 +97,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2324,
+                      "duration": 1682,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:35.027Z",
+                      "startTime": "2025-10-19T21:55:09.617Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -131,12 +131,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 4455,
+                      "duration": 3812,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:34.926Z",
+                      "startTime": "2025-10-19T21:55:09.615Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -165,12 +165,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 4434,
+                      "duration": 3724,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:34.980Z",
+                      "startTime": "2025-10-19T21:55:09.604Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -199,12 +199,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 2194,
+                      "duration": 1687,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:34.974Z",
+                      "startTime": "2025-10-19T21:55:09.613Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -233,12 +233,12 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 2199,
+                      "duration": 1685,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:34.951Z",
+                      "startTime": "2025-10-19T21:55:09.576Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -264,15 +264,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1661,
+                      "duration": 1271,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:37.558Z",
+                      "startTime": "2025-10-19T21:55:11.590Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -287,7 +287,7 @@
             },
             {
               "title": "should validate empty fields",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -300,58 +300,18 @@
                     {
                       "workerIndex": 4,
                       "parallelIndex": 4,
-                      "status": "failed",
-                      "duration": 1675,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Email tidak valid').or(getByText(/Password minimal/i))\nExpected: visible\nError: strict mode violation: getByText('Email tidak valid').or(getByText(/Password minimal/i)) resolved to 2 elements:\n    1) <p class=\"text-sm text-red-600\">Email tidak valid</p> aka getByText('Email tidak valid')\n    2) <p class=\"text-sm text-red-600\">Password minimal 8 karakter</p> aka getByText('Password minimal 8 karakter')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Email tidak valid').or(getByText(/Password minimal/i))\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Email tidak valid').or(getByText(/Password minimal/i))\nExpected: visible\nError: strict mode violation: getByText('Email tidak valid').or(getByText(/Password minimal/i)) resolved to 2 elements:\n    1) <p class=\"text-sm text-red-600\">Email tidak valid</p> aka getByText('Email tidak valid')\n    2) <p class=\"text-sm text-red-600\">Password minimal 8 karakter</p> aka getByText('Password minimal 8 karakter')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Email tidak valid').or(getByText(/Password minimal/i))\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:87:48",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                          "column": 48,
-                          "line": 87
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 85 |\u001b[39m     \n \u001b[90m 86 |\u001b[39m     \u001b[90m// At least one error should be visible\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 87 |\u001b[39m     \u001b[36mawait\u001b[39m expect(emailError\u001b[33m.\u001b[39mor(passwordError))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 88 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 89 |\u001b[39m\n \u001b[90m 90 |\u001b[39m   test(\u001b[32m'should validate email format'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                            "column": 48,
-                            "line": 87
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Email tidak valid').or(getByText(/Password minimal/i))\nExpected: visible\nError: strict mode violation: getByText('Email tidak valid').or(getByText(/Password minimal/i)) resolved to 2 elements:\n    1) <p class=\"text-sm text-red-600\">Email tidak valid</p> aka getByText('Email tidak valid')\n    2) <p class=\"text-sm text-red-600\">Password minimal 8 karakter</p> aka getByText('Password minimal 8 karakter')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Email tidak valid').or(getByText(/Password minimal/i))\u001b[22m\n\n\n\u001b[0m \u001b[90m 85 |\u001b[39m     \n \u001b[90m 86 |\u001b[39m     \u001b[90m// At least one error should be visible\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 87 |\u001b[39m     \u001b[36mawait\u001b[39m expect(emailError\u001b[33m.\u001b[39mor(passwordError))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 88 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 89 |\u001b[39m\n \u001b[90m 90 |\u001b[39m   test(\u001b[32m'should validate email format'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:87:48\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 1252,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:37.563Z",
+                      "startTime": "2025-10-19T21:55:11.592Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Authentication-Flow-should-validate-empty-fields-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Authentication-Flow-should-validate-empty-fields-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Authentication-Flow-should-validate-empty-fields-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                        "column": 48,
-                        "line": 87
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "d748ac400d08b85935ef-80943a26b26d80057187",
@@ -372,34 +332,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "failed",
-                      "duration": 3910,
+                      "duration": 3282,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:99:56",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:95:56",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
                           "column": 56,
-                          "line": 99
+                          "line": 95
                         },
-                        "snippet": "\u001b[0m \u001b[90m  97 |\u001b[39m     \n \u001b[90m  98 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  99 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 100 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 101 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 102 |\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 93 |\u001b[39m     \n \u001b[90m 94 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 95 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 96 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 97 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 98 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
                             "column": 56,
-                            "line": 99
+                            "line": 95
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m  97 |\u001b[39m     \n \u001b[90m  98 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  99 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 100 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 101 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 102 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:99:56\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 93 |\u001b[39m     \n \u001b[90m 94 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 95 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 96 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 97 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 98 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:95:56\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:37.680Z",
+                      "startTime": "2025-10-19T21:55:11.596Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -421,7 +381,7 @@
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
                         "column": 56,
-                        "line": 99
+                        "line": 95
                       }
                     }
                   ],
@@ -430,7 +390,7 @@
               ],
               "id": "d748ac400d08b85935ef-dc53cefe93a5e7ab6b19",
               "file": "auth.spec.ts",
-              "line": 90,
+              "line": 86,
               "column": 7
             }
           ]
@@ -438,73 +398,50 @@
         {
           "title": "Logout Flow",
           "file": "auth.spec.ts",
-          "line": 103,
-          "column": 6,
+          "line": 99,
+          "column": 15,
           "specs": [
             {
               "title": "should logout successfully",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
+                        "line": 99,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
-                      "status": "timedOut",
-                      "duration": 30251,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                            "column": 24,
-                            "line": 125
-                          },
-                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /logout|sign out/i }).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 123 |\u001b[39m     \n \u001b[90m 124 |\u001b[39m     \u001b[90m// Click logout\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m logoutButton\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m     \n \u001b[90m 127 |\u001b[39m     \u001b[90m// Should return to login page\u001b[39m\n \u001b[90m 128 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/sign in|login/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:125:24\u001b[22m"
-                        }
-                      ],
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:39.235Z",
+                      "startTime": "2025-10-19T21:55:12.857Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Logout-Flow-should-logout-successfully-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Logout-Flow-should-logout-successfully-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/auth-Logout-Flow-should-logout-successfully-chromium/error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "skipped"
                 }
               ],
               "id": "d748ac400d08b85935ef-275ed26624a9db9db485",
               "file": "auth.spec.ts",
-              "line": 114,
+              "line": 110,
               "column": 7
             }
           ]
@@ -522,75 +459,44 @@
           "title": "Dashboard",
           "file": "dashboard.spec.ts",
           "line": 8,
-          "column": 6,
+          "column": 15,
           "specs": [
             {
               "title": "should display dashboard",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 8,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 4,
-                      "status": "failed",
-                      "duration": 12085,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3001/login\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://localhost:3001/login\"\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3001/login\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://localhost:3001/login\"\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:25:24",
-                        "location": {
-                          "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                          "column": 24,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m   test(\u001b[32m'should display dashboard'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 24 |\u001b[39m     \u001b[90m// Check that we're on dashboard (URL check)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/dashboard/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m     \n \u001b[90m 27 |\u001b[39m     \u001b[90m// Page should be loaded\u001b[39m\n \u001b[90m 28 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'body'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                            "column": 24,
-                            "line": 25
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3001/login\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://localhost:3001/login\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 23 |\u001b[39m   test(\u001b[32m'should display dashboard'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 24 |\u001b[39m     \u001b[90m// Check that we're on dashboard (URL check)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/dashboard/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m     \n \u001b[90m 27 |\u001b[39m     \u001b[90m// Page should be loaded\u001b[39m\n \u001b[90m 28 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'body'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts:25:24\u001b[22m"
-                        }
-                      ],
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:40.402Z",
+                      "startTime": "2025-10-19T21:55:12.858Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-should-display-dashboard-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-should-display-dashboard-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/test-results/dashboard-Dashboard-should-display-dashboard-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
-                        "column": 24,
-                        "line": 25
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-7cfb61dcee83590c2086",
@@ -605,26 +511,35 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 8,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 6197,
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:39.799Z",
+                      "startTime": "2025-10-19T21:55:12.859Z",
                       "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-8e658e81837607f589f1",
@@ -639,26 +554,35 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 8,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 7712,
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:39.861Z",
+                      "startTime": "2025-10-19T21:55:12.859Z",
                       "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-efb4e1dea9a2f89dc9b9",
@@ -673,26 +597,35 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 8,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 6188,
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:42.501Z",
+                      "startTime": "2025-10-19T21:55:12.860Z",
                       "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-a8b0e5f8009cf082379a",
@@ -706,7 +639,7 @@
           "title": "Dashboard Navigation",
           "file": "dashboard.spec.ts",
           "line": 50,
-          "column": 6,
+          "column": 15,
           "specs": [
             {
               "title": "should navigate to different sections",
@@ -715,26 +648,35 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 50,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 5650,
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:46.014Z",
+                      "startTime": "2025-10-19T21:55:12.860Z",
                       "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-15e83be5a97187208615",
@@ -749,26 +691,35 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 50,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 4658,
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:47.608Z",
+                      "startTime": "2025-10-19T21:55:12.864Z",
                       "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-6c6b3f08d836a5252ee0",
@@ -782,7 +733,7 @@
           "title": "Dashboard Responsiveness",
           "file": "dashboard.spec.ts",
           "line": 81,
-          "column": 6,
+          "column": 15,
           "specs": [
             {
               "title": "should work on mobile viewport",
@@ -791,26 +742,35 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 81,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4091,
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:48.862Z",
+                      "startTime": "2025-10-19T21:55:12.867Z",
                       "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-273778089244dee85261",
@@ -825,26 +785,35 @@
               "tests": [
                 {
                   "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/dashboard.spec.ts",
+                        "line": 81,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 4034,
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:51.677Z",
+                      "startTime": "2025-10-19T21:55:12.869Z",
                       "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
               "id": "90cda532ab82d274b30b-0d17a8a3e49f0595a808",
@@ -882,15 +851,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 567,
+                      "duration": 732,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:52.282Z",
+                      "startTime": "2025-10-19T21:55:12.878Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -916,15 +885,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1006,
+                      "duration": 1244,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:52.858Z",
+                      "startTime": "2025-10-19T21:55:12.880Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -950,15 +919,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 3903,
+                      "duration": 3931,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:53.611Z",
+                      "startTime": "2025-10-19T21:55:13.619Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -984,15 +953,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 711,
+                      "duration": 668,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:16:52.965Z",
+                      "startTime": "2025-10-19T21:55:13.632Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1012,11 +981,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-19T21:16:33.724Z",
-    "duration": 35808.009,
-    "expected": 17,
-    "skipped": 0,
-    "unexpected": 4,
+    "startTime": "2025-10-19T21:55:08.729Z",
+    "duration": 8870.913,
+    "expected": 11,
+    "skipped": 9,
+    "unexpected": 1,
     "flaky": 0
   }
 }

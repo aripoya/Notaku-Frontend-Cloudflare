@@ -85,11 +85,11 @@ test.describe('Authentication Flow', () => {
 
   test('should validate email format', async ({ page }) => {
     // Enter invalid email
-    await page.getByLabel(/email/i).fill('invalid-email');
-    await page.locator('input[type="password"]').fill('password123');
+    const emailInput = page.getByLabel(/email/i);
+    await emailInput.fill('invalid-email');
     
-    // Try to submit
-    await page.getByRole('button', { name: /masuk/i }).click();
+    // Blur to trigger validation
+    await emailInput.blur();
     
     // Should show validation error
     await expect(page.getByText(/email tidak valid/i)).toBeVisible({ timeout: 2000 });
