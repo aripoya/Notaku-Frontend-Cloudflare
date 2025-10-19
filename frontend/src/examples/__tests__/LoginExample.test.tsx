@@ -3,14 +3,22 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginExample from '@/examples/LoginExample';
 
-// Mock the hooks
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: vi.fn(() => ({
-    login: vi.fn(),
-    register: vi.fn(),
-    user: null,
-    isAuthenticated: false,
-  })),
+// Mock mockApi instead of useAuth since it's a Zustand store
+vi.mock('@/lib/mockApi', () => ({
+  mockApi: {
+    login: vi.fn((email: string, password: string) => 
+      Promise.resolve({
+        user: { id: '1', email, name: 'Test User' },
+        token: 'test-token',
+      })
+    ),
+    register: vi.fn((data: any) =>
+      Promise.resolve({
+        user: { id: '1', email: data.email, name: data.name },
+        token: 'test-token',
+      })
+    ),
+  },
 }));
 
 describe('LoginExample Component', () => {
@@ -24,7 +32,7 @@ describe('LoginExample Component', () => {
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
 
     it('should render all form fields', () => {
@@ -32,13 +40,13 @@ describe('LoginExample Component', () => {
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
 
     it('should show password toggle button', () => {
       render(<LoginExample />);
 
-      const toggleButton = screen.getByRole('button', { name: /toggle password visibility/i });
+      const toggleButton = screen.getByRole('button', { name: /show password/i });
       expect(toggleButton).toBeInTheDocument();
     });
   });
@@ -54,7 +62,7 @@ describe('LoginExample Component', () => {
       await waitFor(() => {
         expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /sign up/i })).toBeInTheDocument();
       });
     });
 
@@ -76,7 +84,7 @@ describe('LoginExample Component', () => {
 
       await waitFor(() => {
         expect(screen.queryByLabelText(/username/i)).not.toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
       });
     });
 
@@ -248,7 +256,7 @@ describe('LoginExample Component', () => {
       render(<LoginExample />);
 
       const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement;
-      const toggleButton = screen.getByRole('button', { name: /toggle password visibility/i });
+      const toggleButton = screen.getByRole('button', { name: /show password|hide password/i });
 
       // Initially password should be hidden
       expect(passwordInput.type).toBe('password');
@@ -341,8 +349,8 @@ describe('LoginExample Component', () => {
     it('should have proper button labels', () => {
       render(<LoginExample />);
 
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /toggle password visibility/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /show password|hide password/i })).toBeInTheDocument();
     });
 
     it('should show validation errors with proper aria attributes', async () => {
@@ -368,7 +376,7 @@ describe('LoginExample Component', () => {
       render(<LoginExample />);
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
 
     it('should render on desktop viewport', () => {
@@ -378,7 +386,7 @@ describe('LoginExample Component', () => {
       render(<LoginExample />);
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
   });
 });
