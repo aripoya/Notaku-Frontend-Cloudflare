@@ -14,7 +14,8 @@ test.describe('Smoke Tests', () => {
   });
 
   test('should have login form', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/examples/login');
+    await page.waitForLoadState('networkidle');
     
     // Should have login elements
     await expect(page.getByLabel(/email/i)).toBeVisible();
@@ -22,7 +23,9 @@ test.describe('Smoke Tests', () => {
   });
 
   test('should navigate to examples', async ({ page }) => {
-    await page.goto('/');
+    // Go to login page
+    await page.goto('/examples/login');
+    await page.waitForLoadState('networkidle');
     
     // Login first
     await page.getByLabel(/email/i).fill('demo@example.com');
@@ -32,6 +35,7 @@ test.describe('Smoke Tests', () => {
     
     // Try to navigate to an example page
     await page.goto('/examples/dashboard');
+    await page.waitForLoadState('networkidle');
     
     // Should load without error
     await expect(page.locator('body')).toBeVisible();

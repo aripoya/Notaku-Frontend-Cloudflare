@@ -7,8 +7,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to home page
-    await page.goto('/');
+    // Navigate to login example page
+    await page.goto('/examples/login');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display login page', async ({ page }) => {
@@ -120,7 +121,8 @@ test.describe('Authentication Flow', () => {
 test.describe('Logout Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
-    await page.goto('/');
+    await page.goto('/examples/login');
+    await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
     await page.getByRole('button', { name: /sign in/i }).click();

@@ -1,0 +1,118 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - button "Toggle menu" [ref=e6]:
+            - img [ref=e7]
+          - link "NotaKu" [ref=e8] [cursor=pointer]:
+            - /url: /
+        - button "Toggle dark mode" [ref=e10]:
+          - img [ref=e11]
+    - main [ref=e13]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Untuk UMKM Indonesia
+        - heading "Ngobrol dengan Nota Anda" [level=1] [ref=e19]
+        - paragraph [ref=e20]: Platform kecerdasan finansial berbasis AI untuk UMKM Indonesia. Upload nota, dapatkan OCR otomatis, dan tanya apa saja tentang pengeluaran Anda.
+        - generic [ref=e21]:
+          - link "Coba Gratis 14 Hari" [ref=e22] [cursor=pointer]:
+            - /url: /register
+          - link "Lihat Demo" [ref=e23] [cursor=pointer]:
+            - /url: /pricing
+            - img
+            - text: Lihat Demo
+      - generic [ref=e24]:
+        - heading "Fitur Utama" [level=2] [ref=e25]
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]:
+              - img [ref=e30]
+              - generic [ref=e33]: OCR Otomatis
+            - generic [ref=e34]:
+              - paragraph [ref=e35]: Ambil foto atau upload nota. Sistem mengekstrak data dengan akurat.
+              - link "Pelajari Lebih Lanjut →" [ref=e36] [cursor=pointer]:
+                - /url: /about
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - img [ref=e40]
+              - generic [ref=e42]: Chat AI
+            - generic [ref=e43]:
+              - paragraph [ref=e44]: "Tanya: 'Berapa total belanja bulan ini?' atau pertanyaan lainnya."
+              - link "Pelajari Lebih Lanjut →" [ref=e45] [cursor=pointer]:
+                - /url: /dashboard/chat
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - img [ref=e49]
+              - generic [ref=e51]: Analytics
+            - generic [ref=e52]:
+              - paragraph [ref=e53]: Grafik tren, kategori, supplier, hingga heatmap harian.
+              - link "Pelajari Lebih Lanjut →" [ref=e54] [cursor=pointer]:
+                - /url: /dashboard/analytics
+      - generic [ref=e56]:
+        - heading "Cara Kerja" [level=2] [ref=e57]
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e60]: "1"
+            - heading "Upload Nota" [level=3] [ref=e61]
+            - paragraph [ref=e62]: Ambil foto atau drag & drop file nota Anda.
+          - generic [ref=e63]:
+            - generic [ref=e64]: "2"
+            - heading "Proses OCR & AI" [level=3] [ref=e65]
+            - paragraph [ref=e66]: Sistem mengekstrak data dan menganalisis secara otomatis.
+          - generic [ref=e67]:
+            - generic [ref=e68]: "3"
+            - heading "Dapatkan Insight" [level=3] [ref=e69]
+            - paragraph [ref=e70]: Lihat ringkasan, grafik, dan tanya AI untuk detail.
+      - generic [ref=e72]:
+        - heading "Paket Harga" [level=2] [ref=e73]
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - generic [ref=e77]: Basic
+            - generic [ref=e78]:
+              - paragraph [ref=e79]: Rp 99K/bulan
+              - list [ref=e80]:
+                - listitem [ref=e81]: Upload nota
+                - listitem [ref=e83]: Analitik dasar
+              - link "Mulai" [ref=e86] [cursor=pointer]:
+                - /url: /register
+          - generic [ref=e87]:
+            - generic [ref=e88]: PALING POPULER
+            - generic [ref=e90]: Starter
+            - generic [ref=e91]:
+              - paragraph [ref=e92]: Rp 199K/bulan
+              - list [ref=e93]:
+                - listitem [ref=e94]: Semua fitur Basic
+                - listitem [ref=e96]: Chat AI
+              - link "Mulai" [ref=e99] [cursor=pointer]:
+                - /url: /register
+          - generic [ref=e100]:
+            - generic [ref=e102]: Pro
+            - generic [ref=e103]:
+              - paragraph [ref=e104]: Rp 399K/bulan
+              - list [ref=e105]:
+                - listitem [ref=e106]: Semua fitur Starter
+                - listitem [ref=e108]: Insight lanjutan
+              - link "Mulai" [ref=e111] [cursor=pointer]:
+                - /url: /register
+      - generic [ref=e114]:
+        - heading "Mulai kelola pengeluaran Anda dengan lebih cerdas" [level=2] [ref=e115]
+        - paragraph [ref=e116]: Daftar untuk mendapatkan akses uji coba gratis 14 hari. Tidak perlu kartu kredit.
+        - generic [ref=e117]:
+          - textbox "Email bisnis Anda" [ref=e118]
+          - button "Daftar Sekarang" [ref=e119]
+    - contentinfo [ref=e120]:
+      - generic [ref=e121]:
+        - paragraph [ref=e122]: © 2025 NotaKu
+        - generic [ref=e123]:
+          - link "Privasi" [ref=e124] [cursor=pointer]:
+            - /url: /privacy
+          - link "Syarat" [ref=e125] [cursor=pointer]:
+            - /url: /terms
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e131] [cursor=pointer]:
+    - img [ref=e132]
+  - alert [ref=e135]
+```

@@ -9,7 +9,8 @@ import path from 'path';
 test.describe('Receipt Upload', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
-    await page.goto('/');
+    await page.goto('/examples/login');
+    await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -17,6 +18,7 @@ test.describe('Receipt Upload', () => {
     
     // Navigate to receipt upload page
     await page.goto('/examples/receipt-upload');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display upload interface', async ({ page }) => {
@@ -63,12 +65,14 @@ test.describe('Receipt Upload', () => {
 test.describe('Receipt Upload Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Login and navigate
-    await page.goto('/');
+    await page.goto('/examples/login');
+    await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForTimeout(2000);
     await page.goto('/examples/receipt-upload');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should upload a receipt image', async ({ page }) => {
@@ -124,12 +128,14 @@ test.describe('Receipt Upload Flow', () => {
 
 test.describe('Receipt Upload Validation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/examples/login');
+    await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('demo@example.com');
     await page.getByLabel(/^password$/i).fill('password123');
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForTimeout(2000);
     await page.goto('/examples/receipt-upload');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should show file size limit', async ({ page }) => {
