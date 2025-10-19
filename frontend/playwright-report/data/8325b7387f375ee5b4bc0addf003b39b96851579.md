@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
+- generic [active] [ref=e1]:
   - generic [ref=e2]:
     - generic [ref=e4]:
       - generic [ref=e5]:
@@ -11,7 +11,7 @@
       - generic [ref=e10]:
         - generic [ref=e11]:
           - text: Email
-          - textbox "Email" [active] [ref=e12]:
+          - textbox "Email" [ref=e12]:
             - /placeholder: nama@bisnis.com
             - text: invalid-email
         - generic [ref=e13]:
@@ -19,7 +19,6 @@
           - generic [ref=e14]:
             - textbox "Password" [ref=e15]:
               - /placeholder: Masukkan password
-              - text: password123
             - button "Tampilkan password" [ref=e16]:
               - img [ref=e17]
         - generic [ref=e20]:
