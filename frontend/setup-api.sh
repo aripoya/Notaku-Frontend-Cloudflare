@@ -16,11 +16,15 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# API URL
+# Service URLs (via Cloudflare Tunnel)
 API_URL="https://api.notaku.cloud"
+WORKFLOWS_URL="https://workflows.notaku.cloud"
+STORAGE_URL="https://storage.notaku.cloud"
 
-echo -e "${BLUE}📋 Configuration:${NC}"
-echo "   API URL: $API_URL"
+echo -e "${BLUE}📋 Configuration (Cloudflare Tunnel):${NC}"
+echo "   API Server:  $API_URL"
+echo "   Workflows:   $WORKFLOWS_URL"
+echo "   Storage:     $STORAGE_URL"
 echo ""
 
 # Step 1: Create .env.development
@@ -33,8 +37,14 @@ if [ -f ".env.development" ]; then
         echo -e "${YELLOW}   Skipping .env.development creation${NC}"
     else
         cat > .env.development << EOF
-# API Configuration
+# API Server (FastAPI)
 VITE_API_URL=$API_URL
+
+# Workflows (n8n)
+VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+
+# Storage (MinIO)
+VITE_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
 VITE_DEBUG=true
@@ -43,8 +53,14 @@ EOF
     fi
 else
     cat > .env.development << EOF
-# API Configuration
+# API Server (FastAPI)
 VITE_API_URL=$API_URL
+
+# Workflows (n8n)
+VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+
+# Storage (MinIO)
+VITE_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
 VITE_DEBUG=true
@@ -63,8 +79,14 @@ if [ -f ".env.production" ]; then
         echo -e "${YELLOW}   Skipping .env.production creation${NC}"
     else
         cat > .env.production << EOF
-# API Configuration
+# API Server (FastAPI)
 VITE_API_URL=$API_URL
+
+# Workflows (n8n)
+VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+
+# Storage (MinIO)
+VITE_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
 VITE_DEBUG=false
@@ -73,8 +95,14 @@ EOF
     fi
 else
     cat > .env.production << EOF
-# API Configuration
+# API Server (FastAPI)
 VITE_API_URL=$API_URL
+
+# Workflows (n8n)
+VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+
+# Storage (MinIO)
+VITE_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
 VITE_DEBUG=false
@@ -158,9 +186,25 @@ echo "   4. Read documentation:"
 echo "      - docs/SETUP_API_CONNECTION.md"
 echo "      - docs/API_INTEGRATION.md"
 echo ""
-echo -e "${BLUE}🔗 API Endpoints:${NC}"
-echo "   Health: $API_URL/health"
-echo "   Docs:   $API_URL/docs"
-echo "   System: $API_URL/"
+echo -e "${BLUE}🔗 Service Endpoints:${NC}"
+echo ""
+echo "   API Server (FastAPI):"
+echo "   - Health:  $API_URL/health"
+echo "   - Docs:    $API_URL/docs"
+echo "   - System:  $API_URL/"
+echo ""
+echo "   Workflows (n8n):"
+echo "   - Dashboard: $WORKFLOWS_URL/"
+echo "   - Webhooks:  $WORKFLOWS_URL/webhook/"
+echo ""
+echo "   Storage (MinIO):"
+echo "   - Console: $STORAGE_URL/"
+echo "   - S3 API:  $STORAGE_URL/"
+echo ""
+echo -e "${BLUE}🌐 Infrastructure:${NC}"
+echo "   Cloudflare Tunnel (secure tunnel to localhost)"
+echo "   - api.notaku.cloud       → localhost:8000"
+echo "   - workflows.notaku.cloud → localhost:5678"
+echo "   - storage.notaku.cloud   → localhost:9001"
 echo ""
 echo "Happy coding! 🚀"

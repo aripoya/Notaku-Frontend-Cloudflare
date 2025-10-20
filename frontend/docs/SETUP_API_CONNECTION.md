@@ -3,7 +3,10 @@
 Complete guide to connect Notaku Frontend to Backend API Server
 
 **API Server:** https://api.notaku.cloud  
-**Status:** ✅ Running (FastAPI + PostgreSQL + Redis + MinIO)
+**Workflows:** https://workflows.notaku.cloud (n8n)  
+**Storage:** https://storage.notaku.cloud (MinIO)  
+**Status:** ✅ Running (FastAPI + PostgreSQL + Redis + MinIO)  
+**Infrastructure:** Cloudflare Tunnel
 
 ---
 
@@ -21,17 +24,26 @@ Complete guide to connect Notaku Frontend to Backend API Server
 
 ### ✅ Backend Services Running
 
-Your backend infrastructure is ready:
+Your backend infrastructure is ready via **Cloudflare Tunnel**:
 
+**Public URLs (via Cloudflare):**
 ```
-✅ PostgreSQL: Port 5432 (optimized for 314GB RAM)
-✅ Redis: Port 6379 (32GB cache)
-✅ MinIO: Port 9000 (S3-compatible storage)
-✅ n8n: Port 5678 (workflow automation)
-✅ FastAPI: Port 8000 (main API)
+✅ FastAPI:    https://api.notaku.cloud       → localhost:8000
+✅ n8n:        https://workflows.notaku.cloud → localhost:5678
+✅ MinIO:      https://storage.notaku.cloud   → localhost:9001
 ```
 
-**API Base URL:** `https://api.notaku.cloud`
+**Local Services:**
+```
+✅ PostgreSQL: localhost:5432 (optimized for 314GB RAM)
+✅ Redis:      localhost:6379 (32GB cache)
+✅ MinIO:      localhost:9000 (S3-compatible storage)
+✅ n8n:        localhost:5678 (workflow automation)
+✅ FastAPI:    localhost:8000 (main API)
+```
+
+**API Base URL:** `https://api.notaku.cloud`  
+**Infrastructure:** Cloudflare Tunnel (secure tunnel to local services)
 
 ### ✅ CORS Configuration
 
@@ -56,7 +68,15 @@ cd /Users/ipoy/Documents/Expense\ AI\ Platform/expense-ai/frontend
 **Create `.env.development`:**
 ```bash
 # Development Environment
+
+# API Server (FastAPI)
 VITE_API_URL=https://api.notaku.cloud
+
+# Workflows (n8n)
+VITE_WORKFLOWS_URL=https://workflows.notaku.cloud
+
+# Storage (MinIO)
+VITE_STORAGE_URL=https://storage.notaku.cloud
 
 # Optional: Enable debug mode
 VITE_DEBUG=true
@@ -65,7 +85,17 @@ VITE_DEBUG=true
 **Create `.env.production`:**
 ```bash
 # Production Environment
+
+# API Server (FastAPI)
 VITE_API_URL=https://api.notaku.cloud
+
+# Workflows (n8n)
+VITE_WORKFLOWS_URL=https://workflows.notaku.cloud
+
+# Storage (MinIO)
+VITE_STORAGE_URL=https://storage.notaku.cloud
+
+# Debug Mode
 VITE_DEBUG=false
 ```
 
@@ -327,11 +357,59 @@ SSL certificate problem: unable to get local issuer certificate
 
 **Solution:**
 - API uses Cloudflare SSL (should work)
+- Cloudflare Tunnel provides automatic SSL/TLS
 - If testing locally, use HTTP instead of HTTPS
 - Update `.env.development`:
   ```bash
   VITE_API_URL=http://localhost:8000
   ```
+
+### Issue 6: Cloudflare Tunnel Not Working
+
+**Error:**
+```
+Failed to connect to api.notaku.cloud
+```
+
+**Solution:**
+1. Check if Cloudflare Tunnel is running:
+   ```bash
+   # Check tunnel status in Cloudflare dashboard
+   # Or check local cloudflared process
+   ps aux | grep cloudflared
+   ```
+
+2. Verify tunnel routes are configured:
+   - api.notaku.cloud → localhost:8000
+   - workflows.notaku.cloud → localhost:5678
+   - storage.notaku.cloud → localhost:9001
+
+3. Check local services are running:
+   ```bash
+   # Check FastAPI
+   curl http://localhost:8000/health
+   
+   # Check n8n
+   curl http://localhost:5678
+   
+   # Check MinIO
+   curl http://localhost:9001
+   ```
+
+4. Restart Cloudflare Tunnel if needed
+
+### Issue 7: 404 Not Found
+
+**Error:**
+```
+404 Not Found - Endpoint does not exist
+```
+
+**Solution:**
+- Check endpoint URL is correct
+- Verify API version: `/api/v1/...`
+- Check Cloudflare catch-all rule (returns 404 for unknown routes)
+- Review API documentation: https://api.notaku.cloud/docs
 
 ---
 
@@ -371,10 +449,25 @@ Once connection is verified:
 
 ## 🔗 Useful Links
 
-- **API Base URL:** https://api.notaku.cloud
+### API Server
+- **Base URL:** https://api.notaku.cloud
 - **API Docs:** https://api.notaku.cloud/docs
 - **OpenAPI Spec:** https://api.notaku.cloud/openapi.json
 - **Health Check:** https://api.notaku.cloud/health
+
+### Workflows (n8n)
+- **Base URL:** https://workflows.notaku.cloud
+- **Dashboard:** https://workflows.notaku.cloud/
+- **Webhooks:** https://workflows.notaku.cloud/webhook/
+
+### Storage (MinIO)
+- **Base URL:** https://storage.notaku.cloud
+- **Console:** https://storage.notaku.cloud/
+- **S3 API:** https://storage.notaku.cloud/
+
+### Infrastructure
+- **Cloudflare Tunnel:** Secure tunnel to local services
+- **Catch-all Rule:** `http_status:404` (configured)
 
 ---
 
