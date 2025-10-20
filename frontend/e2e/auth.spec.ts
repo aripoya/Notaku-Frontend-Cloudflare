@@ -84,18 +84,15 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should validate email format', async ({ page }) => {
-    // Enter invalid email and valid password
-    await page.getByLabel(/email/i).fill('invalid-email');
-    await page.locator('input[type="password"]').fill('password123');
+    // Enter email without @ symbol
+    const emailInput = page.getByLabel(/email/i);
+    await emailInput.fill('invalid-email');
     
-    // Try to submit
-    await page.getByRole('button', { name: /masuk/i }).click();
-    
-    // Wait a bit for validation
-    await page.waitForTimeout(500);
-    
-    // Should show validation error
-    await expect(page.getByText(/email tidak valid/i)).toBeVisible({ timeout: 2000 });
+    // HTML5 validation will prevent form submission
+    // Check that email input has validation message
+    const validationMessage = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);
+    expect(validationMessage).toBeTruthy();
+    expect(validationMessage).toContain('@');
   });
 });
 

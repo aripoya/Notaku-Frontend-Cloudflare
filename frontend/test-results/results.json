@@ -97,12 +97,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1682,
+                      "duration": 1855,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:21.482Z",
+                      "startTime": "2025-10-19T21:58:34.974Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -131,12 +131,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3792,
+                      "duration": 4045,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:21.500Z",
+                      "startTime": "2025-10-19T21:58:35.001Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -165,12 +165,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 3673,
+                      "duration": 3930,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:21.490Z",
+                      "startTime": "2025-10-19T21:58:34.978Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -199,12 +199,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1646,
+                      "duration": 1829,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:21.460Z",
+                      "startTime": "2025-10-19T21:58:34.986Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -233,12 +233,12 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1643,
+                      "duration": 1834,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:21.471Z",
+                      "startTime": "2025-10-19T21:58:34.988Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -264,15 +264,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1302,
+                      "duration": 1380,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:23.448Z",
+                      "startTime": "2025-10-19T21:58:37.172Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -298,15 +298,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1299,
+                      "duration": 1377,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:23.456Z",
+                      "startTime": "2025-10-19T21:58:37.173Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -335,31 +335,31 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 3378,
+                      "duration": 4075,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:95:56",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:98:56",
                         "location": {
                           "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
                           "column": 56,
-                          "line": 95
+                          "line": 98
                         },
-                        "snippet": "\u001b[0m \u001b[90m 93 |\u001b[39m     \n \u001b[90m 94 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 95 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 96 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 97 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 98 |\u001b[39m\u001b[0m"
+                        "snippet": "   96 |     \n   97 |     // Should show validation error\n>  98 |     await expect(page.getByText(/email tidak valid/i)).toBeVisible({ timeout: 2000 });\n      |                                                        ^\n   99 |   });\n  100 | });\n  101 |"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
                             "column": 56,
-                            "line": 95
+                            "line": 98
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n\n\u001b[0m \u001b[90m 93 |\u001b[39m     \n \u001b[90m 94 |\u001b[39m     \u001b[90m// Should show validation error\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 95 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/email tidak valid/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m2000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 96 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 97 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 98 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:95:56\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/email tidak valid/i)\nExpected: visible\nTimeout: 2000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 2000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/email tidak valid/i)\u001b[22m\n\n\n   96 |     \n   97 |     // Should show validation error\n>  98 |     await expect(page.getByText(/email tidak valid/i)).toBeVisible({ timeout: 2000 });\n      |                                                        ^\n   99 |   });\n  100 | });\n  101 |\n    at /Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts:98:56"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:23.483Z",
+                      "startTime": "2025-10-19T21:58:37.194Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -381,7 +381,7 @@
                       "errorLocation": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
                         "column": 56,
-                        "line": 95
+                        "line": 98
                       }
                     }
                   ],
@@ -398,7 +398,7 @@
         {
           "title": "Logout Flow",
           "file": "auth.spec.ts",
-          "line": 99,
+          "line": 102,
           "column": 15,
           "specs": [
             {
@@ -413,7 +413,7 @@
                       "type": "skip",
                       "location": {
                         "file": "/Users/ipoy/Documents/Expense AI Platform/expense-ai/frontend/e2e/auth.spec.ts",
-                        "line": 99,
+                        "line": 102,
                         "column": 15
                       }
                     }
@@ -431,7 +431,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.763Z",
+                      "startTime": "2025-10-19T21:58:38.563Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -441,7 +441,7 @@
               ],
               "id": "d748ac400d08b85935ef-275ed26624a9db9db485",
               "file": "auth.spec.ts",
-              "line": 110,
+              "line": 113,
               "column": 7
             }
           ]
@@ -491,7 +491,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.763Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -534,7 +534,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.764Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -577,7 +577,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.764Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -620,7 +620,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.764Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -671,7 +671,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.764Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -714,7 +714,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.770Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -765,7 +765,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.771Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -808,7 +808,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.773Z",
+                      "startTime": "2025-10-19T21:58:38.564Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -851,15 +851,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 722,
+                      "duration": 815,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.776Z",
+                      "startTime": "2025-10-19T21:58:38.570Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -885,15 +885,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1143,
+                      "duration": 1247,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:24.777Z",
+                      "startTime": "2025-10-19T21:58:38.570Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -922,12 +922,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 3984,
+                      "duration": 3938,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:25.513Z",
+                      "startTime": "2025-10-19T21:58:39.281Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -953,15 +953,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 614,
+                      "duration": 726,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T21:56:25.511Z",
+                      "startTime": "2025-10-19T21:58:39.399Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -981,8 +981,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-19T21:56:20.566Z",
-    "duration": 8982.077,
+    "startTime": "2025-10-19T21:58:34.012Z",
+    "duration": 9253.015000000001,
     "expected": 11,
     "skipped": 9,
     "unexpected": 1,
