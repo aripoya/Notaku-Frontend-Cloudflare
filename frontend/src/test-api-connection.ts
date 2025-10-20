@@ -23,7 +23,7 @@ export async function testApiConnection(): Promise<TestResult[]> {
   const results: TestResult[] = [];
   
   console.log('🚀 Starting API Connection Tests...');
-  console.log('API URL:', import.meta.env.VITE_API_URL);
+  console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
   console.log('---');
 
   // Test 1: Health Check
@@ -149,7 +149,7 @@ export async function testApiConnection(): Promise<TestResult[]> {
 }
 
 // Auto-run if in development mode
-if (import.meta.env.DEV) {
+if (process.env.NODE_ENV === 'development') {
   console.log('🔧 Development mode detected');
   console.log('To run API tests, call: testApiConnection()');
 }

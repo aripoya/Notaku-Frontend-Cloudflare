@@ -38,32 +38,32 @@ if [ -f ".env.development" ]; then
     else
         cat > .env.development << EOF
 # API Server (FastAPI)
-VITE_API_URL=$API_URL
+NEXT_PUBLIC_API_URL=$API_URL
 
 # Workflows (n8n)
-VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+NEXT_PUBLIC_WORKFLOWS_URL=$WORKFLOWS_URL
 
 # Storage (MinIO)
-VITE_STORAGE_URL=$STORAGE_URL
+NEXT_PUBLIC_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
-VITE_DEBUG=true
+NEXT_PUBLIC_DEBUG=true
 EOF
         echo -e "${GREEN}   ✅ .env.development created${NC}"
     fi
 else
     cat > .env.development << EOF
 # API Server (FastAPI)
-VITE_API_URL=$API_URL
+NEXT_PUBLIC_API_URL=$API_URL
 
 # Workflows (n8n)
-VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+NEXT_PUBLIC_WORKFLOWS_URL=$WORKFLOWS_URL
 
 # Storage (MinIO)
-VITE_STORAGE_URL=$STORAGE_URL
+NEXT_PUBLIC_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
-VITE_DEBUG=true
+NEXT_PUBLIC_DEBUG=true
 EOF
     echo -e "${GREEN}   ✅ .env.development created${NC}"
 fi
@@ -80,32 +80,32 @@ if [ -f ".env.production" ]; then
     else
         cat > .env.production << EOF
 # API Server (FastAPI)
-VITE_API_URL=$API_URL
+NEXT_PUBLIC_API_URL=$API_URL
 
 # Workflows (n8n)
-VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+NEXT_PUBLIC_WORKFLOWS_URL=$WORKFLOWS_URL
 
 # Storage (MinIO)
-VITE_STORAGE_URL=$STORAGE_URL
+NEXT_PUBLIC_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
-VITE_DEBUG=false
+NEXT_PUBLIC_DEBUG=false
 EOF
         echo -e "${GREEN}   ✅ .env.production created${NC}"
     fi
 else
     cat > .env.production << EOF
 # API Server (FastAPI)
-VITE_API_URL=$API_URL
+NEXT_PUBLIC_API_URL=$API_URL
 
 # Workflows (n8n)
-VITE_WORKFLOWS_URL=$WORKFLOWS_URL
+NEXT_PUBLIC_WORKFLOWS_URL=$WORKFLOWS_URL
 
 # Storage (MinIO)
-VITE_STORAGE_URL=$STORAGE_URL
+NEXT_PUBLIC_STORAGE_URL=$STORAGE_URL
 
 # Debug Mode
-VITE_DEBUG=false
+NEXT_PUBLIC_DEBUG=false
 EOF
     echo -e "${GREEN}   ✅ .env.production created${NC}"
 fi
