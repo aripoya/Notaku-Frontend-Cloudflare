@@ -50,11 +50,11 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       // Call auth store register
+      // API expects: email, username, password
       await registerUser({
         email: data.email,
+        username: data.name.toLowerCase().replace(/\s+/g, ''), // Convert name to username
         password: data.password,
-        name: data.name,
-        businessName: data.businessName,
       });
 
       // Success

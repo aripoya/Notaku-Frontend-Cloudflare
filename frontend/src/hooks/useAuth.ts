@@ -1,13 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { mockApi } from "@/lib/mockApi";
+import ApiClient from "@/lib/api-client";
 
 interface User {
   id: string;
   email: string;
+  username?: string;
   name?: string;
   tier?: "basic" | "starter" | "pro";
   businessName?: string;
+  createdAt?: string;
+  lastLogin?: string;
+  isActive?: boolean;
 }
 
 interface AuthState {
@@ -19,8 +23,8 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
-  logout: () => void;
-  checkAuth: () => void;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
 }
 
 export const useAuth = create<AuthState>()(
@@ -34,10 +38,13 @@ export const useAuth = create<AuthState>()(
       login: async (email, password) => {
         set({ isLoading: true });
         try {
-          const result = await mockApi.login(email, password);
+          // Call API login endpoint
+          const response = await ApiClient.login({ email, password });
+          
+          // API returns user object directly (session managed via cookies)
           set({
-            user: result.user,
-            token: result.token,
+            user: response.user,
+            token: null, // Session managed via HTTP-only cookies
             isAuthenticated: true,
             isLoading: false,
           });
@@ -50,10 +57,13 @@ export const useAuth = create<AuthState>()(
       register: async (data) => {
         set({ isLoading: true });
         try {
-          const result = await mockApi.register(data);
+          // Call API register endpoint
+          const response = await ApiClient.register(data);
+          
+          // API returns user object directly (session managed via cookies)
           set({
-            user: result.user,
-            token: result.token,
+            user: response.user,
+            token: null, // Session managed via HTTP-only cookies
             isAuthenticated: true,
             isLoading: false,
           });
@@ -63,19 +73,37 @@ export const useAuth = create<AuthState>()(
         }
       },
 
-      logout: () => {
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-        });
+      logout: async () => {
+        try {
+          // Call API logout endpoint to clear session
+          await ApiClient.logout();
+        } catch (error) {
+          console.error('Logout error:', error);
+        } finally {
+          // Clear local state regardless of API call result
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+          });
+        }
       },
 
-      checkAuth: () => {
-        const token = get().token;
-        const user = get().user;
-        if (token && user) {
-          set({ isAuthenticated: true });
+      checkAuth: async () => {
+        try {
+          // Verify session with API
+          const user = await ApiClient.getCurrentUser();
+          set({
+            user,
+            isAuthenticated: true,
+          });
+        } catch (error) {
+          // Session invalid or expired, clear state
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+          });
         }
       },
     }),
