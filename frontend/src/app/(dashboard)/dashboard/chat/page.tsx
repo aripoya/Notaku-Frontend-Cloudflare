@@ -40,38 +40,34 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      // Mock API call with streaming effect
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call real backend API
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud"}/api/v1/chat/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // Include cookies for auth
+          body: JSON.stringify({
+            message: message,
+            context: messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        }
+      );
 
-      // Mock responses based on question
-      let response = "";
-      const lowerMessage = message.toLowerCase();
-
-      if (lowerMessage.includes("total") || lowerMessage.includes("belanja")) {
-        response =
-          "Berdasarkan 127 nota yang Anda miliki, total pengeluaran bulan ini adalah **Rp 12.450.000**, meningkat 18% dibanding bulan lalu (Rp 10.550.000).\n\nKategori terbesar:\n• Bahan Baku: Rp 5.2M (42%)\n• Operasional: Rp 3.1M (25%)\n• Marketing: Rp 2.4M (19%)";
-      } else if (lowerMessage.includes("supplier")) {
-        response =
-          "Dari analisis 127 nota terakhir:\n\n**Top 5 Supplier:**\n1. Supplier A - Rp 3.2M (harga terbaik)\n2. Supplier B - Rp 2.8M\n3. Supplier C - Rp 2.1M\n4. Supplier D - Rp 1.5M\n5. Supplier E - Rp 1.2M\n\n💡 **Rekomendasi:** Supplier A memberikan harga 12% lebih murah untuk bahan plastik.";
-      } else if (lowerMessage.includes("bandingkan")) {
-        response =
-          "**Perbandingan Periode:**\n\nBulan Ini: Rp 12.45M\nBulan Lalu: Rp 10.55M\nPerubahan: +Rp 1.9M (+18%)\n\n**Perbedaan utama:**\n• Bahan Baku naik Rp 1.2M\n• Marketing naik Rp 500K\n• Operasional turun Rp 200K\n\n⚠️ Perhatian: Kenaikan signifikan di Bahan Baku.";
-      } else if (lowerMessage.includes("kategori")) {
-        response =
-          "**Breakdown Kategori Pengeluaran:**\n\n🔵 Bahan Baku: Rp 5.2M (42%)\n🟢 Operasional: Rp 3.1M (25%)\n🟣 Marketing: Rp 2.4M (19%)\n🟠 Transportasi: Rp 1.75M (14%)\n\nKategori terbesar adalah Bahan Baku dengan 45 transaksi.";
-      } else if (lowerMessage.includes("hemat") || lowerMessage.includes("tips")) {
-        response =
-          "💡 **Tips Hemat Biaya:**\n\n1. **Konsolidasi Pembelian**\n   Beli bahan baku dalam jumlah lebih besar dari Supplier A untuk diskon volume (potensi hemat 8-12%)\n\n2. **Ganti Supplier untuk Produk Tertentu**\n   Beralih ke Supplier C untuk produk X bisa hemat 15%\n\n3. **Timing Pembelian**\n   Belanja di hari Selasa-Rabu 12% lebih murah dibanding Jumat-Sabtu\n\n4. **Negosiasi Volume**\n   Dengan total pembelian Rp 5.2M/bulan, Anda berhak minta diskon 5-10%\n\n✨ Estimasi total hemat: **Rp 850K/bulan**";
-      } else if (lowerMessage.includes("tren")) {
-        response =
-          "📈 **Tren Pengeluaran 3 Bulan Terakhir:**\n\nOktober: Rp 9.8M\nNovember: Rp 10.5M (+7%)\nDesember: Rp 12.4M (+18%)\n\n**Analisis:**\n• Tren naik konsisten\n• Kenaikan terbesar di bulan Desember\n• Rata-rata pertumbuhan: 12% per bulan\n\n⚠️ **Perhatian:** Jika tren berlanjut, pengeluaran Januari bisa mencapai Rp 14M+. Pertimbangkan kontrol biaya.";
-      } else {
-        response =
-          "Saya dapat membantu Anda menganalisis:\n\n• Total pengeluaran dan perbandingan periode\n• Analisis supplier dan rekomendasi\n• Breakdown per kategori\n• Tips hemat biaya\n• Tren dan prediksi pengeluaran\n\nSilakan tanya hal spesifik tentang keuangan bisnis Anda! 😊";
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
       }
 
+      const data = await response.json();
+      const aiResponse = data.response || "Maaf, tidak ada response dari AI.";
+
       // Simulate streaming by updating word by word
-      const words = response.split(" ");
+      const words = aiResponse.split(" ");
       let currentText = "";
 
       for (let i = 0; i < words.length; i++) {
