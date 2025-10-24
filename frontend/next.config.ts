@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export', // Enable static export for Cloudflare Pages
   images: {
     unoptimized: true,
   },
@@ -10,18 +11,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/ocr/:path*',
-        destination: 'http://172.16.1.7:8001/api/v1/ocr/:path*',
-      },
-      {
-        source: '/api/ocr-health',
-        destination: 'http://172.16.1.7:8001/health',
-      },
-    ];
-  },
+  // Note: rewrites() doesn't work with static export
+  // API calls will need to use full URLs or environment variables
 };
 
 export default nextConfig;

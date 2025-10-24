@@ -1,10 +1,9 @@
 // OCR API Client
 import { UploadResponse, JobStatus, OCRResult, ClusterStats } from '@/types/ocr';
 
-// Use proxy in browser to avoid CORS issues
-const OCR_BASE_URL = typeof window !== 'undefined' 
-  ? '' // Use relative URL for proxy
-  : (process.env.NEXT_PUBLIC_OCR_API_URL || 'http://172.16.1.7:8001');
+// OCR API Base URL - use environment variable or default to direct URL
+// For Cloudflare Pages deployment, we need to use the full URL since rewrites don't work with static export
+const OCR_BASE_URL = process.env.NEXT_PUBLIC_OCR_API_URL || 'http://172.16.1.7:8001';
 
 // Helper function to handle fetch errors
 async function handleFetchError(error: any, endpoint: string): Promise<never> {
