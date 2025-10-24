@@ -1,9 +1,13 @@
 // OCR API Client
 import { UploadResponse, JobStatus, OCRResult, ClusterStats } from '@/types/ocr';
 
-// OCR API Base URL - use environment variable or default to direct URL
-// For Cloudflare Pages deployment, we need to use the full URL since rewrites don't work with static export
-const OCR_BASE_URL = process.env.NEXT_PUBLIC_OCR_API_URL || 'http://172.16.1.7:8001';
+// OCR API Base URL
+// Development: Use empty string to leverage Next.js rewrites (no CORS issues)
+// Production: Use full URL from environment variable
+const isDevelopment = process.env.NODE_ENV === 'development';
+const OCR_BASE_URL = isDevelopment 
+  ? '' // Use Next.js proxy in development
+  : (process.env.NEXT_PUBLIC_OCR_API_URL || 'http://172.16.1.7:8001');
 
 // Helper function to handle fetch errors
 async function handleFetchError(error: any, endpoint: string): Promise<never> {

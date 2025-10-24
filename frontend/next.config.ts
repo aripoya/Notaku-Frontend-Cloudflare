@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
+// Use static export only for production builds
+const isProduction = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
-  output: 'export', // Enable static export for Cloudflare Pages
+  // Only use static export for production (Cloudflare Pages)
+  // For development, use regular Next.js with rewrites
+  ...(isProduction && { output: 'export' }),
+  
   images: {
     unoptimized: true,
   },
@@ -11,8 +17,22 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Note: rewrites() doesn't work with static export
-  // API calls will need to use full URLs or environment variables
+  
+  // Rewrites work in development mode
+  ...(!isProduction && {
+    async rewrites() {
+      return [
+        {
+          source: '/api/ocr/:path*',
+          destination: 'http://172.16.1.7:8001/api/v1/ocr/:path*',
+        },
+        {
+          source: '/api/ocr-health',
+          destination: 'http://172.16.1.7:8001/health',
+        },
+      ];
+    },
+  }),
 };
 
 export default nextConfig;
