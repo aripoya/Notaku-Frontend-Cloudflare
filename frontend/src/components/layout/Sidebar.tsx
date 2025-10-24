@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, FileText, Home, Image as ImageIcon, MessageSquare, Settings } from "lucide-react";
+import { BarChart3, FileText, Home, Image as ImageIcon, MessageSquare, Settings, ScanText } from "lucide-react";
 
 const items = [
   { href: "/dashboard", label: "Beranda", icon: Home },
   { href: "/dashboard/upload", label: "Upload Nota", icon: ImageIcon },
+  { href: "/dashboard/ocr", label: "OCR Struk", icon: ScanText },
   { href: "/dashboard/receipts", label: "Daftar Nota", icon: FileText },
   { href: "/dashboard/analytics", label: "Analitik", icon: BarChart3 },
   { href: "/dashboard/chat", label: "Chat AI", icon: MessageSquare },

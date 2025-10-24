@@ -7,14 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Camera, Upload, X, RotateCw, Check, Loader2, FileImage, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Camera, Upload, X, RotateCw, Check, Loader2, FileImage, Eye, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { mockApi } from "@/lib/mockApi";
+import { OCRApiClient } from "@/lib/ocr-api";
+import { useAuth } from "@/hooks/useAuth";
+import { OcrStatusIndicator } from "@/components/OcrStatusIndicator";
+import { formatIndonesianDate, formatLongDate, formatCurrency } from "@/lib/formatters";
 
 type UploadStage = "select" | "preview" | "uploading" | "processing" | "result";
 
 export default function UploadPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
@@ -80,65 +85,68 @@ export default function UploadPage() {
     try {
       setStage("uploading");
       setProgress(0);
+      setError("");
 
-      // Simulate upload progress
-      const uploadInterval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(uploadInterval);
-            return 100;
-          }
-          return prev + 10;
-        });
-      }, 100);
-
-      // Call mock API
-      const uploadResult = await mockApi.uploadReceipt(selectedFile);
-      clearInterval(uploadInterval);
+      // Upload to OCR API
+      console.log("[OCR] Uploading file:", selectedFile.name);
+      const uploadResult = await OCRApiClient.uploadReceipt(selectedFile, user?.id);
+      
+      console.log("[OCR] Upload response:", uploadResult);
       setProgress(100);
+      setJobId(uploadResult.job_id);
 
       // Start processing
       setStage("processing");
-      setJobId(uploadResult.jobId);
+      toast.info("Memproses...", { description: "Menganalisa nota Anda" });
 
-      // Poll for result
-      let attempts = 0;
-      const maxAttempts = 60; // 30 seconds (500ms * 60)
-      
-      const pollInterval = setInterval(async () => {
-        attempts++;
-        
-        if (attempts > maxAttempts) {
-          clearInterval(pollInterval);
-          setError("Timeout: Proses terlalu lama. Silakan coba lagi.");
-          setStage("select");
-          toast.error("Timeout", { description: "Proses terlalu lama" });
-          return;
-        }
-
-        try {
-          const receiptJob = await mockApi.getReceipt(uploadResult.jobId);
+      // Poll for result with status updates
+      await OCRApiClient.pollStatus(
+        uploadResult.job_id,
+        (status) => {
+          console.log("[OCR] Status update:", status);
           
-          if (receiptJob.status === "completed" && receiptJob.receipt) {
-            clearInterval(pollInterval);
-            setResult(receiptJob.receipt);
-            setStage("result");
-            toast.success("Berhasil!", { description: "Nota berhasil diproses" });
-          } else if (receiptJob.status === "failed") {
-            clearInterval(pollInterval);
-            setError(receiptJob.error || "Gagal memproses nota. Silakan coba lagi.");
-            setStage("select");
-            toast.error("Gagal", { description: "Tidak dapat memproses nota" });
+          // Update processing text based on status
+          if (status.status === "started") {
+            setProcessingText("Menganalisa nota...");
+          } else if (status.status === "queued") {
+            setProcessingText("Menunggu antrian...");
           }
-        } catch (err) {
-          clearInterval(pollInterval);
-          setError("Terjadi kesalahan. Silakan coba lagi.");
-          setStage("select");
-          toast.error("Error", { description: "Terjadi kesalahan" });
-        }
-      }, 500);
+        },
+        1000 // Poll every 1 second
+      );
+
+      // Get final result
+      const ocrResult = await OCRApiClient.getResult(uploadResult.job_id);
+      console.log("[OCR] Final result:", ocrResult);
+      console.log("[OCR] Extracted data:", ocrResult.extracted);
+      console.log("[OCR] Available keys:", Object.keys(ocrResult));
+      
+      // Transform OCR result to match UI format
+      const extractedData = ocrResult.extracted || {};
+      console.log("[OCR] Extracted keys:", Object.keys(extractedData));
+      console.log("[OCR] Merchant:", extractedData.merchant, extractedData.merchant_name);
+      console.log("[OCR] Date:", extractedData.date, extractedData.transaction_date);
+      console.log("[OCR] Total:", extractedData.total_amount, extractedData.total, extractedData.grand_total);
+      
+      const transformedResult = {
+        id: uploadResult.job_id,
+        supplier: extractedData.merchant || extractedData.merchant_name || "N/A",
+        date: extractedData.date || extractedData.transaction_date || new Date().toISOString(),
+        total: extractedData.total_amount || extractedData.total || extractedData.grand_total || 0,
+        items: [], // OCR API doesn't provide line items yet
+        confidence: ocrResult.ocr_confidence || 0,
+        ocrText: ocrResult.ocr_text,
+        rawData: ocrResult,
+      };
+
+      setResult(transformedResult);
+      setStage("result");
+      toast.success("Berhasil!", { 
+        description: `Nota berhasil diproses (Confidence: ${Math.round((ocrResult.ocr_confidence || 0) * 100)}%)` 
+      });
 
     } catch (err: any) {
+      console.error("[OCR] Upload error:", err);
       setError(err?.message || "Terjadi kesalahan saat upload");
       setStage("select");
       toast.error("Upload gagal", { description: err?.message });
@@ -160,9 +168,12 @@ export default function UploadPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Upload Nota</h1>
-        <p className="text-muted-foreground mt-1">Ambil foto atau upload file nota Anda</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Upload Nota</h1>
+          <p className="text-muted-foreground mt-1">Ambil foto atau upload file nota Anda</p>
+        </div>
+        <OcrStatusIndicator />
       </div>
 
       {/* Error Alert */}
@@ -311,38 +322,128 @@ export default function UploadPage() {
 
       {/* Result Stage */}
       {stage === "result" && result && (
-        <Card className="border-green-200 dark:border-green-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-                <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+        <div className="space-y-4">
+          {/* Success Header */}
+          <Card className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Check className="h-6 w-6 text-green-600" />
+                <div>
+                  <h2 className="text-xl font-semibold text-green-900">Nota Berhasil Diproses!</h2>
+                  <p className="text-sm text-green-700">Data telah diekstrak dari nota Anda</p>
+                </div>
               </div>
-              <div>
-                <CardTitle>Nota Berhasil Diproses!</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Data telah diekstrak dari nota Anda</p>
+              {result.confidence !== undefined && (
+                <div className="text-2xl font-bold text-green-600">
+                  {Math.round(result.confidence * 100)}%
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* KEY INFORMATION CARD - PROMINENT */}
+          <Card className="p-6 border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-white shadow-lg">
+            <h3 className="text-sm font-semibold text-gray-600 mb-4 flex items-center gap-2">
+              <span className="text-lg">📋</span>
+              Informasi Utama
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Merchant - Large & Bold */}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-xl">🏪</span>
+                  <div className="text-xs text-gray-500">Toko</div>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 min-h-[2rem] flex items-center justify-center">
+                  {result.supplier && result.supplier !== "N/A" ? (
+                    result.supplier
+                  ) : (
+                    <span className="text-gray-400 text-lg">Tidak Terdeteksi</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Date - Large & Colored */}
+              <div className="text-center md:border-x border-gray-200">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-xl">📅</span>
+                  <div className="text-xs text-gray-500">Tanggal</div>
+                </div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {formatIndonesianDate(result.date)}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {formatLongDate(result.date)}
+                </div>
+              </div>
+
+              {/* Total - VERY LARGE & Prominent */}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-xl">💰</span>
+                  <div className="text-xs text-gray-500">Total</div>
+                </div>
+                <div className="text-3xl font-black text-green-600">
+                  {result.total && result.total > 0 ? (
+                    formatCurrency(result.total)
+                  ) : (
+                    <span className="text-gray-400 text-xl">Rp 0</span>
+                  )}
+                </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Extracted Data */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Toko</p>
-                <p className="font-semibold">{result.supplier || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tanggal</p>
-                <p className="font-semibold">{new Date(result.date).toLocaleDateString("id-ID")}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total</p>
-                <p className="text-xl font-bold text-blue-600">Rp {result.total.toLocaleString("id-ID")}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Item</p>
-                <p className="font-semibold">{result.items?.length || 0} item</p>
-              </div>
+
+            {/* Status Badges */}
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+              <Badge variant={result.supplier && result.supplier !== "N/A" ? "default" : "destructive"} className="text-xs">
+                {result.supplier && result.supplier !== "N/A" ? "✓ Toko Terdeteksi" : "⚠ Toko Tidak Terdeteksi"}
+              </Badge>
+              
+              <Badge variant={result.date ? "default" : "destructive"} className="text-xs">
+                {result.date ? "✓ Tanggal Terdeteksi" : "⚠ Tanggal Tidak Terdeteksi"}
+              </Badge>
+              
+              <Badge variant={result.total && result.total > 0 ? "default" : "destructive"} className="text-xs">
+                {result.total && result.total > 0 ? "✓ Total Terdeteksi" : "⚠ Total Tidak Terdeteksi"}
+              </Badge>
             </div>
+          </Card>
+
+          {/* Warning Card for Missing Data */}
+          {(!result.supplier || result.supplier === "N/A" || !result.total || result.total === 0) && (
+            <Card className="p-4 border-2 border-orange-400 bg-orange-50">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-6 w-6 text-orange-600 flex-shrink-0 mt-1" />
+                <div className="flex-1">
+                  <h4 className="font-semibold text-orange-800 mb-2">
+                    Beberapa Data Tidak Terdeteksi
+                  </h4>
+                  <div className="text-sm text-orange-700 space-y-1">
+                    {(!result.supplier || result.supplier === "N/A") && <div>• Nama toko tidak ditemukan</div>}
+                    {(!result.total || result.total === 0) && <div>• Total pembelian tidak ditemukan</div>}
+                  </div>
+                  <p className="text-xs text-orange-600 mt-3">
+                    Anda dapat melihat teks OCR di bawah untuk melengkapi data secara manual.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Detailed Information Card */}
+          <Card className="p-6">
+            <div className="space-y-4">
+
+            {/* OCR Text */}
+            {result.ocrText && (
+              <div>
+                <h4 className="font-semibold mb-2">Teks yang Terdeteksi:</h4>
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg max-h-48 overflow-y-auto">
+                  <pre className="text-xs whitespace-pre-wrap font-mono">{result.ocrText}</pre>
+                </div>
+              </div>
+            )}
 
             {/* Items List */}
             {result.items && result.items.length > 0 && (
@@ -352,7 +453,7 @@ export default function UploadPage() {
                   {result.items.map((item: any, idx: number) => (
                     <div key={idx} className="flex justify-between text-sm p-2 bg-slate-50 dark:bg-slate-900 rounded">
                       <span>{item.name} (x{item.qty})</span>
-                      <span className="font-medium">Rp {item.price.toLocaleString("id-ID")}</span>
+                      <span className="font-medium">{formatCurrency(item.price)}</span>
                     </div>
                   ))}
                 </div>
@@ -370,8 +471,9 @@ export default function UploadPage() {
                 Upload Lagi
               </Button>
             </div>
-          </CardContent>
-        </Card>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );

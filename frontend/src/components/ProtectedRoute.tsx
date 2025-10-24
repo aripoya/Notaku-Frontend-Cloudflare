@@ -17,16 +17,18 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (hydrated) {
+    if (hydrated && !isAuthenticated && !isLoading) {
+      // Check auth when hydrated and not authenticated
       checkAuth();
     }
-  }, [hydrated, checkAuth]);
+  }, [hydrated, isAuthenticated, isLoading, checkAuth]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    // Redirect to login if not authenticated after loading completes
+    if (hydrated && !isLoading && !isAuthenticated) {
       router.push("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [hydrated, isLoading, isAuthenticated, router]);
 
   if (!hydrated || isLoading) {
     return (

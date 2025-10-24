@@ -41,15 +41,18 @@ export const useAuth = create<AuthState>()(
           // Call API login endpoint
           const response = await ApiClient.login({ email, password });
           
-          // API returns user object directly (session managed via cookies)
+          // Store token and user data
           set({
             user: response.user,
-            token: null, // Session managed via HTTP-only cookies
+            token: response.token || null,
             isAuthenticated: true,
             isLoading: false,
           });
+          
+          console.log('[Auth] Login successful:', response.user?.email);
         } catch (error) {
           set({ isLoading: false });
+          console.error('[Auth] Login failed:', error);
           throw error;
         }
       },
@@ -60,15 +63,18 @@ export const useAuth = create<AuthState>()(
           // Call API register endpoint
           const response = await ApiClient.register(data);
           
-          // API returns user object directly (session managed via cookies)
+          // Store token and user data
           set({
             user: response.user,
-            token: null, // Session managed via HTTP-only cookies
+            token: response.token || null,
             isAuthenticated: true,
             isLoading: false,
           });
+          
+          console.log('[Auth] Registration successful:', response.user?.email);
         } catch (error) {
           set({ isLoading: false });
+          console.error('[Auth] Registration failed:', error);
           throw error;
         }
       },
@@ -77,8 +83,9 @@ export const useAuth = create<AuthState>()(
         try {
           // Call API logout endpoint to clear session
           await ApiClient.logout();
+          console.log('[Auth] Logout successful');
         } catch (error) {
-          console.error('Logout error:', error);
+          console.error('[Auth] Logout error:', error);
         } finally {
           // Clear local state regardless of API call result
           set({
@@ -90,19 +97,33 @@ export const useAuth = create<AuthState>()(
       },
 
       checkAuth: async () => {
+        // Skip check if already authenticated with user data
+        const currentState = get();
+        if (currentState.isAuthenticated && currentState.user) {
+          set({ isLoading: false });
+          return;
+        }
+
+        set({ isLoading: true });
         try {
           // Verify session with API
           const user = await ApiClient.getCurrentUser();
           set({
             user,
             isAuthenticated: true,
+            isLoading: false,
           });
-        } catch (error) {
+        } catch (error: any) {
+          // Only log if it's not a 401 (which is expected when not logged in)
+          if (error?.statusCode !== 401) {
+            console.error('Auth check error:', error);
+          }
           // Session invalid or expired, clear state
           set({
             user: null,
             token: null,
             isAuthenticated: false,
+            isLoading: false,
           });
         }
       },

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, Quote } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { ApiStatusIndicator } from "@/components/ApiStatusIndicator";
 
 const loginSchema = z.object({
   email: z.string().email("Email tidak valid"),
@@ -59,7 +60,10 @@ export default function LoginPage() {
       <div className="flex items-center justify-center p-6 sm:p-8">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <div className="text-sm font-semibold">NotaKu</div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold">NotaKu</div>
+              <ApiStatusIndicator />
+            </div>
             <CardTitle className="text-2xl">Masuk ke Akun Anda</CardTitle>
             <p className="text-sm text-slate-500">Kelola keuangan bisnis dengan lebih mudah</p>
           </CardHeader>

@@ -28,6 +28,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.clou
 const API_VERSION = "v1";
 const API_PREFIX = `/api/${API_VERSION}`;
 
+// Debug mode
+const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true";
+
+// Token storage key
+const TOKEN_KEY = "auth_token";
+
 // Request Configuration
 const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
@@ -108,18 +114,43 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  // Get token from localStorage if available
+  let token: string | null = null;
+  if (typeof window !== "undefined") {
+    token = localStorage.getItem(TOKEN_KEY);
+  }
+
+  const headers: Record<string, string> = {
+    ...DEFAULT_HEADERS,
+    ...(options.headers as Record<string, string>),
+  };
+
+  // Add Authorization header if token exists
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const config: RequestInit = {
     ...REQUEST_CONFIG,
     ...options,
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...options.headers,
-    },
+    headers,
   };
   
   const url = buildUrl(endpoint);
-  const response = await fetch(url, config);
-  return handleResponse<T>(response);
+  
+  if (DEBUG) {
+    console.log(`[API] ${options.method || "GET"} ${url}`);
+  }
+  
+  try {
+    const response = await fetch(url, config);
+    return handleResponse<T>(response);
+  } catch (error) {
+    if (DEBUG) {
+      console.error(`[API Error] ${endpoint}:`, error);
+    }
+    throw error;
+  }
 }
 
 // API Client Class
@@ -148,16 +179,37 @@ export class ApiClient {
   }
   
   static async login(data: UserLogin): Promise<AuthResponse> {
-    return request<AuthResponse>(`${API_PREFIX}/auth/login`, {
+    const response = await request<AuthResponse>(`${API_PREFIX}/auth/login`, {
       method: "POST",
       body: JSON.stringify(data),
     });
+    
+    // Store token if provided
+    if (response.token && typeof window !== "undefined") {
+      localStorage.setItem(TOKEN_KEY, response.token);
+      if (DEBUG) {
+        console.log("[Auth] Token stored");
+      }
+    }
+    
+    return response;
   }
   
   static async logout(): Promise<ApiResponse> {
-    return request<ApiResponse>(`${API_PREFIX}/auth/logout`, {
-      method: "POST",
-    });
+    try {
+      const response = await request<ApiResponse>(`${API_PREFIX}/auth/logout`, {
+        method: "POST",
+      });
+      return response;
+    } finally {
+      // Always clear token from localStorage
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(TOKEN_KEY);
+        if (DEBUG) {
+          console.log("[Auth] Token cleared");
+        }
+      }
+    }
   }
   
   static async getCurrentUser(): Promise<User> {
@@ -490,6 +542,25 @@ export class ApiClient {
   
   static getFileUrl(storagePath: string): string {
     return `${API_BASE_URL}${API_PREFIX}/files/${storagePath}`;
+  }
+
+  // ==================== Token Management ====================
+  
+  static getToken(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(TOKEN_KEY);
+  }
+  
+  static setToken(token: string): void {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TOKEN_KEY, token);
+    }
+  }
+  
+  static clearToken(): void {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(TOKEN_KEY);
+    }
   }
 }
 

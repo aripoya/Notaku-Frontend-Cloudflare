@@ -121,3 +121,36 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Notaku OCR Custom Animations */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 20%, #f0f0f0 40%, #f0f0f0 100%);
+  background-size: 1000px 100%;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce-in {
+  animation: bounce 0.5s ease-out;
+}
+
+.confidence-excellent { @apply bg-green-100 text-green-800; }
+.confidence-good { @apply bg-blue-100 text-blue-800; }
+.confidence-fair { @apply bg-orange-100 text-orange-800; }
+.confidence-poor { @apply bg-red-100 text-red-800; }
+
+.upload-zone {
+  @apply border-2 border-dashed border-gray-300 rounded-lg p-8 transition-all duration-200;
+}
+
+.upload-zone:hover {
+  @apply border-blue-400 bg-blue-50;
+}
