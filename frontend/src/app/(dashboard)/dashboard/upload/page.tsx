@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Upload, X, RotateCw, Check, Loader2, FileImage, Eye, AlertCircle } from "lucide-react";
+import { Camera, Upload, X, RotateCw, Check, Loader2, FileImage, Eye, AlertCircle, Sparkles, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { OCRApiClient } from "@/lib/ocr-api";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,6 +32,17 @@ export default function UploadPage() {
   const [jobId, setJobId] = useState<string>("");
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string>("");
+  const [usePremiumOCR, setUsePremiumOCR] = useState<boolean>(false);
+  const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
+
+  // Check if user is premium
+  useEffect(() => {
+    // TODO: Replace with actual premium check from user object
+    // For now, check if user has is_premium field
+    if (user && 'is_premium' in user) {
+      setIsPremiumUser((user as any).is_premium === true);
+    }
+  }, [user]);
 
   // Processing text animation
   useEffect(() => {
@@ -87,7 +98,43 @@ export default function UploadPage() {
       setProgress(0);
       setError("");
 
-      // Upload to OCR API
+      // Check if using Premium OCR
+      if (usePremiumOCR) {
+        console.log("[OCR] Using Premium OCR (Google Vision)");
+        
+        // Get auth token
+        const token = localStorage.getItem('auth_token');
+        
+        // Upload to Premium OCR API
+        console.log("[OCR] Uploading file to Premium OCR:", selectedFile.name);
+        const premiumResult = await OCRApiClient.uploadPremiumReceipt(selectedFile, token || undefined);
+        
+        console.log("[OCR] Premium OCR result:", premiumResult);
+        setProgress(100);
+        
+        // Premium OCR returns result immediately
+        setStage("result");
+        setResult({
+          id: premiumResult.job_id,
+          supplier: premiumResult.extracted?.merchant || "Tidak Terdeteksi",
+          date: premiumResult.extracted?.date || new Date().toISOString(),
+          total: premiumResult.extracted?.total_amount || 0,
+          items: [],
+          confidence: premiumResult.ocr_confidence || 0,
+          ocrText: premiumResult.ocr_text,
+          rawData: premiumResult,
+          isPremium: true,
+          ocrMethod: 'google_vision'
+        });
+        
+        toast.success("Berhasil!", { 
+          description: `Premium OCR selesai dengan confidence ${Math.round((premiumResult.ocr_confidence || 0) * 100)}%` 
+        });
+        return;
+      }
+
+      // Standard OCR flow
+      console.log("[OCR] Using Standard OCR");
       console.log("[OCR] Uploading file:", selectedFile.name);
       const uploadResult = await OCRApiClient.uploadReceipt(selectedFile, user?.id);
       
@@ -280,10 +327,69 @@ export default function UploadPage() {
               />
             </div>
 
+            {/* Premium OCR Toggle */}
+            <div className="space-y-3 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-600" />
+                  <Label htmlFor="premium-ocr" className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                    Premium OCR (Google Vision)
+                  </Label>
+                  {isPremiumUser && (
+                    <Badge variant="default" className="bg-amber-600 hover:bg-amber-700">
+                      <Crown className="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="premium-ocr"
+                    type="checkbox"
+                    checked={usePremiumOCR}
+                    onChange={(e) => {
+                      if (!isPremiumUser && e.target.checked) {
+                        toast.error("Premium Required", {
+                          description: "Upgrade to Premium to use Google Vision OCR"
+                        });
+                        return;
+                      }
+                      setUsePremiumOCR(e.target.checked);
+                    }}
+                    disabled={!isPremiumUser}
+                    className="w-4 h-4 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 dark:focus:ring-amber-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                {isPremiumUser ? (
+                  usePremiumOCR ? (
+                    <>✨ Menggunakan Google Vision API untuk akurasi maksimal dan hasil instan</>
+                  ) : (
+                    <>Aktifkan untuk hasil OCR yang lebih akurat dan cepat</>
+                  )
+                ) : (
+                  <>🔒 Upgrade ke Premium untuk akses Google Vision OCR dengan akurasi hingga 99%</>
+                )}
+              </p>
+            </div>
+
             <div className="flex gap-2">
-              <Button onClick={handleUpload} className="flex-1">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload & Proses
+              <Button 
+                onClick={handleUpload} 
+                className={`flex-1 ${usePremiumOCR ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700' : ''}`}
+              >
+                {usePremiumOCR ? (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Upload dengan Premium OCR
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload & Proses
+                  </>
+                )}
               </Button>
               <Button variant="outline" onClick={handleReset}>
                 Batal
@@ -324,17 +430,33 @@ export default function UploadPage() {
       {stage === "result" && result && (
         <div className="space-y-4">
           {/* Success Header */}
-          <Card className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+          <Card className={`p-4 ${result.isPremium ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200' : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'}`}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Check className="h-6 w-6 text-green-600" />
+              <div className="flex items-center gap-3">
+                {result.isPremium ? (
+                  <Sparkles className="h-6 w-6 text-amber-600" />
+                ) : (
+                  <Check className="h-6 w-6 text-green-600" />
+                )}
                 <div>
-                  <h2 className="text-xl font-semibold text-green-900">Nota Berhasil Diproses!</h2>
-                  <p className="text-sm text-green-700">Data telah diekstrak dari nota Anda</p>
+                  <div className="flex items-center gap-2">
+                    <h2 className={`text-xl font-semibold ${result.isPremium ? 'text-amber-900' : 'text-green-900'}`}>
+                      Nota Berhasil Diproses!
+                    </h2>
+                    {result.isPremium && (
+                      <Badge className="bg-amber-600 hover:bg-amber-700">
+                        <Crown className="h-3 w-3 mr-1" />
+                        Premium OCR
+                      </Badge>
+                    )}
+                  </div>
+                  <p className={`text-sm ${result.isPremium ? 'text-amber-700' : 'text-green-700'}`}>
+                    {result.isPremium ? 'Diproses dengan Google Vision API' : 'Data telah diekstrak dari nota Anda'}
+                  </p>
                 </div>
               </div>
               {result.confidence !== undefined && (
-                <div className="text-2xl font-bold text-green-600">
+                <div className={`text-2xl font-bold ${result.isPremium ? 'text-amber-600' : 'text-green-600'}`}>
                   {Math.round(result.confidence * 100)}%
                 </div>
               )}

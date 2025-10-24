@@ -25,7 +25,7 @@ async function handleFetchError(error: any, endpoint: string): Promise<never> {
 
 export class OCRApiClient {
   /**
-   * Upload receipt image for OCR processing
+   * Upload receipt image for OCR processing (Standard)
    */
   static async uploadReceipt(file: File, userId?: string): Promise<UploadResponse> {
     try {
@@ -51,6 +51,53 @@ export class OCRApiClient {
       return await response.json();
     } catch (error) {
       return handleFetchError(error, 'upload');
+    }
+  }
+
+  /**
+   * Upload receipt image for Premium OCR processing (Google Vision)
+   * Requires premium subscription
+   */
+  static async uploadPremiumReceipt(file: File, token?: string): Promise<OCRResult> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadUrl = OCR_BASE_URL 
+        ? `${OCR_BASE_URL}/api/v1/ocr/premium/upload` 
+        : '/api/ocr/premium/upload';
+      
+      console.log(`[OCR API] Uploading to Premium OCR: ${uploadUrl}`);
+      
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers,
+        body: formData,
+        credentials: 'include', // Include cookies for auth
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Premium OCR upload failed' }));
+        
+        // Handle specific error cases
+        if (response.status === 403) {
+          throw new Error('Premium subscription required. Please upgrade your account to use Premium OCR.');
+        }
+        
+        throw new Error(error.message || error.detail || `Premium OCR failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[OCR API] Premium OCR result:', result);
+      
+      return result;
+    } catch (error) {
+      return handleFetchError(error, 'premium-upload');
     }
   }
 
