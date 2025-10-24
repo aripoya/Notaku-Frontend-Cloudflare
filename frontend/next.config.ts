@@ -21,14 +21,15 @@ const nextConfig: NextConfig = {
   // Rewrites work in development mode
   ...(!isProduction && {
     async rewrites() {
+      const ocrBackendUrl = process.env.OCR_BACKEND_URL || 'http://localhost:8001';
       return [
         {
           source: '/api/ocr/:path*',
-          destination: 'http://172.16.1.7:8001/api/v1/ocr/:path*',
+          destination: `${ocrBackendUrl}/api/v1/ocr/:path*`,
         },
         {
           source: '/api/ocr-health',
-          destination: 'http://172.16.1.7:8001/health',
+          destination: `${ocrBackendUrl}/health`,
         },
       ];
     },

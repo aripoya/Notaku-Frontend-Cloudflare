@@ -12,9 +12,12 @@ const OCR_BASE_URL = isDevelopment
 // Helper function to handle fetch errors
 async function handleFetchError(error: any, endpoint: string): Promise<never> {
   console.error(`[OCR API] Error on ${endpoint}:`, error);
+  console.error(`[OCR API] OCR_BASE_URL:`, OCR_BASE_URL);
+  console.error(`[OCR API] isDevelopment:`, isDevelopment);
   
   if (error instanceof TypeError && error.message.includes('fetch')) {
-    throw new Error(`Cannot connect to OCR service at ${OCR_BASE_URL}. Please check if the service is running and accessible.`);
+    const displayUrl = OCR_BASE_URL || 'Next.js proxy (/api/ocr)';
+    throw new Error(`Cannot connect to OCR service at ${displayUrl}. Please check if the service is running and accessible.`);
   }
   
   throw error;
