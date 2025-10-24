@@ -14,6 +14,9 @@ import { OCRApiClient } from "@/lib/ocr-api";
 import { useAuth } from "@/hooks/useAuth";
 import { OcrStatusIndicator } from "@/components/OcrStatusIndicator";
 import { formatIndonesianDate, formatLongDate, formatCurrency } from "@/lib/formatters";
+import { SubscriptionAPI } from "@/lib/subscription-api";
+import { QuotaDisplay } from "@/components/QuotaDisplay";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 type UploadStage = "select" | "preview" | "uploading" | "processing" | "result";
 
@@ -34,14 +37,28 @@ export default function UploadPage() {
   const [error, setError] = useState<string>("");
   const [usePremiumOCR, setUsePremiumOCR] = useState<boolean>(false);
   const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
+  const [upgradeReason, setUpgradeReason] = useState<string>("");
+  const [ocrProvider, setOcrProvider] = useState<"paddle" | "google">("paddle");
 
-  // Check if user is premium
+  // Check if user is premium and can use Google Vision
   useEffect(() => {
-    // TODO: Replace with actual premium check from user object
-    // For now, check if user has is_premium field
-    if (user && 'is_premium' in user) {
-      setIsPremiumUser((user as any).is_premium === true);
-    }
+    const checkPremiumStatus = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const canUse = await SubscriptionAPI.canUseGoogleVision(user.id);
+        setIsPremiumUser(canUse);
+      } catch (error) {
+        console.error("[Upload] Error checking premium status:", error);
+        // Fallback to user object check
+        if (user && 'is_premium' in user) {
+          setIsPremiumUser((user as any).is_premium === true);
+        }
+      }
+    };
+    
+    checkPremiumStatus();
   }, [user]);
 
   // Processing text animation
@@ -91,12 +108,32 @@ export default function UploadPage() {
 
   // Handle upload
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !user?.id) return;
 
     try {
       setStage("uploading");
       setProgress(0);
       setError("");
+
+      // Determine OCR provider
+      const provider = usePremiumOCR ? "google" : "paddle";
+      
+      // Check permission BEFORE upload
+      console.log("[Upload] Checking permission for provider:", provider);
+      const permission = await SubscriptionAPI.checkOCRPermission(user.id, provider);
+      
+      if (!permission.allowed) {
+        console.log("[Upload] Permission denied:", permission.message);
+        setUpgradeReason(permission.message || "Quota limit reached. Please upgrade your plan.");
+        setShowUpgradeModal(true);
+        setStage("select");
+        toast.error("Upload Blocked", {
+          description: permission.message || "Quota limit reached"
+        });
+        return;
+      }
+      
+      console.log("[Upload] Permission granted, proceeding with upload");
 
       // Check if using Premium OCR
       if (usePremiumOCR) {
@@ -223,12 +260,28 @@ export default function UploadPage() {
         <OcrStatusIndicator />
       </div>
 
+      {/* Quota Display */}
+      {user?.id && (
+        <QuotaDisplay 
+          userId={user.id} 
+          onUpgradeClick={() => setShowUpgradeModal(true)}
+        />
+      )}
+
       {/* Error Alert */}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentTier={user && 'subscription_tier' in user ? (user as any).subscription_tier : 'free'}
+        reason={upgradeReason}
+      />
 
       {/* Select Stage */}
       {stage === "select" && (

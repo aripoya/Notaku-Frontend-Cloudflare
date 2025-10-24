@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, Sparkles, Bot, User, Send, Loader2 } from "lucide-react";
+import { MessageSquare, Sparkles, Bot, User, Send, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
+import { SubscriptionAPI } from "@/lib/subscription-api";
+import { UpgradeModal } from "@/components/UpgradeModal";
+import { toast } from "sonner";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,9 +17,13 @@ interface Message {
 }
 
 export default function ChatPage() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [aiQueriesRemaining, setAiQueriesRemaining] = useState<number | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to bottom
@@ -22,8 +31,50 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Fetch AI queries remaining
+  useEffect(() => {
+    const fetchAIQueries = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const remaining = await SubscriptionAPI.getRemainingAIQueries(user.id);
+        setAiQueriesRemaining(remaining);
+      } catch (error) {
+        console.error("[Chat] Error fetching AI queries:", error);
+      }
+    };
+    
+    fetchAIQueries();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchAIQueries, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || isLoading) return;
+
+    // Check AI permission BEFORE sending
+    if (user?.id) {
+      try {
+        const permission = await SubscriptionAPI.checkAIPermission(user.id);
+        
+        if (!permission.allowed) {
+          setUpgradeReason(permission.message || "AI query limit reached. Please upgrade your plan.");
+          setShowUpgradeModal(true);
+          toast.error("AI Limit Reached", {
+            description: permission.message || "Upgrade to continue using AI chat"
+          });
+          return;
+        }
+        
+        // Update remaining queries
+        setAiQueriesRemaining(permission.remaining);
+      } catch (error) {
+        console.error("[Chat] Error checking AI permission:", error);
+        // Continue anyway if check fails
+      }
+    }
 
     // Add user message
     const userMessage: Message = { role: "user", content: message };
@@ -123,13 +174,39 @@ export default function ChatPage() {
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Header (Fixed Top) */}
       <div className="border-b p-4 bg-white dark:bg-slate-900">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Chat AI
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Tanya apapun tentang keuangan bisnis Anda
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+              Chat AI
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Tanya apapun tentang keuangan bisnis Anda
+            </p>
+          </div>
+          {/* AI Queries Remaining Badge */}
+          {aiQueriesRemaining !== null && (
+            <Badge 
+              variant="outline" 
+              className={`flex items-center gap-1 ${
+                aiQueriesRemaining === 0 ? 'border-red-500 text-red-600' : 
+                aiQueriesRemaining < 5 ? 'border-orange-500 text-orange-600' : 
+                'border-blue-500 text-blue-600'
+              }`}
+            >
+              <Zap className="h-3 w-3" />
+              {aiQueriesRemaining === -1 ? 'Unlimited' : `${aiQueriesRemaining} queries left`}
+            </Badge>
+          )}
+        </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentTier={user && 'subscription_tier' in user ? (user as any).subscription_tier : 'free'}
+        reason={upgradeReason}
+      />
 
       {/* Messages Container (Scrollable) */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950">
