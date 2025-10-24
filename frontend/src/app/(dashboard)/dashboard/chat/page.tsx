@@ -54,7 +54,7 @@ export default function ChatPage() {
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || isLoading) return;
 
-    // Check AI permission BEFORE sending
+    // Check AI permission BEFORE sending (skip if API not available)
     if (user?.id) {
       try {
         const permission = await SubscriptionAPI.checkAIPermission(user.id);
@@ -70,9 +70,9 @@ export default function ChatPage() {
         
         // Update remaining queries
         setAiQueriesRemaining(permission.remaining);
-      } catch (error) {
-        console.error("[Chat] Error checking AI permission:", error);
-        // Continue anyway if check fails
+      } catch (error: any) {
+        console.warn("[Chat] AI permission check failed (API not available), allowing chat:", error.message);
+        // Continue anyway if check fails - allows app to work without subscription backend
       }
     }
 

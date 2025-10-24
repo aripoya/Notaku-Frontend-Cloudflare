@@ -118,22 +118,28 @@ export default function UploadPage() {
       // Determine OCR provider
       const provider = usePremiumOCR ? "google" : "paddle";
       
-      // Check permission BEFORE upload
-      console.log("[Upload] Checking permission for provider:", provider);
-      const permission = await SubscriptionAPI.checkOCRPermission(user.id, provider);
-      
-      if (!permission.allowed) {
-        console.log("[Upload] Permission denied:", permission.message);
-        setUpgradeReason(permission.message || "Quota limit reached. Please upgrade your plan.");
-        setShowUpgradeModal(true);
-        setStage("select");
-        toast.error("Upload Blocked", {
-          description: permission.message || "Quota limit reached"
-        });
-        return;
+      // Check permission BEFORE upload (skip if API not available)
+      try {
+        console.log("[Upload] Checking permission for provider:", provider);
+        const permission = await SubscriptionAPI.checkOCRPermission(user.id, provider);
+        
+        if (!permission.allowed) {
+          console.log("[Upload] Permission denied:", permission.message);
+          setUpgradeReason(permission.message || "Quota limit reached. Please upgrade your plan.");
+          setShowUpgradeModal(true);
+          setStage("select");
+          toast.error("Upload Blocked", {
+            description: permission.message || "Quota limit reached"
+          });
+          return;
+        }
+        
+        console.log("[Upload] Permission granted, proceeding with upload");
+      } catch (permError: any) {
+        console.warn("[Upload] Permission check failed (API not available), allowing upload:", permError.message);
+        // Continue with upload even if permission check fails
+        // This allows the app to work without subscription backend
       }
-      
-      console.log("[Upload] Permission granted, proceeding with upload");
 
       // Check if using Premium OCR
       if (usePremiumOCR) {

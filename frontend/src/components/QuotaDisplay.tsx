@@ -35,7 +35,24 @@ export function QuotaDisplay({ userId, compact = false, onUpgradeClick }: QuotaD
       setQuota(data);
     } catch (err: any) {
       console.error("[QuotaDisplay] Error fetching quota:", err);
-      setError(err.message || "Failed to load quota");
+      
+      // If API not available, use default FREE tier quota
+      // This allows the app to work even without subscription backend
+      setQuota({
+        tier: "free" as any,
+        status: "active" as any,
+        monthly_limit: 100,
+        used: 0,
+        remaining: 100,
+        can_use_google_vision: false,
+        ai_queries_used: 0,
+        ai_queries_limit: 10,
+        total_cost: 0,
+        price: 0,
+      });
+      
+      // Don't show error to user, just log it
+      console.warn("[QuotaDisplay] Using default FREE tier quota (API not available)");
     } finally {
       setLoading(false);
     }
