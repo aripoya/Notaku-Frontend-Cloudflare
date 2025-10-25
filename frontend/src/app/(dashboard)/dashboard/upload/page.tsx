@@ -291,30 +291,69 @@ export default function UploadPage() {
     // Handle different response formats (Premium vs Standard OCR)
     const extracted = result.extracted || {};
     console.log("[MapResult] 📦 Extracted object:", extracted);
-    console.log("[MapResult] Extracted keys:", Object.keys(extracted));
+    console.log("[MapResult] Extracted keys:", extracted ? Object.keys(extracted) : 'no extracted');
+    console.log("[MapResult] Extracted JSON:", JSON.stringify(extracted, null, 2));
     
-    // Try all possible field names
+    // ✅ EXPANDED: Try ALL possible field name variations
     const merchantOptions = [
+      // From extracted object
       extracted.merchant,
       extracted.merchant_name,
+      extracted.merchantName,
       extracted.supplier,
-      result.supplier,
+      extracted.store,
+      extracted.store_name,
+      extracted.storeName,
+      extracted.vendor,
+      // From result object directly
       result.merchant,
-      result.merchant_name
+      result.merchant_name,
+      result.merchantName,
+      result.supplier,
+      result.store,
+      result.store_name,
+      result.storeName,
+      result.vendor,
     ];
+    
     const amountOptions = [
+      // From extracted object
       extracted.total_amount,
+      extracted.totalAmount,
       extracted.total,
       extracted.grand_total,
-      result.total,
+      extracted.grandTotal,
+      extracted.amount,
+      extracted.price,
+      extracted.sum,
+      // From result object directly
       result.total_amount,
-      result.grand_total
+      result.totalAmount,
+      result.total,
+      result.grand_total,
+      result.grandTotal,
+      result.amount,
+      result.price,
+      result.sum,
     ];
+    
     const dateOptions = [
+      // From extracted object
       extracted.date,
       extracted.transaction_date,
+      extracted.transactionDate,
+      extracted.receipt_date,
+      extracted.receiptDate,
+      extracted.purchase_date,
+      extracted.purchaseDate,
+      // From result object directly
       result.date,
-      result.transaction_date
+      result.transaction_date,
+      result.transactionDate,
+      result.receipt_date,
+      result.receiptDate,
+      result.purchase_date,
+      result.purchaseDate,
     ];
     
     console.log("[MapResult] 🔍 Trying merchant from:", merchantOptions);
