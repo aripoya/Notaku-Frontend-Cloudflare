@@ -257,17 +257,36 @@ export default function ReceiptEditForm({
       if (isNewReceipt) {
         console.log("[ReceiptEditForm] ✨ Creating NEW receipt (from OCR)");
         
+        // Validate required fields for creation
+        if (!initialData.user_id) {
+          console.error("[ReceiptEditForm] ❌ ERROR: user_id is missing!");
+          toast.error("Error: User ID tidak ditemukan", {
+            description: "Tidak dapat membuat receipt tanpa user ID"
+          });
+          return;
+        }
+        
         const createData = {
           ...saveData,
           user_id: initialData.user_id,
-          ocr_text: initialData.ocr_text,
-          ocr_confidence: initialData.ocr_confidence,
-          image_path: initialData.image_path,
+          ocr_text: initialData.ocr_text || "",
+          ocr_confidence: initialData.ocr_confidence || 0,
+          image_path: initialData.image_path || "",
         };
         
         console.log("[ReceiptEditForm] Create data:", createData);
-        savedReceipt = await ReceiptsAPI.createReceipt(createData);
-        console.log("[ReceiptEditForm] ✅ Receipt created:", savedReceipt);
+        console.log("[ReceiptEditForm] Create data JSON:", JSON.stringify(createData, null, 2));
+        
+        try {
+          savedReceipt = await ReceiptsAPI.createReceipt(createData);
+          console.log("[ReceiptEditForm] ✅ Receipt created:", savedReceipt);
+        } catch (createError: any) {
+          console.error("[ReceiptEditForm] ❌ CREATE failed:", createError);
+          console.error("[ReceiptEditForm] Error message:", createError.message);
+          console.error("[ReceiptEditForm] Error statusCode:", createError.statusCode);
+          console.error("[ReceiptEditForm] Error details:", createError.details);
+          throw createError; // Re-throw to be caught by outer catch
+        }
       } else {
         // This is an existing receipt, UPDATE it
         console.log("[ReceiptEditForm] 🔄 Updating existing receipt");
@@ -288,9 +307,37 @@ export default function ReceiptEditForm({
       }
     } catch (error: any) {
       console.error("[ReceiptEditForm] ❌ Error saving receipt:", error);
-      console.error("[ReceiptEditForm] Error details:", error.message, error.statusCode);
-      toast.error("Failed to save receipt", {
-        description: error.message || "Please try again",
+      console.error("[ReceiptEditForm] Error type:", typeof error);
+      console.error("[ReceiptEditForm] Error name:", error.name);
+      console.error("[ReceiptEditForm] Error message:", error.message);
+      console.error("[ReceiptEditForm] Error statusCode:", error.statusCode);
+      console.error("[ReceiptEditForm] Error details:", error.details);
+      console.error("[ReceiptEditForm] Error stack:", error.stack);
+      
+      // Determine error message based on error type
+      let errorTitle = "Gagal menyimpan nota";
+      let errorDescription = error.message || "Silakan coba lagi";
+      
+      if (error.message?.includes("Failed to fetch")) {
+        errorTitle = "Tidak dapat terhubung ke server";
+        errorDescription = "Periksa koneksi internet atau server mungkin sedang down";
+      } else if (error.statusCode === 400) {
+        errorTitle = "Data tidak valid";
+        errorDescription = error.message || "Periksa kembali data yang diisi";
+      } else if (error.statusCode === 401 || error.statusCode === 403) {
+        errorTitle = "Tidak memiliki akses";
+        errorDescription = "Silakan login kembali";
+      } else if (error.statusCode === 404) {
+        errorTitle = "Endpoint tidak ditemukan";
+        errorDescription = "Backend mungkin belum mengimplementasi endpoint ini";
+      } else if (error.statusCode === 500) {
+        errorTitle = "Server error";
+        errorDescription = "Terjadi kesalahan di server";
+      }
+      
+      toast.error(errorTitle, {
+        description: errorDescription,
+        duration: 5000,
       });
     } finally {
       setSaving(false);
