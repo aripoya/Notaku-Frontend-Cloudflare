@@ -119,6 +119,11 @@ export class ReceiptsAPI {
    * Create a new receipt
    */
   static async createReceipt(data: ReceiptUpdateData & { user_id: string; ocr_text?: string; ocr_confidence?: number; image_path?: string }): Promise<Receipt> {
+    console.log('[ReceiptsAPI] 📝 Creating new receipt');
+    console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
+    console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts`);
+    console.log('[ReceiptsAPI] Data:', data);
+    
     return request<Receipt>(`${API_PREFIX}/receipts`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -132,6 +137,17 @@ export class ReceiptsAPI {
     receiptId: string,
     data: ReceiptUpdateData
   ): Promise<Receipt> {
+    console.log('[ReceiptsAPI] 🔄 Updating receipt');
+    console.log('[ReceiptsAPI] Receipt ID:', receiptId);
+    console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
+    console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts/${receiptId}`);
+    console.log('[ReceiptsAPI] Data:', data);
+    
+    if (!receiptId || receiptId === 'undefined') {
+      console.error('[ReceiptsAPI] ❌ ERROR: Invalid receiptId:', receiptId);
+      throw new ReceiptsAPIError('Invalid receipt ID', 400, 'INVALID_ID');
+    }
+    
     return request<Receipt>(`${API_PREFIX}/receipts/${receiptId}`, {
       method: "PUT",
       body: JSON.stringify(data),

@@ -25,6 +25,12 @@ export default function ReceiptEditForm({
   onCancel,
   onDelete,
 }: ReceiptEditFormProps) {
+  console.log('[ReceiptEditForm] 🎬 Component mounted/re-rendered');
+  console.log('[ReceiptEditForm] Props received:');
+  console.log('[ReceiptEditForm]   - receiptId:', receiptId);
+  console.log('[ReceiptEditForm]   - initialData:', initialData);
+  console.log('[ReceiptEditForm]   - API_URL:', process.env.NEXT_PUBLIC_API_URL);
+  
   // State
   const [receipt, setReceipt] = useState<Receipt | null>(initialData || null);
   const [loading, setLoading] = useState(!initialData);
@@ -40,6 +46,13 @@ export default function ReceiptEditForm({
   const [date, setDate] = useState(formatDateForInput(initialData?.date || null));
   const [category, setCategory] = useState(initialData?.category || "");
   const [notes, setNotes] = useState(initialData?.notes || "");
+  
+  console.log('[ReceiptEditForm] Initial form state:');
+  console.log('[ReceiptEditForm]   - merchant:', merchant);
+  console.log('[ReceiptEditForm]   - totalAmount:', totalAmount);
+  console.log('[ReceiptEditForm]   - date:', date);
+  console.log('[ReceiptEditForm]   - category:', category);
+  console.log('[ReceiptEditForm]   - notes:', notes);
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,9 +60,32 @@ export default function ReceiptEditForm({
   // Track if form is dirty (has unsaved changes)
   const [isDirty, setIsDirty] = useState(false);
 
+  // ✅ UPDATE: Populate form fields when initialData changes
+  useEffect(() => {
+    console.log('[ReceiptEditForm] 🔄 initialData changed, updating form fields');
+    console.log('[ReceiptEditForm] New initialData:', initialData);
+    
+    if (initialData) {
+      console.log('[ReceiptEditForm] Populating form with initialData...');
+      setReceipt(initialData);
+      setMerchant(initialData.merchant || "");
+      setTotalAmount(initialData.total_amount?.toString() || "");
+      setDate(formatDateForInput(initialData.date));
+      setCategory(initialData.category || "");
+      setNotes(initialData.notes || "");
+      setLoading(false);
+      
+      console.log('[ReceiptEditForm] ✅ Form populated:');
+      console.log('[ReceiptEditForm]   - merchant:', initialData.merchant);
+      console.log('[ReceiptEditForm]   - totalAmount:', initialData.total_amount);
+      console.log('[ReceiptEditForm]   - date:', initialData.date);
+    }
+  }, [initialData]);
+  
   // Fetch receipt data if not provided
   useEffect(() => {
     if (!initialData && receiptId) {
+      console.log('[ReceiptEditForm] No initialData, fetching receipt from API...');
       fetchReceipt();
     }
   }, [receiptId, initialData]);
@@ -68,9 +104,13 @@ export default function ReceiptEditForm({
   }, [merchant, totalAmount, date, category, notes, receipt]);
 
   const fetchReceipt = async () => {
+    console.log('[ReceiptEditForm] 📥 Fetching receipt from API...');
+    console.log('[ReceiptEditForm] Receipt ID:', receiptId);
+    
     try {
       setLoading(true);
       const data = await ReceiptsAPI.getReceipt(receiptId);
+      console.log('[ReceiptEditForm] ✅ Receipt fetched:', data);
       setReceipt(data);
       
       // Populate form fields
@@ -79,8 +119,11 @@ export default function ReceiptEditForm({
       setDate(formatDateForInput(data.date));
       setCategory(data.category || "");
       setNotes(data.notes || "");
+      
+      console.log('[ReceiptEditForm] Form populated from API data');
     } catch (error: any) {
-      console.error("[ReceiptEditForm] Error fetching receipt:", error);
+      console.error("[ReceiptEditForm] ❌ Error fetching receipt:", error);
+      console.error("[ReceiptEditForm] Error details:", error.message, error.statusCode);
       toast.error("Failed to load receipt", {
         description: error.message || "Please try again",
       });
@@ -123,6 +166,17 @@ export default function ReceiptEditForm({
     console.log("[ReceiptEditForm] 💾 Starting save process");
     console.log("[ReceiptEditForm] Receipt ID:", receiptId);
     console.log("[ReceiptEditForm] Initial data:", initialData);
+    console.log("[ReceiptEditForm] Current receipt state:", receipt);
+    console.log("[ReceiptEditForm] API_URL:", process.env.NEXT_PUBLIC_API_URL);
+    
+    // ✅ CRITICAL: Validate receiptId before proceeding
+    if (!receiptId) {
+      console.error('[ReceiptEditForm] ❌ ERROR: receiptId is undefined or empty!');
+      toast.error('Error: Receipt ID tidak ditemukan', {
+        description: 'Tidak dapat menyimpan tanpa ID receipt'
+      });
+      return;
+    }
     
     if (!validate()) {
       toast.error("Validation Error", {
@@ -146,10 +200,20 @@ export default function ReceiptEditForm({
 
       let savedReceipt: Receipt;
 
+      // ✅ SMART LOGIC: Determine if this is CREATE or UPDATE
+      // CREATE if: initialData exists AND receipt.id doesn't match a real UUID
+      const isNewReceipt = initialData && (!receipt?.id || receipt.id === receiptId);
+      
+      console.log('[ReceiptEditForm] 🤔 Determining operation type:');
+      console.log('[ReceiptEditForm]   - initialData exists:', !!initialData);
+      console.log('[ReceiptEditForm]   - receipt?.id:', receipt?.id);
+      console.log('[ReceiptEditForm]   - receiptId:', receiptId);
+      console.log('[ReceiptEditForm]   - isNewReceipt:', isNewReceipt);
+
       // If initialData is provided and has all OCR data, this is a NEW receipt from OCR
       // We need to CREATE it, not UPDATE
-      if (initialData && !receipt?.id) {
-        console.log("[ReceiptEditForm] Creating NEW receipt (from OCR)");
+      if (isNewReceipt) {
+        console.log("[ReceiptEditForm] ✨ Creating NEW receipt (from OCR)");
         
         const createData = {
           ...saveData,
@@ -164,7 +228,8 @@ export default function ReceiptEditForm({
         console.log("[ReceiptEditForm] ✅ Receipt created:", savedReceipt);
       } else {
         // This is an existing receipt, UPDATE it
-        console.log("[ReceiptEditForm] Updating existing receipt");
+        console.log("[ReceiptEditForm] 🔄 Updating existing receipt");
+        console.log("[ReceiptEditForm] Update URL will be: /api/v1/receipts/" + receiptId);
         savedReceipt = await ReceiptsAPI.updateReceipt(receiptId, saveData);
         console.log("[ReceiptEditForm] ✅ Receipt updated:", savedReceipt);
       }
