@@ -1,26 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Download,
   TrendingUp,
   TrendingDown,
-  Package,
-  Percent,
   DollarSign,
   Receipt as ReceiptIcon,
   Calendar,
   CreditCard,
+  Loader2,
+  AlertCircle,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   AreaChart,
   Area,
@@ -37,60 +32,159 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { AnalyticsAPI } from "@/lib/analytics-api";
+import type {
+  AnalyticsSummary,
+  TrendDataPoint,
+  CategoryData,
+  MerchantData,
+  DateRangePreset,
+  TrendInterval,
+} from "@/types/analytics";
+import {
+  getDateRangeFromPreset,
+  formatCurrency,
+  formatCurrencyCompact,
+  formatDateShort,
+} from "@/types/analytics";
 
-// Mock Data
-const spendingTrendData = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-  }),
-  current: Math.floor(Math.random() * 300000) + 200000,
-  previous: Math.floor(Math.random() * 250000) + 180000,
-}));
-
-const categoryData = [
-  { name: "Bahan Baku", value: 5200000, amount: 5200000, color: "#3b82f6" },
-  { name: "Operasional", value: 3100000, amount: 3100000, color: "#10b981" },
-  { name: "Marketing", value: 2400000, amount: 2400000, color: "#8b5cf6" },
-  { name: "Transportasi", value: 1750000, amount: 1750000, color: "#f97316" },
-];
-
-const supplierData = Array.from({ length: 10 }, (_, i) => ({
-  name: `Supplier ${String.fromCharCode(65 + i)}`,
-  amount: Math.floor(Math.random() * 2000000) + 500000,
-})).sort((a, b) => b.amount - a.amount);
-
-const paymentMethodData = [
-  { name: "Cash", value: 45, color: "#3b82f6" },
-  { name: "Transfer", value: 30, color: "#10b981" },
-  { name: "E-Wallet", value: 20, color: "#8b5cf6" },
-  { name: "Kartu Kredit", value: 5, color: "#f97316" },
-];
-
-const dayOfWeekData = [
-  { day: "Senin", amount: 1200000, transactions: 12 },
-  { day: "Selasa", amount: 850000, transactions: 8 },
-  { day: "Rabu", amount: 1500000, transactions: 15 },
-  { day: "Kamis", amount: 980000, transactions: 9 },
-  { day: "Jumat", amount: 2100000, transactions: 18 },
-  { day: "Sabtu", amount: 1800000, transactions: 16 },
-  { day: "Minggu", amount: 650000, transactions: 6 },
+// Chart colors
+const COLORS = [
+  "#3b82f6", // blue
+  "#10b981", // green
+  "#8b5cf6", // purple
+  "#f97316", // orange
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#f59e0b", // amber
+  "#6366f1", // indigo
 ];
 
 export default function AnalyticsPage() {
-  const [period, setPeriod] = useState("30");
+  const { user } = useAuth();
+  
+  // State
+  const [datePreset, setDatePreset] = useState<DateRangePreset>("this_month");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Data state
+  const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
+  const [trendData, setTrendData] = useState<TrendDataPoint[]>([]);
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [merchantData, setMerchantData] = useState<MerchantData[]>([]);
 
+  // Fetch all analytics data
+  const fetchAnalytics = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Get date range
+      const dateRange = datePreset === "custom" && customStartDate && customEndDate
+        ? { start: customStartDate, end: customEndDate }
+        : getDateRangeFromPreset(datePreset);
+
+      // Determine interval based on date range
+      const daysDiff = Math.ceil(
+        (new Date(dateRange.end).getTime() - new Date(dateRange.start).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const interval: TrendInterval = daysDiff > 90 ? "monthly" : daysDiff > 30 ? "weekly" : "daily";
+
+      console.log("[Analytics] Fetching data:", { dateRange, interval });
+
+      // Fetch all data
+      const data = await AnalyticsAPI.getAllData(
+        user.id,
+        dateRange.start,
+        dateRange.end,
+        interval
+      );
+
+      setSummary(data.summary);
+      setTrendData(data.trend.data);
+      setCategoryData(data.categories.categories);
+      setMerchantData(data.merchants.merchants);
+
+    } catch (err: any) {
+      console.error("[Analytics] Error fetching data:", err);
+      setError(err.message || "Failed to load analytics data");
+      
+      // Use mock data as fallback
+      useMockData();
+      
+      toast.error("Failed to load analytics", {
+        description: "Using sample data. Backend API may not be available.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock data fallback
+  const useMockData = () => {
+    setSummary({
+      total_spending: 12450000,
+      total_receipts: 84,
+      average_per_transaction: 148214,
+      biggest_expense: {
+        merchant: "Supplier A",
+        amount: 2500000,
+        date: new Date().toISOString(),
+      },
+    });
+
+    setTrendData(
+      Array.from({ length: 30 }, (_, i) => ({
+        date: new Date(Date.now() - (29 - i) * 86400000).toISOString().split("T")[0],
+        amount: Math.floor(Math.random() * 300000) + 200000,
+      }))
+    );
+
+    setCategoryData([
+      { name: "Bahan Baku", amount: 5200000, count: 32, percentage: 41.8 },
+      { name: "Operasional", amount: 3100000, count: 25, percentage: 24.9 },
+      { name: "Marketing", amount: 2400000, count: 15, percentage: 19.3 },
+      { name: "Transportasi", amount: 1750000, count: 12, percentage: 14.0 },
+    ]);
+
+    setMerchantData(
+      Array.from({ length: 10 }, (_, i) => ({
+        name: `Supplier ${String.fromCharCode(65 + i)}`,
+        amount: Math.floor(Math.random() * 2000000) + 500000,
+        count: Math.floor(Math.random() * 20) + 5,
+      })).sort((a, b) => b.amount - a.amount)
+    );
+  };
+
+  // Fetch on mount and when date changes
+  useEffect(() => {
+    fetchAnalytics();
+  }, [user?.id, datePreset, customStartDate, customEndDate]);
+
+  // Export PDF handler
   const handleExportPDF = () => {
     toast.success("Export PDF", {
       description: "Laporan analitik sedang diproses",
     });
   };
 
-  // Calculate key metrics
-  const totalSpending = categoryData.reduce((sum, cat) => sum + cat.value, 0);
-  const avgDailySpending = Math.floor(totalSpending / 30);
-  const totalTransactions = dayOfWeekData.reduce((sum, day) => sum + day.transactions, 0);
-  const avgTransactionValue = Math.floor(totalSpending / totalTransactions);
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -105,17 +199,6 @@ export default function AnalyticsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7">7 hari terakhir</SelectItem>
-              <SelectItem value="30">30 hari terakhir</SelectItem>
-              <SelectItem value="90">3 bulan terakhir</SelectItem>
-              <SelectItem value="365">1 tahun terakhir</SelectItem>
-            </SelectContent>
-          </Select>
           <Button variant="outline" onClick={handleExportPDF}>
             <Download className="mr-2 h-4 w-4" />
             Export PDF
@@ -123,187 +206,256 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Section 1: Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total Pengeluaran
-                </p>
-                <h3 className="text-2xl font-bold mt-2">
-                  Rp {(totalSpending / 1000000).toFixed(1)}M
-                </h3>
-                <p className="text-xs text-green-600 flex items-center mt-1">
-                  <TrendingDown className="h-3 w-3 mr-1" />
-                  12% dari bulan lalu
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Rata-rata Harian
-                </p>
-                <h3 className="text-2xl font-bold mt-2">
-                  Rp {(avgDailySpending / 1000).toFixed(0)}K
-                </h3>
-                <p className="text-xs text-red-600 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  5% dari minggu lalu
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total Transaksi
-                </p>
-                <h3 className="text-2xl font-bold mt-2">{totalTransactions}</h3>
-                <p className="text-xs text-green-600 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  8% dari bulan lalu
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center">
-                <ReceiptIcon className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Rata-rata per Nota
-                </p>
-                <h3 className="text-2xl font-bold mt-2">
-                  Rp {(avgTransactionValue / 1000).toFixed(0)}K
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Konsisten
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                <CreditCard className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Section 2: Spending Trend (Full Width) */}
+      {/* Date Range Selector */}
       <Card>
-        <CardHeader>
-          <CardTitle>Tren Pengeluaran</CardTitle>
-          <CardDescription>
-            Perbandingan pengeluaran dari waktu ke waktu
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <AreaChart data={spendingTrendData}>
-              <defs>
-                <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorPrevious" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="date" className="text-xs" />
-              <YAxis
-                className="text-xs"
-                tickFormatter={(value) => `Rp ${(value / 1000).toFixed(0)}K`}
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={datePreset === "this_month" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDatePreset("this_month")}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              This Month
+            </Button>
+            <Button
+              variant={datePreset === "last_30_days" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDatePreset("last_30_days")}
+            >
+              Last 30 Days
+            </Button>
+            <Button
+              variant={datePreset === "last_3_months" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDatePreset("last_3_months")}
+            >
+              Last 3 Months
+            </Button>
+            <Button
+              variant={datePreset === "this_year" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDatePreset("this_year")}
+            >
+              This Year
+            </Button>
+            
+            {/* Custom Date Range */}
+            <div className="flex gap-2 ml-auto">
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => {
+                  setCustomStartDate(e.target.value);
+                  setDatePreset("custom");
+                }}
+                className="px-3 py-1 text-sm border rounded-md"
               />
-              <Tooltip
-                formatter={(value: number) =>
-                  `Rp ${value.toLocaleString("id-ID")}`
-                }
+              <span className="self-center text-muted-foreground">to</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => {
+                  setCustomEndDate(e.target.value);
+                  setDatePreset("custom");
+                }}
+                className="px-3 py-1 text-sm border rounded-md"
               />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="current"
-                name="Periode Ini"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                fill="url(#colorCurrent)"
-              />
-              <Area
-                type="monotone"
-                dataKey="previous"
-                name="Periode Sebelumnya"
-                stroke="#94a3b8"
-                strokeWidth={2}
-                fill="url(#colorPrevious)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Section 3: Two-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left Column (60%) */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* 3A. Category Breakdown (Pie Chart) */}
+      {/* Error Alert */}
+      {error && (
+        <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm">
+                Using sample data. Backend analytics API may not be available.
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Summary Cards */}
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total Spending */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Pengeluaran
+                  </p>
+                  <h3 className="text-2xl font-bold mt-2">
+                    {formatCurrencyCompact(summary.total_spending)}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(summary.total_spending)}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Total Receipts */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Transaksi
+                  </p>
+                  <h3 className="text-2xl font-bold mt-2">
+                    {summary.total_receipts}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    receipts
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center">
+                  <ReceiptIcon className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Average per Transaction */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Rata-rata per Nota
+                  </p>
+                  <h3 className="text-2xl font-bold mt-2">
+                    {formatCurrencyCompact(summary.average_per_transaction)}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    per transaction
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center">
+                  <CreditCard className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Biggest Expense */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Pengeluaran Terbesar
+                  </p>
+                  <h3 className="text-lg font-bold mt-2 truncate">
+                    {summary.biggest_expense.merchant}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrencyCompact(summary.biggest_expense.amount)}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Spending Trend Chart */}
+      {trendData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Tren Pengeluaran</CardTitle>
+            <CardDescription>
+              Perbandingan pengeluaran dari waktu ke waktu
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <AreaChart data={trendData}>
+                <defs>
+                  <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="date" 
+                  className="text-xs"
+                  tickFormatter={(value) => formatDateShort(value)}
+                />
+                <YAxis
+                  className="text-xs"
+                  tickFormatter={(value) => formatCurrencyCompact(value)}
+                />
+                <Tooltip
+                  formatter={(value: number) => formatCurrency(value)}
+                  labelFormatter={(label) => formatDateShort(label)}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="amount"
+                  name="Pengeluaran"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  fill="url(#colorAmount)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Category Breakdown */}
+        {categoryData.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Pengeluaran per Kategori</CardTitle>
+              <CardDescription>Breakdown by category</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={categoryData}
+                    data={categoryData as any}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
                     label={(entry: any) =>
-                      `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
+                      `${entry.name} ${entry.percentage.toFixed(0)}%`
                     }
                     outerRadius={100}
                     fill="#8884d8"
-                    dataKey="value"
+                    dataKey="amount"
                   >
                     {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) =>
-                      `Rp ${value.toLocaleString("id-ID")}`
-                    }
+                    formatter={(value: number) => formatCurrency(value)}
                   />
                 </PieChart>
               </ResponsiveContainer>
 
               {/* Legend with amounts */}
               <div className="mt-4 space-y-2">
-                {categoryData.map((cat) => (
+                {categoryData.map((cat, index) => (
                   <div
                     key={cat.name}
                     className="flex items-center justify-between text-sm"
@@ -311,28 +463,33 @@ export default function AnalyticsPage() {
                     <div className="flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: cat.color }}
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       />
                       <span>{cat.name}</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {cat.count}
+                      </Badge>
                     </div>
                     <span className="font-semibold">
-                      Rp {cat.amount.toLocaleString("id-ID")}
+                      {formatCurrencyCompact(cat.amount)}
                     </span>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
+        )}
 
-          {/* 3B. Top Suppliers (Bar Chart) */}
+        {/* Top Merchants */}
+        {merchantData.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Top 10 Supplier</CardTitle>
+              <CardTitle>Top 10 Merchants</CardTitle>
               <CardDescription>Berdasarkan total pembelian</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={supplierData} layout="vertical">
+                <BarChart data={merchantData.slice(0, 10)} layout="vertical">
                   <CartesianGrid
                     strokeDasharray="3 3"
                     className="stroke-muted"
@@ -340,9 +497,7 @@ export default function AnalyticsPage() {
                   <XAxis
                     type="number"
                     className="text-xs"
-                    tickFormatter={(value) =>
-                      `Rp ${(value / 1000000).toFixed(1)}M`
-                    }
+                    tickFormatter={(value) => formatCurrencyCompact(value)}
                   />
                   <YAxis
                     dataKey="name"
@@ -351,9 +506,7 @@ export default function AnalyticsPage() {
                     width={100}
                   />
                   <Tooltip
-                    formatter={(value: number) =>
-                      `Rp ${value.toLocaleString("id-ID")}`
-                    }
+                    formatter={(value: number) => formatCurrency(value)}
                   />
                   <Bar
                     dataKey="amount"
@@ -364,145 +517,24 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Right Column (40%) */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* 3C. Spending by Day of Week */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Pola Pengeluaran</CardTitle>
-              <CardDescription>Per hari dalam seminggu</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {dayOfWeekData.map((item) => {
-                  const maxAmount = 2100000;
-                  const percentage = (item.amount / maxAmount) * 100;
-                  return (
-                    <div key={item.day} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{item.day}</span>
-                        <span className="text-muted-foreground">
-                          Rp {(item.amount / 1000).toFixed(0)}K
-                        </span>
-                      </div>
-                      <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-end pr-2"
-                          style={{ width: `${percentage}%` }}
-                        >
-                          <span className="text-xs text-white font-semibold">
-                            {item.transactions} nota
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 3D. Payment Methods (Donut Chart) */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Metode Pembayaran</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={paymentMethodData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    dataKey="value"
-                  >
-                    {paymentMethodData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
-                </PieChart>
-              </ResponsiveContainer>
-
-              {/* Legend */}
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {paymentMethodData.map((method) => (
-                  <div
-                    key={method.name}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: method.color }}
-                    />
-                    <span>
-                      {method.name} ({method.value}%)
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        )}
       </div>
 
-      {/* Section 4: AI Insights Panel */}
-      <Card>
-        <CardHeader>
-          <CardTitle>💡 Insights & Rekomendasi</CardTitle>
-          <CardDescription>
-            Berdasarkan analisis data pengeluaran Anda
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              {
-                icon: TrendingUp,
-                color: "text-blue-600",
-                bg: "bg-blue-50 dark:bg-blue-950",
-                title: "Pengeluaran tertinggi di hari Jumat",
-                description:
-                  "Rata-rata Rp 2.1 juta per Jumat. Pertimbangkan bulk purchase di awal minggu.",
-              },
-              {
-                icon: Package,
-                color: "text-green-600",
-                bg: "bg-green-50 dark:bg-green-950",
-                title: "Supplier A 15% lebih murah",
-                description:
-                  "Untuk bahan plastik, Supplier A memberikan harga terbaik dibanding kompetitor.",
-              },
-              {
-                icon: Percent,
-                color: "text-purple-600",
-                bg: "bg-purple-50 dark:bg-purple-950",
-                title: "Potensi hemat Rp 850K/bulan",
-                description:
-                  "Dengan konsolidasi pembelian dan negosiasi volume discount.",
-              },
-            ].map((insight, i) => (
-              <div key={i} className={`p-4 rounded-lg ${insight.bg}`}>
-                <div className="flex gap-3">
-                  <insight.icon
-                    className={`h-5 w-5 ${insight.color} mt-0.5 shrink-0`}
-                  />
-                  <div>
-                    <h4 className="font-semibold mb-1">{insight.title}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {insight.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Empty State */}
+      {!loading && summary && summary.total_receipts === 0 && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
+            <p className="text-muted-foreground mb-4">
+              Upload some receipts to see your analytics
+            </p>
+            <Button onClick={() => window.location.href = "/dashboard/upload"}>
+              Upload Receipt
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
