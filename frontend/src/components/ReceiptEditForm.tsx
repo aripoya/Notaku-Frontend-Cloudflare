@@ -120,6 +120,10 @@ export default function ReceiptEditForm({
   };
 
   const handleSave = async () => {
+    console.log("[ReceiptEditForm] 💾 Starting save process");
+    console.log("[ReceiptEditForm] Receipt ID:", receiptId);
+    console.log("[ReceiptEditForm] Initial data:", initialData);
+    
     if (!validate()) {
       toast.error("Validation Error", {
         description: "Please fix the errors before saving",
@@ -130,7 +134,7 @@ export default function ReceiptEditForm({
     try {
       setSaving(true);
 
-      const updateData: ReceiptUpdateData = {
+      const saveData = {
         merchant: merchant.trim(),
         total_amount: parseCurrency(totalAmount),
         date,
@@ -138,9 +142,34 @@ export default function ReceiptEditForm({
         notes: notes.trim() || null,
       };
 
-      const updatedReceipt = await ReceiptsAPI.updateReceipt(receiptId, updateData);
+      console.log("[ReceiptEditForm] Save data:", saveData);
+
+      let savedReceipt: Receipt;
+
+      // If initialData is provided and has all OCR data, this is a NEW receipt from OCR
+      // We need to CREATE it, not UPDATE
+      if (initialData && !receipt?.id) {
+        console.log("[ReceiptEditForm] Creating NEW receipt (from OCR)");
+        
+        const createData = {
+          ...saveData,
+          user_id: initialData.user_id,
+          ocr_text: initialData.ocr_text,
+          ocr_confidence: initialData.ocr_confidence,
+          image_path: initialData.image_path,
+        };
+        
+        console.log("[ReceiptEditForm] Create data:", createData);
+        savedReceipt = await ReceiptsAPI.createReceipt(createData);
+        console.log("[ReceiptEditForm] ✅ Receipt created:", savedReceipt);
+      } else {
+        // This is an existing receipt, UPDATE it
+        console.log("[ReceiptEditForm] Updating existing receipt");
+        savedReceipt = await ReceiptsAPI.updateReceipt(receiptId, saveData);
+        console.log("[ReceiptEditForm] ✅ Receipt updated:", savedReceipt);
+      }
       
-      setReceipt(updatedReceipt);
+      setReceipt(savedReceipt);
       setIsDirty(false);
       
       toast.success("Receipt saved!", {
@@ -148,10 +177,11 @@ export default function ReceiptEditForm({
       });
 
       if (onSave) {
-        onSave(updatedReceipt);
+        onSave(savedReceipt);
       }
     } catch (error: any) {
-      console.error("[ReceiptEditForm] Error saving receipt:", error);
+      console.error("[ReceiptEditForm] ❌ Error saving receipt:", error);
+      console.error("[ReceiptEditForm] Error details:", error.message, error.statusCode);
       toast.error("Failed to save receipt", {
         description: error.message || "Please try again",
       });

@@ -116,6 +116,16 @@ export class ReceiptsAPI {
   }
 
   /**
+   * Create a new receipt
+   */
+  static async createReceipt(data: ReceiptUpdateData & { user_id: string; ocr_text?: string; ocr_confidence?: number; image_path?: string }): Promise<Receipt> {
+    return request<Receipt>(`${API_PREFIX}/receipts`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
    * Update a receipt
    */
   static async updateReceipt(

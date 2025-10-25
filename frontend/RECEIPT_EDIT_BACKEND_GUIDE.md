@@ -150,7 +150,87 @@ Authorization: Bearer {token}
 
 ---
 
-## 1. Get Single Receipt
+## 1. Create Receipt (NEW - IMPORTANT!)
+
+**Endpoint:** `POST /api/v1/receipts`
+
+**Request Body:**
+```json
+{
+  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+  "merchant": "Gramedia Yogya Sudirman",
+  "total_amount": 125000.00,
+  "date": "2025-10-24",
+  "category": "Shopping",
+  "notes": "Bought some books",
+  "ocr_text": "GRAMEDIA\nTotal: Rp 125.000",
+  "ocr_confidence": 0.95,
+  "image_path": "/uploads/receipts/abc123.jpg"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+  "merchant": "Gramedia Yogya Sudirman",
+  "total_amount": 125000.00,
+  "date": "2025-10-24",
+  "category": "Shopping",
+  "notes": "Bought some books",
+  "ocr_text": "GRAMEDIA\nTotal: Rp 125.000",
+  "ocr_confidence": 0.95,
+  "image_path": "/uploads/receipts/abc123.jpg",
+  "is_edited": false,
+  "created_at": "2025-10-24T10:30:00Z",
+  "updated_at": "2025-10-24T10:30:00Z"
+}
+```
+
+**Python Implementation:**
+```python
+@router.post("", response_model=ReceiptResponse, status_code=status.HTTP_201_CREATED)
+async def create_receipt(
+    data: ReceiptCreateRequest,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Create a new receipt"""
+    
+    # Verify user owns this receipt
+    if str(data.user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to create receipt for this user"
+        )
+    
+    # Create receipt
+    receipt = ReceiptModel(
+        user_id=data.user_id,
+        merchant=data.merchant,
+        total_amount=data.total_amount,
+        date=datetime.strptime(data.date, '%Y-%m-%d').date(),
+        category=data.category,
+        notes=data.notes,
+        ocr_text=data.ocr_text or "",
+        ocr_confidence=data.ocr_confidence or 0.0,
+        image_path=data.image_path,
+        is_edited=False,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    
+    db.add(receipt)
+    db.commit()
+    db.refresh(receipt)
+    
+    return receipt
+```
+
+---
+
+## 2. Get Single Receipt
 
 **Endpoint:** `GET /api/v1/receipts/{receipt_id}`
 
