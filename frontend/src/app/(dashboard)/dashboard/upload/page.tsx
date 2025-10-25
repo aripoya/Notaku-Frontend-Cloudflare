@@ -264,6 +264,81 @@ export default function UploadPage() {
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
+  // ✅ HELPER: Parse OCR text to extract structured data
+  const parseOcrText = (ocrText: string): { merchant: string | null; amount: number | null; date: string | null } => {
+    console.log("[ParseOCR] 🔍 Parsing OCR text...");
+    console.log("[ParseOCR] Input:", ocrText);
+    
+    let merchant: string | null = null;
+    let amount: number | null = null;
+    let date: string | null = null;
+    
+    if (!ocrText) return { merchant, amount, date };
+    
+    // Parse merchant (usually first few lines, look for common patterns)
+    const lines = ocrText.split('\n').filter(line => line.trim());
+    console.log("[ParseOCR] Lines:", lines);
+    
+    // Try to find merchant name (usually first non-short line that's not a number)
+    for (let i = 0; i < Math.min(5, lines.length); i++) {
+      const line = lines[i].trim();
+      if (line.length > 5 && !/^\d+$/.test(line) && !line.match(/^www\./i)) {
+        merchant = line;
+        console.log("[ParseOCR] Found merchant:", merchant);
+        break;
+      }
+    }
+    
+    // Parse amount (look for "Rp" or "IDR" followed by numbers)
+    const amountPatterns = [
+      /(?:Rp|IDR|Total)[:\s]*([0-9,\.]+)/gi,
+      /([0-9]{3,})[,\.]?(\d{3})?[,\.]?(\d{3})?/g,
+    ];
+    
+    for (const pattern of amountPatterns) {
+      const matches = ocrText.matchAll(pattern);
+      for (const match of matches) {
+        const amountStr = match[1] || match[0];
+        const cleaned = amountStr.replace(/[^0-9]/g, '');
+        const parsed = parseInt(cleaned);
+        if (parsed > 100 && parsed < 100000000) { // Reasonable amount range
+          amount = parsed;
+          console.log("[ParseOCR] Found amount:", amount);
+          break;
+        }
+      }
+      if (amount) break;
+    }
+    
+    // Parse date (look for DD/MM/YYYY or YYYY-MM-DD format)
+    const datePatterns = [
+      /(\d{2})\/(\d{2})\/(\d{4})/,  // DD/MM/YYYY
+      /(\d{4})-(\d{2})-(\d{2})/,    // YYYY-MM-DD
+      /(\d{2})-(\d{2})-(\d{4})/,    // DD-MM-YYYY
+    ];
+    
+    for (const pattern of datePatterns) {
+      const match = ocrText.match(pattern);
+      if (match) {
+        if (pattern.source.startsWith('(\\d{4})')) {
+          // YYYY-MM-DD
+          date = match[0];
+        } else {
+          // DD/MM/YYYY or DD-MM-YYYY -> convert to YYYY-MM-DD
+          const day = match[1];
+          const month = match[2];
+          const year = match[3];
+          date = `${year}-${month}-${day}`;
+        }
+        console.log("[ParseOCR] Found date:", date);
+        break;
+      }
+    }
+    
+    console.log("[ParseOCR] ✅ Parsed result:", { merchant, amount, date });
+    return { merchant, amount, date };
+  };
+
   const mapResultToReceipt = (): Receipt => {
     console.log("[MapResult] 🗺️ Mapping result to Receipt format");
     console.log("[MapResult] Input result:", result);
@@ -364,17 +439,43 @@ export default function UploadPage() {
     const finalAmount = amountOptions.find(v => v != null && v !== 0 && v !== "") || null;
     const finalDate = dateOptions.find(v => v != null && v !== "") || null;
     
-    console.log("[MapResult] ✅ Final values selected:");
+    console.log("[MapResult] ✅ Final values from extracted object:");
     console.log("[MapResult]   - merchant:", finalMerchant);
     console.log("[MapResult]   - total_amount:", finalAmount);
     console.log("[MapResult]   - date:", finalDate);
     
+    // ✅ FALLBACK: If extracted values are null, parse OCR text
+    let useMerchant = finalMerchant;
+    let useAmount = finalAmount;
+    let useDate = finalDate;
+    
+    if (!finalMerchant || !finalAmount || !finalDate) {
+      console.log("[MapResult] ⚠️ Some fields are null, trying to parse OCR text...");
+      const ocrText = result.ocr_text || result.ocrText || "";
+      const parsed = parseOcrText(ocrText);
+      
+      useMerchant = finalMerchant || parsed.merchant;
+      useAmount = finalAmount || parsed.amount;
+      useDate = finalDate || parsed.date;
+      
+      console.log("[MapResult] 🔧 After OCR text parsing:");
+      console.log("[MapResult]   - merchant:", useMerchant);
+      console.log("[MapResult]   - total_amount:", useAmount);
+      console.log("[MapResult]   - date:", useDate);
+    }
+    
+    // ✅ Date fallback: Use current date if still null
+    if (!useDate) {
+      console.warn("[MapResult] ⚠️ WARNING: date is null, using current date as fallback");
+      useDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    }
+    
     const mappedReceipt = {
       id: result.job_id || result.id || result.receipt_id || "",
       user_id: user?.id || "",
-      merchant: finalMerchant,
-      total_amount: finalAmount,
-      date: finalDate,
+      merchant: useMerchant,
+      total_amount: useAmount,
+      date: useDate,
       category: null,
       notes: notes || null,
       ocr_text: result.ocr_text || result.ocrText || "",
@@ -387,16 +488,16 @@ export default function UploadPage() {
     console.log("[MapResult] ✅ Mapped receipt:", mappedReceipt);
     console.log("[MapResult] Full mapped object:", JSON.stringify(mappedReceipt, null, 2));
     
-    // ⚠️ CRITICAL CHECK: Warn if merchant or amount is null
-    if (!finalMerchant) {
-      console.error("[MapResult] ❌ WARNING: merchant is NULL!");
-      console.error("[MapResult] ❌ Check if OCR result has merchant data");
-      console.error("[MapResult] ❌ Tried these fields:", merchantOptions);
+    // ⚠️ CRITICAL CHECK: Warn if final values are still null after parsing
+    if (!useMerchant) {
+      console.error("[MapResult] ❌ WARNING: merchant is STILL NULL after parsing!");
+      console.error("[MapResult] ❌ Backend doesn't provide structured data");
+      console.error("[MapResult] ❌ OCR text parsing also failed");
     }
-    if (!finalAmount) {
-      console.error("[MapResult] ❌ WARNING: total_amount is NULL!");
-      console.error("[MapResult] ❌ Check if OCR result has amount data");
-      console.error("[MapResult] ❌ Tried these fields:", amountOptions);
+    if (!useAmount) {
+      console.error("[MapResult] ❌ WARNING: total_amount is STILL NULL after parsing!");
+      console.error("[MapResult] ❌ Backend doesn't provide structured data");
+      console.error("[MapResult] ❌ OCR text parsing also failed");
     }
     
     console.log("[MapResult] 🎯 RETURNING mapped receipt to ReceiptEditForm");
