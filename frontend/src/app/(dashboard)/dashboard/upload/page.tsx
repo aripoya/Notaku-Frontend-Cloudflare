@@ -387,6 +387,20 @@ export default function UploadPage() {
     console.log("[MapResult] ✅ Mapped receipt:", mappedReceipt);
     console.log("[MapResult] Full mapped object:", JSON.stringify(mappedReceipt, null, 2));
     
+    // ⚠️ CRITICAL CHECK: Warn if merchant or amount is null
+    if (!finalMerchant) {
+      console.error("[MapResult] ❌ WARNING: merchant is NULL!");
+      console.error("[MapResult] ❌ Check if OCR result has merchant data");
+      console.error("[MapResult] ❌ Tried these fields:", merchantOptions);
+    }
+    if (!finalAmount) {
+      console.error("[MapResult] ❌ WARNING: total_amount is NULL!");
+      console.error("[MapResult] ❌ Check if OCR result has amount data");
+      console.error("[MapResult] ❌ Tried these fields:", amountOptions);
+    }
+    
+    console.log("[MapResult] 🎯 RETURNING mapped receipt to ReceiptEditForm");
+    
     return mappedReceipt;
   };
 
