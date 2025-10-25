@@ -52,14 +52,25 @@ export default function ChatPage() {
   }, [user]);
 
   const handleSendMessage = async (message: string) => {
-    if (!message.trim() || isLoading) return;
+    console.log('[Chat] 🚀 Starting handleSendMessage');
+    console.log('[Chat] Message:', message);
+    console.log('[Chat] User:', user?.id);
+    console.log('[Chat] Current messages count:', messages.length);
+    
+    if (!message.trim() || isLoading) {
+      console.log('[Chat] ⚠️ Message empty or already loading, aborting');
+      return;
+    }
 
     // Check AI permission BEFORE sending (skip if API not available)
     if (user?.id) {
       try {
+        console.log('[Chat] Checking AI permission...');
         const permission = await SubscriptionAPI.checkAIPermission(user.id);
+        console.log('[Chat] Permission result:', permission);
         
         if (!permission.allowed) {
+          console.warn('[Chat] ⚠️ AI permission denied:', permission.message);
           setUpgradeReason(permission.message || "AI query limit reached. Please upgrade your plan.");
           setShowUpgradeModal(true);
           toast.error("AI Limit Reached", {
@@ -70,6 +81,7 @@ export default function ChatPage() {
         
         // Update remaining queries
         setAiQueriesRemaining(permission.remaining);
+        console.log('[Chat] ✅ Permission granted, remaining:', permission.remaining);
       } catch (error: any) {
         console.warn("[Chat] AI permission check failed (API not available), allowing chat:", error.message);
         // Continue anyway if check fails - allows app to work without subscription backend
@@ -92,32 +104,68 @@ export default function ChatPage() {
 
     try {
       // Call real backend API
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud"}/api/v1/chat/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // Include cookies for auth
-          body: JSON.stringify({
-            message: message,
-            context: messages.map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
-          }),
-        }
-      );
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+      const endpoint = `${API_URL}/api/v1/chat`; // Remove trailing slash
+      
+      console.log('[Chat] 📡 API Configuration:');
+      console.log('[Chat] API_URL:', API_URL);
+      console.log('[Chat] Endpoint:', endpoint);
+      console.log('[Chat] NEXT_PUBLIC_API_URL env:', process.env.NEXT_PUBLIC_API_URL);
+      
+      const requestBody = {
+        message: message,
+        context: messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+      };
+      
+      console.log('[Chat] Request body:', requestBody);
+      console.log('[Chat] Context length:', requestBody.context.length);
+      
+      console.log('[Chat] Sending fetch request...');
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Include cookies for auth
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('[Chat] ✅ Response received');
+      console.log('[Chat] Response status:', response.status);
+      console.log('[Chat] Response statusText:', response.statusText);
+      console.log('[Chat] Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('[Chat] ❌ Error response body:', errorText);
+        
+        // Handle specific error codes
+        if (response.status === 401) {
+          throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
+        } else if (response.status === 403) {
+          throw new Error('Akses ditolak. Periksa izin Anda.');
+        } else if (response.status === 500) {
+          throw new Error('Server error. Silakan coba lagi.');
+        } else if (response.status === 404) {
+          throw new Error('Endpoint tidak ditemukan. Periksa konfigurasi API.');
+        } else {
+          throw new Error(`API error ${response.status}: ${errorText}`);
+        }
       }
 
       const data = await response.json();
+      console.log('[Chat] 📦 Response data:', data);
+      console.log('[Chat] Response keys:', Object.keys(data));
+      console.log('[Chat] Response.response:', data.response);
+      
       const aiResponse = data.response || "Maaf, tidak ada response dari AI.";
+      console.log('[Chat] ✨ AI Response:', aiResponse);
 
       // Simulate streaming by updating word by word
+      console.log('[Chat] 🎬 Starting streaming animation...');
       const words = aiResponse.split(" ");
       let currentText = "";
 
@@ -134,17 +182,41 @@ export default function ChatPage() {
         });
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
-    } catch (error) {
-      console.error("Chat error:", error);
+      
+      console.log('[Chat] ✅ Streaming complete');
+    } catch (error: any) {
+      console.error('[Chat] ❌ Chat error:', error);
+      console.error('[Chat] Error type:', error.constructor.name);
+      console.error('[Chat] Error message:', error.message);
+      console.error('[Chat] Error stack:', error.stack);
+      
+      // Determine error message
+      let errorMessage = "Maaf, terjadi kesalahan. Silakan coba lagi.";
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet.';
+        console.error('[Chat] Network error - cannot reach server');
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      console.error('[Chat] Final error message shown to user:', errorMessage);
+      
       setMessages((prev) => {
         const newMessages = [...prev];
         newMessages[newMessages.length - 1] = {
           role: "assistant",
-          content: "Maaf, terjadi kesalahan. Silakan coba lagi.",
+          content: errorMessage,
         };
         return newMessages;
       });
+      
+      // Show toast notification
+      toast.error('Chat Error', {
+        description: errorMessage
+      });
     } finally {
+      console.log('[Chat] 🏁 handleSendMessage complete, setting isLoading to false');
       setIsLoading(false);
     }
   };
@@ -183,20 +255,49 @@ export default function ChatPage() {
               Tanya apapun tentang keuangan bisnis Anda
             </p>
           </div>
-          {/* AI Queries Remaining Badge */}
-          {aiQueriesRemaining !== null && (
-            <Badge 
-              variant="outline" 
-              className={`flex items-center gap-1 ${
-                aiQueriesRemaining === 0 ? 'border-red-500 text-red-600' : 
-                aiQueriesRemaining < 5 ? 'border-orange-500 text-orange-600' : 
-                'border-blue-500 text-blue-600'
-              }`}
+          <div className="flex items-center gap-2">
+            {/* Test Connection Button (Debug) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+                const healthEndpoint = `${API_URL}/api/v1/chat/health`;
+                console.log('[Chat] 🔍 Testing connection to:', healthEndpoint);
+                try {
+                  const response = await fetch(healthEndpoint);
+                  const data = await response.json();
+                  console.log('[Chat] ✅ Health check result:', data);
+                  toast.success('Connection OK', {
+                    description: JSON.stringify(data, null, 2)
+                  });
+                } catch (error: any) {
+                  console.error('[Chat] ❌ Health check failed:', error);
+                  toast.error('Connection Failed', {
+                    description: error.message
+                  });
+                }
+              }}
+              className="text-xs"
             >
-              <Zap className="h-3 w-3" />
-              {aiQueriesRemaining === -1 ? 'Unlimited' : `${aiQueriesRemaining} queries left`}
-            </Badge>
-          )}
+              Test API
+            </Button>
+            
+            {/* AI Queries Remaining Badge */}
+            {aiQueriesRemaining !== null && (
+              <Badge 
+                variant="outline" 
+                className={`flex items-center gap-1 ${
+                  aiQueriesRemaining === 0 ? 'border-red-500 text-red-600' : 
+                  aiQueriesRemaining < 5 ? 'border-orange-500 text-orange-600' : 
+                  'border-blue-500 text-blue-600'
+                }`}
+              >
+                <Zap className="h-3 w-3" />
+                {aiQueriesRemaining === -1 ? 'Unlimited' : `${aiQueriesRemaining} queries left`}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
