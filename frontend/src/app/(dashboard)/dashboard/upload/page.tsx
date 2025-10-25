@@ -267,6 +267,8 @@ export default function UploadPage() {
   const mapResultToReceipt = (): Receipt => {
     console.log("[MapResult] 🗺️ Mapping result to Receipt format");
     console.log("[MapResult] Input result:", result);
+    console.log("[MapResult] Result type:", typeof result);
+    console.log("[MapResult] Result keys:", result ? Object.keys(result) : 'null');
     
     if (!result) {
       console.warn("[MapResult] ⚠️ No result data, returning empty receipt");
@@ -288,13 +290,52 @@ export default function UploadPage() {
 
     // Handle different response formats (Premium vs Standard OCR)
     const extracted = result.extracted || {};
+    console.log("[MapResult] 📦 Extracted object:", extracted);
+    console.log("[MapResult] Extracted keys:", Object.keys(extracted));
+    
+    // Try all possible field names
+    const merchantOptions = [
+      extracted.merchant,
+      extracted.merchant_name,
+      extracted.supplier,
+      result.supplier,
+      result.merchant,
+      result.merchant_name
+    ];
+    const amountOptions = [
+      extracted.total_amount,
+      extracted.total,
+      extracted.grand_total,
+      result.total,
+      result.total_amount,
+      result.grand_total
+    ];
+    const dateOptions = [
+      extracted.date,
+      extracted.transaction_date,
+      result.date,
+      result.transaction_date
+    ];
+    
+    console.log("[MapResult] 🔍 Trying merchant from:", merchantOptions);
+    console.log("[MapResult] 🔍 Trying amount from:", amountOptions);
+    console.log("[MapResult] 🔍 Trying date from:", dateOptions);
+    
+    const finalMerchant = merchantOptions.find(v => v != null && v !== "") || null;
+    const finalAmount = amountOptions.find(v => v != null && v !== 0 && v !== "") || null;
+    const finalDate = dateOptions.find(v => v != null && v !== "") || null;
+    
+    console.log("[MapResult] ✅ Final values selected:");
+    console.log("[MapResult]   - merchant:", finalMerchant);
+    console.log("[MapResult]   - total_amount:", finalAmount);
+    console.log("[MapResult]   - date:", finalDate);
     
     const mappedReceipt = {
       id: result.job_id || result.id || result.receipt_id || "",
       user_id: user?.id || "",
-      merchant: extracted.merchant || extracted.merchant_name || result.supplier || result.merchant || null,
-      total_amount: extracted.total_amount || extracted.total || extracted.grand_total || result.total || result.total_amount || null,
-      date: extracted.date || extracted.transaction_date || result.date || null,
+      merchant: finalMerchant,
+      total_amount: finalAmount,
+      date: finalDate,
       category: null,
       notes: notes || null,
       ocr_text: result.ocr_text || result.ocrText || "",
@@ -305,11 +346,7 @@ export default function UploadPage() {
     };
     
     console.log("[MapResult] ✅ Mapped receipt:", mappedReceipt);
-    console.log("[MapResult] Receipt ID:", mappedReceipt.id);
-    console.log("[MapResult] Merchant:", mappedReceipt.merchant);
-    console.log("[MapResult] Total:", mappedReceipt.total_amount);
-    console.log("[MapResult] Date:", mappedReceipt.date);
-    console.log("[MapResult] Confidence:", mappedReceipt.ocr_confidence);
+    console.log("[MapResult] Full mapped object:", JSON.stringify(mappedReceipt, null, 2));
     
     return mappedReceipt;
   };

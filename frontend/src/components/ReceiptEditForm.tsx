@@ -62,23 +62,50 @@ export default function ReceiptEditForm({
 
   // ✅ UPDATE: Populate form fields when initialData changes
   useEffect(() => {
-    console.log('[ReceiptEditForm] 🔄 initialData changed, updating form fields');
-    console.log('[ReceiptEditForm] New initialData:', initialData);
+    console.log('[ReceiptEditForm] 🔄 useEffect triggered - initialData dependency');
+    console.log('[ReceiptEditForm] initialData value:', initialData);
+    console.log('[ReceiptEditForm] initialData type:', typeof initialData);
+    console.log('[ReceiptEditForm] initialData is null?', initialData === null);
+    console.log('[ReceiptEditForm] initialData is undefined?', initialData === undefined);
     
     if (initialData) {
-      console.log('[ReceiptEditForm] Populating form with initialData...');
+      console.log('[ReceiptEditForm] ✅ initialData exists, extracting fields...');
+      console.log('[ReceiptEditForm] Full initialData object:', JSON.stringify(initialData, null, 2));
+      
+      // Extract values with detailed logging
+      const merchantValue = initialData.merchant || "";
+      const amountValue = initialData.total_amount?.toString() || "";
+      const dateValue = formatDateForInput(initialData.date);
+      const categoryValue = initialData.category || "";
+      const notesValue = initialData.notes || "";
+      
+      console.log('[ReceiptEditForm] Extracted values:');
+      console.log('[ReceiptEditForm]   - merchant:', merchantValue, '(type:', typeof merchantValue, ')');
+      console.log('[ReceiptEditForm]   - totalAmount:', amountValue, '(type:', typeof amountValue, ')');
+      console.log('[ReceiptEditForm]   - date:', dateValue, '(type:', typeof dateValue, ')');
+      console.log('[ReceiptEditForm]   - category:', categoryValue);
+      console.log('[ReceiptEditForm]   - notes:', notesValue);
+      
+      // Update state
+      console.log('[ReceiptEditForm] 📝 Setting form state...');
       setReceipt(initialData);
-      setMerchant(initialData.merchant || "");
-      setTotalAmount(initialData.total_amount?.toString() || "");
-      setDate(formatDateForInput(initialData.date));
-      setCategory(initialData.category || "");
-      setNotes(initialData.notes || "");
+      setMerchant(merchantValue);
+      setTotalAmount(amountValue);
+      setDate(dateValue);
+      setCategory(categoryValue);
+      setNotes(notesValue);
       setLoading(false);
       
-      console.log('[ReceiptEditForm] ✅ Form populated:');
-      console.log('[ReceiptEditForm]   - merchant:', initialData.merchant);
-      console.log('[ReceiptEditForm]   - totalAmount:', initialData.total_amount);
-      console.log('[ReceiptEditForm]   - date:', initialData.date);
+      console.log('[ReceiptEditForm] ✅ Form state updated!');
+      
+      // Force a small delay to ensure state is set
+      setTimeout(() => {
+        console.log('[ReceiptEditForm] 🔍 Verifying state after update:');
+        console.log('[ReceiptEditForm]   - Current merchant state should be:', merchantValue);
+        console.log('[ReceiptEditForm]   - Current amount state should be:', amountValue);
+      }, 100);
+    } else {
+      console.log('[ReceiptEditForm] ⚠️ initialData is null/undefined, skipping population');
     }
   }, [initialData]);
   
