@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 const registerSchema = z
   .object({
     name: z.string().min(2, "Nama minimal 2 karakter"),
+    preferredName: z.string().optional(), // ✅ ADD THIS - Optional nickname for chat
     email: z.string().email("Email tidak valid"),
     password: z.string().min(8, "Password minimal 8 karakter"),
     confirmPassword: z.string(),
@@ -49,12 +50,22 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      // ✅ Smart preferred name logic
+      // Priority: 1) provided preferredName, 2) first word of name, 3) username
+      const preferredName = data.preferredName?.trim() || 
+                           data.name.split(' ')[0] || 
+                           data.name.toLowerCase().replace(/\s+/g, '');
+      
+      console.log('[Register] Preferred name:', preferredName);
+      
       // Call auth store register
-      // API expects: email, username, password
+      // API expects: email, username, password, full_name, preferred_name
       await registerUser({
         email: data.email,
         username: data.name.toLowerCase().replace(/\s+/g, ''), // Convert name to username
         password: data.password,
+        full_name: data.name, // ✅ ADD THIS
+        preferred_name: preferredName, // ✅ ADD THIS
       });
 
       // Success
@@ -88,8 +99,26 @@ export default function RegisterPage() {
               {/* Nama Lengkap */}
               <div className="space-y-2">
                 <Label htmlFor="name">Nama Lengkap</Label>
-                <Input id="name" type="text" placeholder="Nama lengkap Anda" {...register("name")} aria-invalid={!!errors.name} />
+                <Input id="name" type="text" placeholder="Ari Wibowo" {...register("name")} aria-invalid={!!errors.name} />
                 {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+              </div>
+
+              {/* Nama Panggilan - NEW! */}
+              <div className="space-y-2">
+                <Label htmlFor="preferredName">
+                  Nama Panggilan <span className="text-xs text-muted-foreground">(opsional)</span>
+                </Label>
+                <Input 
+                  id="preferredName" 
+                  type="text" 
+                  placeholder="Ari" 
+                  {...register("preferredName")} 
+                  aria-invalid={!!errors.preferredName} 
+                />
+                <p className="text-xs text-muted-foreground">
+                  💬 Diajeng akan memanggil Anda dengan nama ini saat chat
+                </p>
+                {errors.preferredName && <p className="text-sm text-red-600">{errors.preferredName.message}</p>}
               </div>
 
               {/* Email */}

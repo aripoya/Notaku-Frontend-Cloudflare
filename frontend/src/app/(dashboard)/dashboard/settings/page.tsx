@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react"; // ✅ ADD THIS
 import { Save, Upload, Key, LogOut, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,11 +22,71 @@ import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
+  
+  // ✅ ADD STATE FOR PROFILE FIELDS
+  const [fullName, setFullName] = useState("");
+  const [preferredName, setPreferredName] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  // ✅ LOAD PROFILE DATA ON MOUNT
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+        const response = await fetch(`${API_URL}/api/v1/user/profile`, {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[Settings] Profile data:', data);
+          setFullName(data.full_name || "");
+          setPreferredName(data.preferred_name || "");
+        }
+      } catch (error) {
+        console.error("[Settings] Failed to load profile:", error);
+      }
+    };
+    
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
-  const handleSaveProfile = () => {
-    toast.success("Profil berhasil diperbarui!", {
-      description: "Perubahan Anda telah disimpan",
-    });
+  // ✅ UPDATE PROFILE HANDLER
+  const handleSaveProfile = async () => {
+    setLoading(true);
+    
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+      const response = await fetch(`${API_URL}/api/v1/user/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          full_name: fullName,
+          preferred_name: preferredName,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[Settings] Profile updated:', data);
+        toast.success("Profil berhasil diperbarui!", {
+          description: "Perubahan Anda telah disimpan",
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to update profile");
+      }
+    } catch (error: any) {
+      console.error('[Settings] Update error:', error);
+      toast.error("Gagal memperbarui profil", {
+        description: error.message || "Terjadi kesalahan"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveBusiness = () => {
@@ -94,24 +155,28 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Name */}
+          {/* Username (readonly) */}
           <div>
-            <Label htmlFor="name">Nama Lengkap</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="name"
-              defaultValue={user?.name || "Demo User"}
-              className="mt-1"
+              id="username"
+              value={user?.username || ""}
+              className="mt-1 bg-muted"
+              disabled
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Username tidak dapat diubah
+            </p>
           </div>
 
-          {/* Email */}
+          {/* Email (readonly) */}
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
-              defaultValue={user?.email || "demo@example.com"}
-              className="mt-1"
+              value={user?.email || ""}
+              className="mt-1 bg-muted"
               disabled
             />
             <p className="text-xs text-muted-foreground mt-1">
@@ -119,20 +184,36 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          {/* Phone */}
+          {/* Full Name (editable) */}
           <div>
-            <Label htmlFor="phone">Nomor Telepon</Label>
+            <Label htmlFor="fullName">Nama Lengkap</Label>
             <Input
-              id="phone"
-              type="tel"
-              placeholder="+62 812-3456-7890"
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Ari Wibowo"
               className="mt-1"
             />
           </div>
 
-          <Button onClick={handleSaveProfile}>
+          {/* Preferred Name (editable) - MAIN FEATURE! */}
+          <div className="space-y-2">
+            <Label htmlFor="preferredName">Nama Panggilan</Label>
+            <Input
+              id="preferredName"
+              value={preferredName}
+              onChange={(e) => setPreferredName(e.target.value)}
+              placeholder="Ari"
+              className="mt-1"
+            />
+            <p className="text-xs text-muted-foreground">
+              💬 Diajeng akan memanggil Anda dengan nama ini saat chat
+            </p>
+          </div>
+
+          <Button onClick={handleSaveProfile} disabled={loading}>
             <Save className="mr-2 h-4 w-4" />
-            Simpan Perubahan
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </Button>
         </CardContent>
       </Card>

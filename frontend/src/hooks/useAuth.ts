@@ -7,6 +7,8 @@ interface User {
   email: string;
   username?: string;
   name?: string;
+  full_name?: string;
+  preferred_name?: string; // ✅ ADD THIS - Used by chat AI for personalization
   tier?: "basic" | "starter" | "pro";
   businessName?: string;
   createdAt?: string;
