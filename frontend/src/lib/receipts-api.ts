@@ -122,12 +122,42 @@ export class ReceiptsAPI {
     console.log('[ReceiptsAPI] 📝 Creating new receipt');
     console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
     console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts`);
-    console.log('[ReceiptsAPI] Data:', data);
+    console.log('[ReceiptsAPI] Original frontend data:', data);
     
-    return request<Receipt>(`${API_PREFIX}/receipts`, {
+    // ✅ MAP FRONTEND FIELDS TO BACKEND FIELDS
+    const backendData = {
+      merchant_name: data.merchant,           // merchant → merchant_name
+      transaction_date: data.date,            // date → transaction_date
+      total_amount: data.total_amount,        // ✅ same
+      currency: "IDR",                        // ✅ add currency
+      category: data.category || null,        // ✅ same
+      notes: data.notes || null,              // ✅ same
+      user_id: data.user_id,                  // ✅ same
+      ocr_text: data.ocr_text || "",          // ✅ same
+      ocr_confidence: data.ocr_confidence || 0, // ✅ same
+      image_path: data.image_path || "",      // ✅ same
+    };
+    
+    console.log('[ReceiptsAPI] ✅ Mapped to backend format:', backendData);
+    console.log('[ReceiptsAPI] Backend data JSON:', JSON.stringify(backendData, null, 2));
+    
+    const response = await request<any>(`${API_PREFIX}/receipts`, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(backendData),
     });
+    
+    console.log('[ReceiptsAPI] Backend response:', response);
+    
+    // ✅ MAP BACKEND RESPONSE BACK TO FRONTEND FORMAT
+    const mappedReceipt: Receipt = {
+      ...response,
+      merchant: response.merchant_name || response.merchant,     // merchant_name → merchant
+      date: response.transaction_date || response.date,          // transaction_date → date
+    };
+    
+    console.log('[ReceiptsAPI] ✅ Mapped response to frontend format:', mappedReceipt);
+    
+    return mappedReceipt;
   }
 
   /**
@@ -141,17 +171,43 @@ export class ReceiptsAPI {
     console.log('[ReceiptsAPI] Receipt ID:', receiptId);
     console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
     console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts/${receiptId}`);
-    console.log('[ReceiptsAPI] Data:', data);
+    console.log('[ReceiptsAPI] Original frontend data:', data);
     
     if (!receiptId || receiptId === 'undefined') {
       console.error('[ReceiptsAPI] ❌ ERROR: Invalid receiptId:', receiptId);
       throw new ReceiptsAPIError('Invalid receipt ID', 400, 'INVALID_ID');
     }
     
-    return request<Receipt>(`${API_PREFIX}/receipts/${receiptId}`, {
+    // ✅ MAP FRONTEND FIELDS TO BACKEND FIELDS
+    const backendData = {
+      merchant_name: data.merchant,           // merchant → merchant_name
+      transaction_date: data.date,            // date → transaction_date
+      total_amount: data.total_amount,        // ✅ same
+      currency: "IDR",                        // ✅ add currency
+      category: data.category || null,        // ✅ same
+      notes: data.notes || null,              // ✅ same
+    };
+    
+    console.log('[ReceiptsAPI] ✅ Mapped to backend format:', backendData);
+    console.log('[ReceiptsAPI] Backend data JSON:', JSON.stringify(backendData, null, 2));
+    
+    const response = await request<any>(`${API_PREFIX}/receipts/${receiptId}`, {
       method: "PUT",
-      body: JSON.stringify(data),
+      body: JSON.stringify(backendData),
     });
+    
+    console.log('[ReceiptsAPI] Backend response:', response);
+    
+    // ✅ MAP BACKEND RESPONSE BACK TO FRONTEND FORMAT
+    const mappedReceipt: Receipt = {
+      ...response,
+      merchant: response.merchant_name || response.merchant,     // merchant_name → merchant
+      date: response.transaction_date || response.date,          // transaction_date → date
+    };
+    
+    console.log('[ReceiptsAPI] ✅ Mapped response to frontend format:', mappedReceipt);
+    
+    return mappedReceipt;
   }
 
   /**
