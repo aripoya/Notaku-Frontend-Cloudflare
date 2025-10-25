@@ -111,9 +111,17 @@ export default function ReceiptEditForm({
   
   // Fetch receipt data if not provided
   useEffect(() => {
+    console.log('[ReceiptEditForm] 🔍 Fetch useEffect triggered');
+    console.log('[ReceiptEditForm] Should fetch? initialData:', initialData ? 'EXISTS' : 'NULL');
+    console.log('[ReceiptEditForm] receiptId:', receiptId);
+    
     if (!initialData && receiptId) {
-      console.log('[ReceiptEditForm] No initialData, fetching receipt from API...');
+      console.log('[ReceiptEditForm] ⚠️ No initialData, fetching receipt from API...');
       fetchReceipt();
+    } else if (initialData) {
+      console.log('[ReceiptEditForm] ✅ initialData exists, SKIPPING fetch');
+    } else {
+      console.log('[ReceiptEditForm] ⚠️ No receiptId, cannot fetch');
     }
   }, [receiptId, initialData]);
 
@@ -151,9 +159,16 @@ export default function ReceiptEditForm({
     } catch (error: any) {
       console.error("[ReceiptEditForm] ❌ Error fetching receipt:", error);
       console.error("[ReceiptEditForm] Error details:", error.message, error.statusCode);
-      toast.error("Failed to load receipt", {
-        description: error.message || "Please try again",
-      });
+      
+      // ⚠️ DON'T show error toast if we have initialData
+      // This means we're in OCR flow and don't need to fetch
+      if (!initialData) {
+        toast.error("Failed to load receipt", {
+          description: error.message || "Please try again",
+        });
+      } else {
+        console.log("[ReceiptEditForm] ℹ️ Fetch failed but we have initialData, ignoring error");
+      }
     } finally {
       setLoading(false);
     }
@@ -328,6 +343,7 @@ export default function ReceiptEditForm({
 
   // Loading state
   if (loading) {
+    console.log('[ReceiptEditForm] 🔄 Rendering loading state');
     return (
       <Card className="w-full max-w-4xl mx-auto">
         <CardContent className="p-12">
@@ -340,7 +356,10 @@ export default function ReceiptEditForm({
     );
   }
 
-  if (!receipt) {
+  // ⚠️ IMPORTANT: Don't show "not found" if we have initialData
+  // In OCR flow, receipt might be null but initialData has the data
+  if (!receipt && !initialData) {
+    console.log('[ReceiptEditForm] ❌ No receipt and no initialData, showing not found');
     return (
       <Card className="w-full max-w-4xl mx-auto">
         <CardContent className="p-12">
@@ -356,6 +375,13 @@ export default function ReceiptEditForm({
       </Card>
     );
   }
+  
+  console.log('[ReceiptEditForm] ✅ Rendering form with data');
+  console.log('[ReceiptEditForm] Current form values:', { merchant, totalAmount, date });
+
+  // Use receipt or initialData as fallback
+  const displayData = receipt || initialData;
+  console.log('[ReceiptEditForm] Display data source:', receipt ? 'receipt' : 'initialData');
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
@@ -367,7 +393,7 @@ export default function ReceiptEditForm({
             Review and correct the extracted information
           </p>
         </div>
-        {receipt.is_edited && (
+        {displayData?.is_edited && (
           <Badge variant="secondary" className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
             Edited
@@ -387,9 +413,9 @@ export default function ReceiptEditForm({
                 className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => setShowImageModal(true)}
               >
-                {receipt.image_path ? (
+                {displayData?.image_path ? (
                   <img
-                    src={receipt.image_path}
+                    src={displayData.image_path}
                     alt="Receipt"
                     className="w-full h-full object-contain"
                   />
@@ -410,24 +436,24 @@ export default function ReceiptEditForm({
                 <div className="flex items-center justify-between text-sm mb-2">
                   <span className="text-muted-foreground">OCR Confidence</span>
                   <Badge 
-                    variant={receipt.ocr_confidence >= 0.8 ? "default" : "secondary"}
+                    variant={(displayData?.ocr_confidence || 0) >= 0.8 ? "default" : "secondary"}
                     className={
-                      receipt.ocr_confidence >= 0.8
+                      (displayData?.ocr_confidence || 0) >= 0.8
                         ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                         : "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
                     }
                   >
-                    {(receipt.ocr_confidence * 100).toFixed(0)}%
+                    {((displayData?.ocr_confidence || 0) * 100).toFixed(0)}%
                   </Badge>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all ${
-                      receipt.ocr_confidence >= 0.8
+                      (displayData?.ocr_confidence || 0) >= 0.8
                         ? "bg-green-500"
                         : "bg-orange-500"
                     }`}
-                    style={{ width: `${receipt.ocr_confidence * 100}%` }}
+                    style={{ width: `${(displayData?.ocr_confidence || 0) * 100}%` }}
                   />
                 </div>
               </div>
@@ -460,7 +486,7 @@ export default function ReceiptEditForm({
                       Raw OCR Text
                     </label>
                     <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-900 rounded-md text-xs max-h-40 overflow-y-auto">
-                      {receipt.ocr_text || "No OCR text available"}
+                      {displayData?.ocr_text || "No OCR text available"}
                     </div>
                   </div>
                 </div>
@@ -690,7 +716,7 @@ export default function ReceiptEditForm({
               <X className="h-6 w-6" />
             </Button>
             <img
-              src={receipt.image_path}
+              src={displayData?.image_path || ""}
               alt="Receipt Full Size"
               className="max-w-full max-h-[90vh] object-contain"
               onClick={(e) => e.stopPropagation()}
