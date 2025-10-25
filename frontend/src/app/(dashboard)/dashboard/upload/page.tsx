@@ -17,6 +17,8 @@ import { formatIndonesianDate, formatLongDate, formatCurrency } from "@/lib/form
 import { SubscriptionAPI } from "@/lib/subscription-api";
 import { QuotaDisplay } from "@/components/QuotaDisplay";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import ReceiptEditForm from "@/components/ReceiptEditForm";
+import type { Receipt } from "@/types/receipt";
 
 type UploadStage = "select" | "preview" | "uploading" | "processing" | "result";
 
@@ -51,7 +53,6 @@ export default function UploadPage() {
         setIsPremiumUser(canUse);
       } catch (error) {
         console.error("[Upload] Error checking premium status:", error);
-        // Fallback to user object check
         if (user && 'is_premium' in user) {
           setIsPremiumUser((user as any).is_premium === true);
         }
@@ -81,13 +82,11 @@ export default function UploadPage() {
 
   // Handle file selection
   const handleFileSelect = (file: File) => {
-    // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error("File terlalu besar", { description: "Maksimal ukuran file 10MB" });
       return;
     }
 
-    // Validate file type
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       toast.error("Format file tidak valid", { description: "Hanya menerima .jpg, .png, .webp" });
       return;
@@ -99,151 +98,159 @@ export default function UploadPage() {
     setError("");
   };
 
-  // Handle drag & drop
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) handleFileSelect(file);
   };
 
-  // Handle upload
+  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileSelect(file);
+  };
+
   const handleUpload = async () => {
-    if (!selectedFile || !user?.id) return;
+    console.log("[Upload] 🚀 Starting upload process");
+    console.log("[Upload] Selected file:", selectedFile?.name);
+    console.log("[Upload] User ID:", user?.id);
+    console.log("[Upload] Premium OCR:", usePremiumOCR);
+    
+    if (!selectedFile || !user) {
+      console.error("[Upload] ❌ Missing file or user");
+      return;
+    }
 
     try {
-      setStage("uploading");
-      setProgress(0);
-      setError("");
+      console.log("[Upload] Checking OCR permission...");
+      const hasPermission = await SubscriptionAPI.checkOCRPermission(
+        user.id,
+        usePremiumOCR ? "google" : "paddle"
+      );
+      console.log("[Upload] Permission check result:", hasPermission);
 
-      // Determine OCR provider
-      const provider = usePremiumOCR ? "google" : "paddle";
-      
-      // Check permission BEFORE upload (skip if API not available)
-      try {
-        console.log("[Upload] Checking permission for provider:", provider);
-        const permission = await SubscriptionAPI.checkOCRPermission(user.id, provider);
-        
-        if (!permission.allowed) {
-          console.log("[Upload] Permission denied:", permission.message);
-          setUpgradeReason(permission.message || "Quota limit reached. Please upgrade your plan.");
-          setShowUpgradeModal(true);
-          setStage("select");
-          toast.error("Upload Blocked", {
-            description: permission.message || "Quota limit reached"
-          });
-          return;
-        }
-        
-        console.log("[Upload] Permission granted, proceeding with upload");
-      } catch (permError: any) {
-        console.warn("[Upload] Permission check failed (API not available), allowing upload:", permError.message);
-        // Continue with upload even if permission check fails
-        // This allows the app to work without subscription backend
-      }
-
-      // Check if using Premium OCR
-      if (usePremiumOCR) {
-        console.log("[OCR] Using Premium OCR (Google Vision)");
-        
-        // Get auth token
-        const token = localStorage.getItem('auth_token');
-        
-        // Upload to Premium OCR API
-        console.log("[OCR] Uploading file to Premium OCR:", selectedFile.name);
-        const premiumResult = await OCRApiClient.uploadPremiumReceipt(selectedFile, token || undefined);
-        
-        console.log("[OCR] Premium OCR result:", premiumResult);
-        setProgress(100);
-        
-        // Premium OCR returns result immediately
-        setStage("result");
-        setResult({
-          id: premiumResult.job_id,
-          supplier: premiumResult.extracted?.merchant || "Tidak Terdeteksi",
-          date: premiumResult.extracted?.date || new Date().toISOString(),
-          total: premiumResult.extracted?.total_amount || 0,
-          items: [],
-          confidence: premiumResult.ocr_confidence || 0,
-          ocrText: premiumResult.ocr_text,
-          rawData: premiumResult,
-          isPremium: true,
-          ocrMethod: 'google_vision'
-        });
-        
-        toast.success("Berhasil!", { 
-          description: `Premium OCR selesai dengan confidence ${Math.round((premiumResult.ocr_confidence || 0) * 100)}%` 
-        });
+      if (!hasPermission) {
+        console.warn("[Upload] ⚠️ Permission denied");
+        setUpgradeReason("OCR quota habis! Upgrade untuk melanjutkan.");
+        setShowUpgradeModal(true);
         return;
       }
+    } catch (error) {
+      console.error("[Upload] Error checking permission:", error);
+    }
 
-      // Standard OCR flow
-      console.log("[OCR] Using Standard OCR");
-      console.log("[OCR] Uploading file:", selectedFile.name);
-      const uploadResult = await OCRApiClient.uploadReceipt(selectedFile, user?.id);
+    console.log("[Upload] Setting stage to 'uploading'");
+    setStage("uploading");
+    setProgress(0);
+    setError("");
+
+    try {
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => Math.min(prev + 10, 90));
+      }, 200);
+
+      console.log("[Upload] Calling OCRApiClient.uploadReceipt...");
+      console.log("[Upload] Using provider:", usePremiumOCR ? "google (premium)" : "paddle (standard)");
       
-      console.log("[OCR] Upload response:", uploadResult);
-      setProgress(100);
-      setJobId(uploadResult.job_id);
-
-      // Start processing
-      setStage("processing");
-      toast.info("Memproses...", { description: "Menganalisa nota Anda" });
-
-      // Poll for result with status updates
-      await OCRApiClient.pollStatus(
-        uploadResult.job_id,
-        (status) => {
-          console.log("[OCR] Status update:", status);
-          
-          // Update processing text based on status
-          if (status.status === "started") {
-            setProcessingText("Menganalisa nota...");
-          } else if (status.status === "queued") {
-            setProcessingText("Menunggu antrian...");
-          }
-        },
-        1000 // Poll every 1 second
-      );
-
-      // Get final result
-      const ocrResult = await OCRApiClient.getResult(uploadResult.job_id);
-      console.log("[OCR] Final result:", ocrResult);
-      console.log("[OCR] Extracted data:", ocrResult.extracted);
-      console.log("[OCR] Available keys:", Object.keys(ocrResult));
+      let response: any;
       
-      // Transform OCR result to match UI format
-      const extractedData = ocrResult.extracted || {};
-      console.log("[OCR] Extracted keys:", Object.keys(extractedData));
-      console.log("[OCR] Merchant:", extractedData.merchant, extractedData.merchant_name);
-      console.log("[OCR] Date:", extractedData.date, extractedData.transaction_date);
-      console.log("[OCR] Total:", extractedData.total_amount, extractedData.total, extractedData.grand_total);
-      
-      const transformedResult = {
-        id: uploadResult.job_id,
-        supplier: extractedData.merchant || extractedData.merchant_name || "N/A",
-        date: extractedData.date || extractedData.transaction_date || new Date().toISOString(),
-        total: extractedData.total_amount || extractedData.total || extractedData.grand_total || 0,
-        items: [], // OCR API doesn't provide line items yet
-        confidence: ocrResult.ocr_confidence || 0,
-        ocrText: ocrResult.ocr_text,
-        rawData: ocrResult,
-      };
+      if (usePremiumOCR) {
+        // Use Premium OCR (Google Vision)
+        const token = localStorage.getItem('auth_token');
+        console.log("[Upload] Using Premium OCR with token:", token ? 'present' : 'missing');
+        response = await OCRApiClient.uploadPremiumReceipt(selectedFile, token || undefined);
+        console.log("[Upload] ✅ Premium OCR response:", response);
+        
+        // Premium OCR returns result immediately
+        clearInterval(progressInterval);
+        setProgress(100);
+        
+        setResult(response);
+        setStage("result");
+        toast.success("Nota berhasil diproses!");
+      } else {
+        // Use Standard OCR (PaddleOCR)
+        response = await OCRApiClient.uploadReceipt(selectedFile, user.id);
+        console.log("[Upload] ✅ Upload response received:", response);
+        console.log("[Upload] Response status:", response.status);
+        console.log("[Upload] Response keys:", Object.keys(response));
 
-      setResult(transformedResult);
-      setStage("result");
-      toast.success("Berhasil!", { 
-        description: `Nota berhasil diproses (Confidence: ${Math.round((ocrResult.ocr_confidence || 0) * 100)}%)` 
-      });
+        clearInterval(progressInterval);
+        setProgress(100);
+        console.log("[Upload] Progress set to 100%");
 
+        // Standard OCR returns job_id for polling
+        console.log("[Upload] Starting poll for job:", response.job_id);
+        setJobId(response.job_id);
+        setStage("processing");
+        pollJobStatus(response.job_id);
+      }
     } catch (err: any) {
-      console.error("[OCR] Upload error:", err);
-      setError(err?.message || "Terjadi kesalahan saat upload");
-      setStage("select");
-      toast.error("Upload gagal", { description: err?.message });
+      console.error("[Upload] ❌ Upload error:", err);
+      console.error("[Upload] Error message:", err.message);
+      console.error("[Upload] Error stack:", err.stack);
+      setError(err.message || "Gagal mengupload nota");
+      setStage("preview");
+      toast.error("Upload gagal", { description: err.message });
     }
   };
 
-  // Reset
+  const pollJobStatus = async (jobId: string) => {
+    console.log("[Poll] 🔄 Starting to poll job status for:", jobId);
+    const maxAttempts = 60;
+    let attempts = 0;
+
+    const poll = setInterval(async () => {
+      attempts++;
+      console.log(`[Poll] Attempt ${attempts}/${maxAttempts}`);
+      
+      if (attempts > maxAttempts) {
+        console.error("[Poll] ❌ Timeout reached");
+        clearInterval(poll);
+        setError("Timeout: Proses OCR memakan waktu terlalu lama");
+        setStage("preview");
+        toast.error("Timeout", { description: "Silakan coba lagi" });
+        return;
+      }
+
+      try {
+        const status = await OCRApiClient.checkStatus(jobId);
+        console.log(`[Poll] Status response:`, status);
+        console.log(`[Poll] Status value:`, status.status);
+        
+        if (status.status === "finished") {
+          console.log("[Poll] ✅ Job finished! Fetching result...");
+          clearInterval(poll);
+          
+          const resultData = await OCRApiClient.getResult(jobId);
+          console.log("[Poll] ✨ Result data received:", resultData);
+          console.log("[Poll] Result keys:", Object.keys(resultData));
+          console.log("[Poll] Result job_id:", resultData.job_id);
+          console.log("[Poll] Result extracted:", resultData.extracted);
+          console.log("[Poll] Result ocr_text:", resultData.ocr_text);
+          console.log("[Poll] Result ocr_confidence:", resultData.ocr_confidence);
+          
+          setResult(resultData);
+          console.log("[Poll] Result state updated, setting stage to 'result'");
+          setStage("result");
+          console.log("[Poll] Stage set to 'result'");
+          toast.success("Nota berhasil diproses!");
+        } else if (status.status === "failed") {
+          console.error("[Poll] ❌ Job failed");
+          clearInterval(poll);
+          setError("OCR processing gagal");
+          setStage("preview");
+          toast.error("Processing gagal", { description: "Silakan coba lagi" });
+        } else {
+          console.log(`[Poll] Job still processing, status: ${status.status}`);
+        }
+      } catch (err: any) {
+        console.error("[Poll] ❌ Error polling status:", err);
+        clearInterval(poll);
+        setError(err.message || "Gagal memeriksa status");
+        setStage("preview");
+      }
+    }, 1000);
+  };
+
   const handleReset = () => {
     setStage("select");
     setSelectedFile(null);
@@ -253,407 +260,304 @@ export default function UploadPage() {
     setJobId("");
     setResult(null);
     setError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+  };
+
+  const mapResultToReceipt = (): Receipt => {
+    console.log("[MapResult] 🗺️ Mapping result to Receipt format");
+    console.log("[MapResult] Input result:", result);
+    
+    if (!result) {
+      console.warn("[MapResult] ⚠️ No result data, returning empty receipt");
+      return {
+        id: "",
+        user_id: user?.id || "",
+        merchant: null,
+        total_amount: null,
+        date: null,
+        category: null,
+        notes: null,
+        ocr_text: "",
+        ocr_confidence: 0,
+        image_path: "",
+        is_edited: false,
+        created_at: new Date().toISOString(),
+      };
+    }
+
+    // Handle different response formats (Premium vs Standard OCR)
+    const extracted = result.extracted || {};
+    
+    const mappedReceipt = {
+      id: result.job_id || result.id || result.receipt_id || "",
+      user_id: user?.id || "",
+      merchant: extracted.merchant || extracted.merchant_name || result.supplier || result.merchant || null,
+      total_amount: extracted.total_amount || extracted.total || extracted.grand_total || result.total || result.total_amount || null,
+      date: extracted.date || extracted.transaction_date || result.date || null,
+      category: null,
+      notes: notes || null,
+      ocr_text: result.ocr_text || result.ocrText || "",
+      ocr_confidence: result.ocr_confidence || result.confidence || 0,
+      image_path: result.image_path || previewUrl || "",
+      is_edited: false,
+      created_at: new Date().toISOString(),
+    };
+    
+    console.log("[MapResult] ✅ Mapped receipt:", mappedReceipt);
+    console.log("[MapResult] Receipt ID:", mappedReceipt.id);
+    console.log("[MapResult] Merchant:", mappedReceipt.merchant);
+    console.log("[MapResult] Total:", mappedReceipt.total_amount);
+    console.log("[MapResult] Date:", mappedReceipt.date);
+    console.log("[MapResult] Confidence:", mappedReceipt.ocr_confidence);
+    
+    return mappedReceipt;
+  };
+
+  const handleSaveReceipt = (receipt: Receipt) => {
+    toast.success("Nota berhasil disimpan!", {
+      description: `${receipt.merchant || "Nota"} telah tersimpan`,
+    });
+    
+    setTimeout(() => {
+      handleReset();
+    }, 1500);
+  };
+
+  const handleCancelEdit = () => {
+    handleReset();
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Upload Nota</h1>
-          <p className="text-muted-foreground mt-1">Ambil foto atau upload file nota Anda</p>
+    <div className="container mx-auto py-6 max-w-4xl">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Upload Nota</h1>
+        <p className="text-muted-foreground">
+          Foto atau upload nota belanja Anda untuk otomatis mencatat pengeluaran
+        </p>
+      </div>
+
+      {user && (
+        <div className="mb-6">
+          <QuotaDisplay userId={user.id} />
         </div>
+      )}
+
+      <div className="mb-6">
         <OcrStatusIndicator />
       </div>
 
-      {/* Quota Display */}
-      {user?.id && (
-        <QuotaDisplay 
-          userId={user.id} 
-          onUpgradeClick={() => setShowUpgradeModal(true)}
-        />
-      )}
-
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Upgrade Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        currentTier={user && 'subscription_tier' in user ? (user as any).subscription_tier : 'free'}
         reason={upgradeReason}
       />
 
-      {/* Select Stage */}
       {stage === "select" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Camera Capture */}
-          <Card className="hover:shadow-lg transition-shadow">
+        <Card className="p-8">
+          <div className="space-y-6">
+            <div className="text-center">
+              <FileImage className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Pilih Nota</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Ambil foto atau upload gambar nota Anda
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-32 flex flex-col gap-2"
+                onClick={() => cameraInputRef.current?.click()}
+              >
+                <Camera className="h-8 w-8" />
+                <span>Ambil Foto</span>
+              </Button>
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleCameraCapture}
+              />
+
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-32 flex flex-col gap-2"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-8 w-8" />
+                <span>Upload File</span>
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            <div className="text-center text-xs text-muted-foreground">
+              Format: JPG, PNG, WEBP • Maksimal: 10MB
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {stage === "preview" && (
+        <div className="space-y-4">
+          <Card className="overflow-hidden">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5" />
-                Ambil Foto
+              <CardTitle className="flex items-center justify-between">
+                <span>Preview Nota</span>
+                <Button variant="ghost" size="sm" onClick={handleReset}>
+                  <X className="h-4 w-4" />
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg">
-                <Camera className="h-16 w-16 text-slate-400 mb-4" />
-                <p className="text-sm text-muted-foreground text-center mb-4">
-                  Gunakan kamera perangkat Anda
-                </p>
-                <input
-                  ref={cameraInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileSelect(file);
-                  }}
+              <div className="relative w-full max-h-96 overflow-hidden rounded-lg border">
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full h-auto object-contain"
                 />
-                <Button onClick={() => cameraInputRef.current?.click()} className="w-full">
-                  <Camera className="mr-2 h-4 w-4" />
-                  Buka Kamera
+              </div>
+
+              {isPremiumUser && (
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-amber-600" />
+                    <div>
+                      <p className="font-semibold text-amber-900">Google Vision API</p>
+                      <p className="text-xs text-amber-700">Akurasi lebih tinggi untuk nota Anda</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usePremiumOCR}
+                      onChange={(e) => setUsePremiumOCR(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                  </label>
+                </div>
+              )}
+
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleReset} className="flex-1">
+                  <X className="mr-2 h-4 w-4" />
+                  Batal
+                </Button>
+                <Button onClick={handleUpload} className="flex-1">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Proses Nota
                 </Button>
               </div>
             </CardContent>
           </Card>
-
-          {/* File Upload */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Upload File
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div
-                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer hover:border-blue-500 transition-colors"
-                onDrop={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <FileImage className="h-16 w-16 text-slate-400 mb-4" />
-                <p className="text-sm font-medium mb-1">Drag & drop file di sini</p>
-                <p className="text-xs text-muted-foreground mb-4">atau klik untuk pilih file</p>
-                <p className="text-xs text-muted-foreground">JPG, PNG, WEBP (max 10MB)</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileSelect(file);
-                  }}
-                />
-              </div>
-            </CardContent>
-          </Card>
         </div>
       )}
 
-      {/* Preview Stage */}
-      {stage === "preview" && previewUrl && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Preview Nota</CardTitle>
-              <Button variant="ghost" size="sm" onClick={handleReset}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative">
-              <img src={previewUrl} alt="Preview" className="w-full max-h-96 object-contain rounded-lg border" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="notes">Catatan (Opsional)</Label>
-              <Input
-                id="notes"
-                placeholder="Tambahkan catatan untuk nota ini..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </div>
-
-            {/* Premium OCR Toggle */}
-            <div className="space-y-3 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-amber-600" />
-                  <Label htmlFor="premium-ocr" className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                    Premium OCR (Google Vision)
-                  </Label>
-                  {isPremiumUser && (
-                    <Badge variant="default" className="bg-amber-600 hover:bg-amber-700">
-                      <Crown className="h-3 w-3 mr-1" />
-                      Premium
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="premium-ocr"
-                    type="checkbox"
-                    checked={usePremiumOCR}
-                    onChange={(e) => {
-                      if (!isPremiumUser && e.target.checked) {
-                        toast.error("Premium Required", {
-                          description: "Upgrade to Premium to use Google Vision OCR"
-                        });
-                        return;
-                      }
-                      setUsePremiumOCR(e.target.checked);
-                    }}
-                    disabled={!isPremiumUser}
-                    className="w-4 h-4 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 dark:focus:ring-amber-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-amber-700 dark:text-amber-300">
-                {isPremiumUser ? (
-                  usePremiumOCR ? (
-                    <>✨ Menggunakan Google Vision API untuk akurasi maksimal dan hasil instan</>
-                  ) : (
-                    <>Aktifkan untuk hasil OCR yang lebih akurat dan cepat</>
-                  )
-                ) : (
-                  <>🔒 Upgrade ke Premium untuk akses Google Vision OCR dengan akurasi hingga 99%</>
-                )}
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleUpload} 
-                className={`flex-1 ${usePremiumOCR ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700' : ''}`}
-              >
-                {usePremiumOCR ? (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Upload dengan Premium OCR
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload & Proses
-                  </>
-                )}
-              </Button>
-              <Button variant="outline" onClick={handleReset}>
-                Batal
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Uploading Stage */}
       {stage === "uploading" && (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto" />
-              <h3 className="text-lg font-semibold">Mengunggah...</h3>
-              <Progress value={progress} className="w-full max-w-md mx-auto" />
+        <Card className="p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Mengupload Nota...</h3>
+              <Progress value={progress} className="mb-2" />
               <p className="text-sm text-muted-foreground">{progress}%</p>
             </div>
-          </CardContent>
+          </div>
         </Card>
       )}
 
-      {/* Processing Stage */}
       {stage === "processing" && (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-16 w-16 animate-spin text-blue-600 mx-auto" />
-              <h3 className="text-xl font-semibold">{processingText}</h3>
-              <p className="text-sm text-muted-foreground">Mohon tunggu, ini mungkin memakan waktu beberapa detik...</p>
+        <Card className="p-8">
+          <div className="text-center space-y-4">
+            <div className="relative">
+              <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+              <Sparkles className="absolute top-0 right-1/3 h-4 w-4 text-yellow-500 animate-pulse" />
             </div>
-          </CardContent>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">{processingText}</h3>
+              <p className="text-sm text-muted-foreground">
+                {usePremiumOCR ? "Menggunakan Google Vision API" : "Menggunakan PaddleOCR"}
+              </p>
+            </div>
+          </div>
         </Card>
       )}
 
-      {/* Result Stage */}
       {stage === "result" && result && (
         <div className="space-y-4">
-          {/* Success Header */}
-          <Card className={`p-4 ${result.isPremium ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200' : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {result.isPremium ? (
-                  <Sparkles className="h-6 w-6 text-amber-600" />
-                ) : (
-                  <Check className="h-6 w-6 text-green-600" />
-                )}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className={`text-xl font-semibold ${result.isPremium ? 'text-amber-900' : 'text-green-900'}`}>
-                      Nota Berhasil Diproses!
-                    </h2>
-                    {result.isPremium && (
-                      <Badge className="bg-amber-600 hover:bg-amber-700">
-                        <Crown className="h-3 w-3 mr-1" />
-                        Premium OCR
-                      </Badge>
-                    )}
-                  </div>
-                  <p className={`text-sm ${result.isPremium ? 'text-amber-700' : 'text-green-700'}`}>
-                    {result.isPremium ? 'Diproses dengan Google Vision API' : 'Data telah diekstrak dari nota Anda'}
-                  </p>
+          {/* Debug Info Card */}
+          <Card className="p-4 bg-yellow-50 border-2 border-yellow-300">
+            <div className="text-xs font-mono space-y-1">
+              <p className="font-bold text-yellow-800">🐛 DEBUG INFO:</p>
+              <p>Stage: <span className="font-bold">{stage}</span></p>
+              <p>Result exists: <span className="font-bold">{result ? 'YES' : 'NO'}</span></p>
+              <p>Job ID: <span className="font-bold">{result?.job_id || result?.id || result?.receipt_id || 'MISSING'}</span></p>
+              <p>Merchant: <span className="font-bold">{result?.extracted?.merchant || result?.supplier || result?.merchant || 'N/A'}</span></p>
+              <p>Total: <span className="font-bold">{result?.extracted?.total_amount || result?.total || result?.total_amount || 0}</span></p>
+              <p>Date: <span className="font-bold">{result?.extracted?.date || result?.date || 'N/A'}</span></p>
+              <p>Confidence: <span className="font-bold">{result?.ocr_confidence || result?.confidence || 0}</span></p>
+              <p>Result keys: <span className="font-bold">{result ? Object.keys(result).join(', ') : 'none'}</span></p>
+            </div>
+          </Card>
+          
+          <Card className="p-4 border-2 border-green-500 bg-green-50">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
+                  <Check className="h-6 w-6 text-white" />
                 </div>
               </div>
-              {result.confidence !== undefined && (
+              <div className="flex-1">
+                <h3 className="font-semibold text-green-800">Nota Berhasil Diproses!</h3>
+                <p className={`text-sm ${result.isPremium ? 'text-amber-700' : 'text-green-700'}`}>
+                  {result.isPremium ? 'Diproses dengan Google Vision API' : 'Data telah diekstrak dari nota Anda'}
+                </p>
+              </div>
+              {(result.confidence !== undefined || result.ocr_confidence !== undefined) && (
                 <div className={`text-2xl font-bold ${result.isPremium ? 'text-amber-600' : 'text-green-600'}`}>
-                  {Math.round(result.confidence * 100)}%
+                  {Math.round((result.confidence || result.ocr_confidence || 0) * 100)}%
                 </div>
               )}
             </div>
           </Card>
 
-          {/* KEY INFORMATION CARD - PROMINENT */}
-          <Card className="p-6 border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-white shadow-lg">
-            <h3 className="text-sm font-semibold text-gray-600 mb-4 flex items-center gap-2">
-              <span className="text-lg">📋</span>
-              Informasi Utama
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Merchant - Large & Bold */}
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-xl">🏪</span>
-                  <div className="text-xs text-gray-500">Toko</div>
-                </div>
-                <div className="text-2xl font-bold text-gray-900 min-h-[2rem] flex items-center justify-center">
-                  {result.supplier && result.supplier !== "N/A" ? (
-                    result.supplier
-                  ) : (
-                    <span className="text-gray-400 text-lg">Tidak Terdeteksi</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Date - Large & Colored */}
-              <div className="text-center md:border-x border-gray-200">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-xl">📅</span>
-                  <div className="text-xs text-gray-500">Tanggal</div>
-                </div>
-                <div className="text-2xl font-bold text-blue-600">
-                  {formatIndonesianDate(result.date)}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {formatLongDate(result.date)}
-                </div>
-              </div>
-
-              {/* Total - VERY LARGE & Prominent */}
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-xl">💰</span>
-                  <div className="text-xs text-gray-500">Total</div>
-                </div>
-                <div className="text-3xl font-black text-green-600">
-                  {result.total && result.total > 0 ? (
-                    formatCurrency(result.total)
-                  ) : (
-                    <span className="text-gray-400 text-xl">Rp 0</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Status Badges */}
-            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
-              <Badge variant={result.supplier && result.supplier !== "N/A" ? "default" : "destructive"} className="text-xs">
-                {result.supplier && result.supplier !== "N/A" ? "✓ Toko Terdeteksi" : "⚠ Toko Tidak Terdeteksi"}
-              </Badge>
-              
-              <Badge variant={result.date ? "default" : "destructive"} className="text-xs">
-                {result.date ? "✓ Tanggal Terdeteksi" : "⚠ Tanggal Tidak Terdeteksi"}
-              </Badge>
-              
-              <Badge variant={result.total && result.total > 0 ? "default" : "destructive"} className="text-xs">
-                {result.total && result.total > 0 ? "✓ Total Terdeteksi" : "⚠ Total Tidak Terdeteksi"}
-              </Badge>
-            </div>
-          </Card>
-
-          {/* Warning Card for Missing Data */}
-          {(!result.supplier || result.supplier === "N/A" || !result.total || result.total === 0) && (
-            <Card className="p-4 border-2 border-orange-400 bg-orange-50">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-6 w-6 text-orange-600 flex-shrink-0 mt-1" />
-                <div className="flex-1">
-                  <h4 className="font-semibold text-orange-800 mb-2">
-                    Beberapa Data Tidak Terdeteksi
-                  </h4>
-                  <div className="text-sm text-orange-700 space-y-1">
-                    {(!result.supplier || result.supplier === "N/A") && <div>• Nama toko tidak ditemukan</div>}
-                    {(!result.total || result.total === 0) && <div>• Total pembelian tidak ditemukan</div>}
-                  </div>
-                  <p className="text-xs text-orange-600 mt-3">
-                    Anda dapat melihat teks OCR di bawah untuk melengkapi data secara manual.
-                  </p>
-                </div>
-              </div>
-            </Card>
+          {/* Conditional rendering based on receipt ID */}
+          {(result.job_id || result.id || result.receipt_id) ? (
+            <ReceiptEditForm
+              receiptId={result.job_id || result.id || result.receipt_id || ""}
+              initialData={mapResultToReceipt()}
+              onSave={handleSaveReceipt}
+              onCancel={handleCancelEdit}
+            />
+          ) : (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <p className="font-bold mb-2">Error: Receipt ID tidak ditemukan</p>
+                <pre className="text-xs overflow-auto max-h-40">
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+              </AlertDescription>
+            </Alert>
           )}
-
-          {/* Detailed Information Card */}
-          <Card className="p-6">
-            <div className="space-y-4">
-
-            {/* OCR Text */}
-            {result.ocrText && (
-              <div>
-                <h4 className="font-semibold mb-2">Teks yang Terdeteksi:</h4>
-                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg max-h-48 overflow-y-auto">
-                  <pre className="text-xs whitespace-pre-wrap font-mono">{result.ocrText}</pre>
-                </div>
-              </div>
-            )}
-
-            {/* Items List */}
-            {result.items && result.items.length > 0 && (
-              <div>
-                <h4 className="font-semibold mb-2">Daftar Item:</h4>
-                <div className="space-y-2">
-                  {result.items.map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between text-sm p-2 bg-slate-50 dark:bg-slate-900 rounded">
-                      <span>{item.name} (x{item.qty})</span>
-                      <span className="font-medium">{formatCurrency(item.price)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex gap-2">
-              <Button onClick={() => router.push(`/dashboard/receipts?id=${result.id}`)} className="flex-1">
-                <Eye className="mr-2 h-4 w-4" />
-                Lihat Detail
-              </Button>
-              <Button variant="outline" onClick={handleReset} className="flex-1">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Lagi
-              </Button>
-            </div>
-            </div>
-          </Card>
         </div>
       )}
     </div>
