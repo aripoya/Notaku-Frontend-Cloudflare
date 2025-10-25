@@ -72,6 +72,17 @@ export default function ReceiptEditForm({
       console.log('[ReceiptEditForm] ✅ initialData exists, extracting fields...');
       console.log('[ReceiptEditForm] Full initialData object:', JSON.stringify(initialData, null, 2));
       
+      // ⚠️ CRITICAL: Check individual fields BEFORE extraction
+      console.log('[ReceiptEditForm] 🔍 Checking individual fields:');
+      console.log('[ReceiptEditForm]   - initialData.merchant:', initialData.merchant);
+      console.log('[ReceiptEditForm]   - initialData.total_amount:', initialData.total_amount);
+      console.log('[ReceiptEditForm]   - initialData.date:', initialData.date);
+      console.log('[ReceiptEditForm]   - Type of merchant:', typeof initialData.merchant);
+      console.log('[ReceiptEditForm]   - Type of total_amount:', typeof initialData.total_amount);
+      console.log('[ReceiptEditForm]   - merchant === null?', initialData.merchant === null);
+      console.log('[ReceiptEditForm]   - merchant === ""?', initialData.merchant === "");
+      console.log('[ReceiptEditForm]   - merchant === undefined?', initialData.merchant === undefined);
+      
       // Extract values with detailed logging
       const merchantValue = initialData.merchant || "";
       const amountValue = initialData.total_amount?.toString() || "";
