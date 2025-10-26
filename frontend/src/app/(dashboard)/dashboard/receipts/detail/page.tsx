@@ -48,6 +48,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatCurrency, formatDate, getCategoryColor } from "@/lib/receipt-utils";
+import ReceiptItems from "@/components/ReceiptItems";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
 
@@ -552,6 +553,13 @@ export default function ReceiptDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Receipt Items Section */}
+      {receiptId && (
+        <div className="mt-6">
+          <ReceiptItems receiptId={receiptId} />
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
