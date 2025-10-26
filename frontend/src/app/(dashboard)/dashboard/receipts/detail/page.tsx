@@ -14,6 +14,8 @@ import {
   X,
   Save,
   ArrowLeft,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,7 +45,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { formatCurrency, formatDate, getCategoryColor } from "@/lib/receipt-utils";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
 
 interface ReceiptItem {
   name: string;
@@ -54,96 +60,230 @@ interface ReceiptItem {
 
 interface ReceiptData {
   id: string;
-  store: string;
-  date: string;
-  time: string;
-  items: ReceiptItem[];
-  subtotal: number;
-  tax: number;
-  discount: number;
-  total: number;
-  category: string;
-  paymentMethod: string;
-  notes: string;
+  merchant_name: string;
+  transaction_date: string;
+  total_amount: string | number;
+  currency: string;
+  category: string | null;
+  notes: string | null;
+  image_path: string | null;
+  ocr_text: string | null;
+  ocr_confidence: number | null;
+  created_at: string;
+  // Additional fields for editing
+  items?: ReceiptItem[];
+  tax?: number;
+  discount?: number;
 }
 
 export default function ReceiptDetailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const receiptId = searchParams.get("id") || "unknown";
+  const receiptId = searchParams.get("id");
 
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [receipt, setReceipt] = useState<ReceiptData>({
-    id: receiptId,
-    store: "Alfamart",
-    date: "2025-01-15",
-    time: "14:30",
-    items: [
-      { name: "Beras 5kg", qty: 2, price: 65000, total: 130000 },
-      { name: "Minyak Goreng 2L", qty: 1, price: 35000, total: 35000 },
-      { name: "Gula Pasir 1kg", qty: 3, price: 15000, total: 45000 },
-    ],
-    subtotal: 210000,
-    tax: 0,
-    discount: 0,
-    total: 210000,
-    category: "bahan-baku",
-    paymentMethod: "cash",
-    notes: "",
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
+  const [imageError, setImageError] = useState(false);
 
-  // Calculate totals
+  // Fetch receipt data from API
   useEffect(() => {
-    const subtotal = receipt.items.reduce((sum, item) => sum + item.total, 0);
-    const total = subtotal + receipt.tax - receipt.discount;
-    setReceipt((prev) => ({ ...prev, subtotal, total }));
-  }, [receipt.items, receipt.tax, receipt.discount]);
-
-  const handleItemChange = (index: number, field: keyof ReceiptItem, value: string | number) => {
-    const newItems = [...receipt.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-
-    // Recalculate total for this item
-    if (field === "qty" || field === "price") {
-      newItems[index].total = newItems[index].qty * newItems[index].price;
+    if (!receiptId) {
+      setError("Receipt ID not provided");
+      setIsLoading(false);
+      return;
     }
 
-    setReceipt({ ...receipt, items: newItems });
+    const fetchReceipt = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Nota tidak ditemukan");
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setReceipt(data);
+      } catch (err) {
+        console.error("[ReceiptDetail] Error fetching receipt:", err);
+        setError(err instanceof Error ? err.message : "Gagal memuat data nota");
+        toast.error("Error", {
+          description: "Gagal memuat data nota. Silakan coba lagi.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReceipt();
+  }, [receiptId]);
+
+  const handleSave = async () => {
+    if (!receipt || !receiptId) return;
+
+    try {
+      setIsSaving(true);
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          merchant_name: receipt.merchant_name,
+          transaction_date: receipt.transaction_date,
+          total_amount: typeof receipt.total_amount === "string" 
+            ? parseFloat(receipt.total_amount) 
+            : receipt.total_amount,
+          currency: receipt.currency,
+          category: receipt.category,
+          notes: receipt.notes,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update receipt");
+      }
+
+      const updatedData = await response.json();
+      setReceipt(updatedData);
+      toast.success("Berhasil", {
+        description: "Perubahan berhasil disimpan",
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error("[ReceiptDetail] Error saving:", err);
+      toast.error("Error", {
+        description: "Gagal menyimpan perubahan",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleAddItem = () => {
-    setReceipt({
-      ...receipt,
-      items: [...receipt.items, { name: "", qty: 1, price: 0, total: 0 }],
-    });
-  };
+  const handleDelete = async () => {
+    if (!receiptId) return;
 
-  const handleRemoveItem = (index: number) => {
-    const newItems = receipt.items.filter((_, i) => i !== index);
-    setReceipt({ ...receipt, items: newItems });
-  };
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
-  const handleSave = () => {
-    // TODO: Call mockApi.updateReceipt()
-    toast.success("Perubahan berhasil disimpan!", {
-      description: "Data nota telah diperbarui",
-    });
-    setIsEditing(false);
-  };
+      if (!response.ok) {
+        throw new Error("Failed to delete receipt");
+      }
 
-  const handleDelete = () => {
-    // TODO: Call mockApi.deleteReceipt()
-    toast.success("Nota berhasil dihapus", {
-      description: "Data nota telah dihapus dari sistem",
-    });
-    setShowDeleteDialog(false);
-    router.push("/dashboard/receipts");
+      toast.success("Berhasil", {
+        description: "Nota berhasil dihapus",
+      });
+      setShowDeleteDialog(false);
+      router.push("/dashboard/receipts");
+    } catch (err) {
+      console.error("[ReceiptDetail] Error deleting:", err);
+      toast.error("Error", {
+        description: "Gagal menghapus nota",
+      });
+    }
   };
 
   const handleDownloadImage = () => {
-    toast.success("Download", { description: "Gambar nota berhasil diunduh" });
+    if (receipt?.image_path) {
+      window.open(receipt.image_path, "_blank");
+    } else {
+      toast.info("Info", { description: "Gambar nota tidak tersedia" });
+    }
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/receipts">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Kembali
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              Detail Nota
+            </h1>
+            <p className="text-muted-foreground mt-1">Memuat data...</p>
+          </div>
+        </div>
+        <Card className="p-12">
+          <div className="flex flex-col items-center justify-center text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
+            <p className="text-muted-foreground">Memuat data nota...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !receipt) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/receipts">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Kembali
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              Detail Nota
+            </h1>
+            <p className="text-muted-foreground mt-1">Error</p>
+          </div>
+        </div>
+        <Card className="p-12">
+          <div className="flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+              {error || "Nota tidak ditemukan"}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Silakan kembali ke daftar nota
+            </p>
+            <Button asChild variant="outline">
+              <Link href="/dashboard/receipts">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Kembali ke Daftar
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  const categoryColors = getCategoryColor(receipt.category || "other");
+  const amount = typeof receipt.total_amount === "string" 
+    ? parseFloat(receipt.total_amount) 
+    : receipt.total_amount;
 
   return (
     <div className="space-y-6">
@@ -169,9 +309,20 @@ export default function ReceiptDetailPage() {
         <Card className="h-fit">
           <CardContent className="p-6">
             {/* Image viewer */}
-            <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg flex flex-col items-center justify-center mb-4">
-              <Receipt className="h-24 w-24 text-gray-400 mb-4" />
-              <p className="text-sm text-muted-foreground">Receipt Image Preview</p>
+            <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg flex flex-col items-center justify-center mb-4 overflow-hidden">
+              {receipt.image_path && !imageError ? (
+                <img
+                  src={receipt.image_path}
+                  alt={receipt.merchant_name}
+                  className="w-full h-full object-contain"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <>
+                  <Receipt className="h-24 w-24 text-gray-400 mb-4" />
+                  <p className="text-sm text-muted-foreground">No Image Available</p>
+                </>
+              )}
             </div>
 
             {/* Image controls */}
@@ -224,205 +375,75 @@ export default function ReceiptDetailPage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Store Info */}
+            {/* Merchant Name */}
             <div>
-              <Label>Nama Toko/Supplier</Label>
+              <Label>Nama Merchant</Label>
               <Input
-                value={receipt.store}
-                onChange={(e) => setReceipt({ ...receipt, store: e.target.value })}
+                value={receipt.merchant_name}
+                onChange={(e) => setReceipt({ ...receipt, merchant_name: e.target.value })}
                 className="mt-1"
                 disabled={!isEditing}
               />
             </div>
 
-            {/* Date & Time */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Tanggal</Label>
-                <Input
-                  type="date"
-                  value={receipt.date}
-                  onChange={(e) => setReceipt({ ...receipt, date: e.target.value })}
-                  className="mt-1"
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label>Waktu</Label>
-                <Input
-                  type="time"
-                  value={receipt.time}
-                  onChange={(e) => setReceipt({ ...receipt, time: e.target.value })}
-                  className="mt-1"
-                  disabled={!isEditing}
-                />
-              </div>
+            {/* Date */}
+            <div>
+              <Label>Tanggal Transaksi</Label>
+              <Input
+                type="date"
+                value={receipt.transaction_date}
+                onChange={(e) => setReceipt({ ...receipt, transaction_date: e.target.value })}
+                className="mt-1"
+                disabled={!isEditing}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {formatDate(receipt.transaction_date)}
+              </p>
             </div>
 
-            {/* Items Table */}
+            {/* Amount */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label>Daftar Barang</Label>
-                {isEditing && (
-                  <Button size="sm" variant="ghost" onClick={handleAddItem}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Tambah Item
-                  </Button>
+              <Label>Total Nominal</Label>
+              <div className="mt-1">
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setReceipt({ ...receipt, total_amount: e.target.value })}
+                    className="font-bold text-2xl"
+                  />
+                ) : (
+                  <div className="text-3xl font-bold text-blue-600">
+                    {formatCurrency(amount, receipt.currency)}
+                  </div>
                 )}
               </div>
-
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nama Item</TableHead>
-                      <TableHead className="w-20">Qty</TableHead>
-                      <TableHead className="w-32">Harga</TableHead>
-                      <TableHead className="w-32">Total</TableHead>
-                      {isEditing && <TableHead className="w-10"></TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {receipt.items.map((item, i) => (
-                      <TableRow key={i}>
-                        <TableCell>
-                          <Input
-                            value={item.name}
-                            onChange={(e) =>
-                              handleItemChange(i, "name", e.target.value)
-                            }
-                            className="h-8"
-                            disabled={!isEditing}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={item.qty}
-                            onChange={(e) =>
-                              handleItemChange(i, "qty", parseInt(e.target.value) || 0)
-                            }
-                            className="h-8"
-                            disabled={!isEditing}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={item.price}
-                            onChange={(e) =>
-                              handleItemChange(i, "price", parseInt(e.target.value) || 0)
-                            }
-                            className="h-8"
-                            disabled={!isEditing}
-                          />
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          Rp {item.total.toLocaleString("id-ID")}
-                        </TableCell>
-                        {isEditing && (
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleRemoveItem(i)}
-                            >
-                              <X className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
             </div>
 
-            {/* Summary */}
-            <div className="border-t pt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">
-                  Rp {receipt.subtotal.toLocaleString("id-ID")}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm items-center">
-                <span className="text-muted-foreground">Pajak</span>
-                <Input
-                  type="number"
-                  value={receipt.tax}
-                  onChange={(e) =>
-                    setReceipt({ ...receipt, tax: parseInt(e.target.value) || 0 })
-                  }
-                  className="h-8 w-32 text-right"
-                  disabled={!isEditing}
-                />
-              </div>
-              <div className="flex justify-between text-sm items-center">
-                <span className="text-muted-foreground">Diskon</span>
-                <Input
-                  type="number"
-                  value={receipt.discount}
-                  onChange={(e) =>
-                    setReceipt({
-                      ...receipt,
-                      discount: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="h-8 w-32 text-right"
-                  disabled={!isEditing}
-                />
-              </div>
-              <div className="flex justify-between text-lg font-bold border-t pt-2">
-                <span>Total</span>
-                <span className="text-blue-600">
-                  Rp {receipt.total.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
-
-            {/* Category & Payment Method */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Kategori</Label>
-                <Select
-                  value={receipt.category}
-                  onValueChange={(value) =>
-                    setReceipt({ ...receipt, category: value })
-                  }
-                  disabled={!isEditing}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bahan-baku">Bahan Baku</SelectItem>
-                    <SelectItem value="operasional">Operasional</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="transportasi">Transportasi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Metode Pembayaran</Label>
-                <Select
-                  value={receipt.paymentMethod}
-                  onValueChange={(value) =>
-                    setReceipt({ ...receipt, paymentMethod: value })
-                  }
-                  disabled={!isEditing}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="transfer">Transfer Bank</SelectItem>
-                    <SelectItem value="ewallet">E-Wallet</SelectItem>
-                    <SelectItem value="credit">Kartu Kredit</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Category */}
+            <div>
+              <Label>Kategori</Label>
+              <Select
+                value={receipt.category || ""}
+                onValueChange={(value) => setReceipt({ ...receipt, category: value })}
+                disabled={!isEditing}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Pilih kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bahan Baku">Bahan Baku</SelectItem>
+                  <SelectItem value="Operasional">Operasional</SelectItem>
+                  <SelectItem value="Marketing">Marketing</SelectItem>
+                  <SelectItem value="Transportasi">Transportasi</SelectItem>
+                  <SelectItem value="Food & Dining">Food & Dining</SelectItem>
+                </SelectContent>
+              </Select>
+              {receipt.category && (
+                <Badge className={`mt-2 ${categoryColors.bg} ${categoryColors.text} border-none`}>
+                  {receipt.category}
+                </Badge>
+              )}
             </div>
 
             {/* Notes */}
@@ -432,23 +453,67 @@ export default function ReceiptDetailPage() {
                 placeholder="Tambahkan catatan..."
                 className="mt-1"
                 rows={3}
-                value={receipt.notes}
+                value={receipt.notes || ""}
                 onChange={(e) => setReceipt({ ...receipt, notes: e.target.value })}
                 disabled={!isEditing}
               />
+            </div>
+
+            {/* OCR Info */}
+            {receipt.ocr_text && (
+              <div>
+                <Label>OCR Text</Label>
+                <Textarea
+                  className="mt-1 font-mono text-xs"
+                  rows={6}
+                  value={receipt.ocr_text}
+                  readOnly
+                />
+                {receipt.ocr_confidence && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Confidence: {(receipt.ocr_confidence * 100).toFixed(2)}%
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Metadata */}
+            <div className="border-t pt-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Created:</span>
+                <span>{formatDate(receipt.created_at)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Currency:</span>
+                <span className="font-medium">{receipt.currency}</span>
+              </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-2 pt-4">
               {isEditing ? (
                 <>
-                  <Button className="flex-1" onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" />
-                    Simpan Perubahan
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Simpan Perubahan
+                      </>
+                    )}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setIsEditing(false)}
+                    disabled={isSaving}
                   >
                     Batal
                   </Button>
