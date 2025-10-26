@@ -334,7 +334,10 @@ export default function ReceiptEditForm({
       let errorTitle = "Gagal menyimpan nota";
       let errorDescription = error.message || "Silakan coba lagi";
       
-      if (error.message?.includes("Failed to fetch")) {
+      if (error.code === 'TIMEOUT' || error.statusCode === 408) {
+        errorTitle = "⏱️ Request Timeout";
+        errorDescription = "Server memakan waktu terlalu lama. Gambar terlalu besar atau server lambat.";
+      } else if (error.message?.includes("Failed to fetch")) {
         errorTitle = "Tidak dapat terhubung ke server";
         errorDescription = "Periksa koneksi internet atau server mungkin sedang down";
       } else if (error.statusCode === 400) {
@@ -346,6 +349,9 @@ export default function ReceiptEditForm({
       } else if (error.statusCode === 404) {
         errorTitle = "Endpoint tidak ditemukan";
         errorDescription = "Backend mungkin belum mengimplementasi endpoint ini";
+      } else if (error.statusCode === 413) {
+        errorTitle = "Payload terlalu besar";
+        errorDescription = "Gambar terlalu besar. Server tidak bisa menerima file sebesar ini.";
       } else if (error.statusCode === 500) {
         errorTitle = "Server error";
         errorDescription = "Terjadi kesalahan di server";

@@ -81,8 +81,53 @@ export default function UploadPage() {
     }
   }, [stage]);
 
+  // ✅ Helper: Compress image to reduce size
+  const compressImage = (file: File, maxSizeMB: number = 1): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Calculate new dimensions (max 1920px width)
+          const maxWidth = 1920;
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Start with quality 0.8, reduce if needed
+          let quality = 0.8;
+          let base64 = canvas.toDataURL('image/jpeg', quality);
+          
+          // If still too large, reduce quality
+          while (base64.length > maxSizeMB * 1024 * 1024 * 1.37 && quality > 0.3) {
+            quality -= 0.1;
+            base64 = canvas.toDataURL('image/jpeg', quality);
+          }
+          
+          console.log(`[Upload] 🗜️ Compressed: ${file.size} → ${Math.round(base64.length / 1.37)} bytes (quality: ${quality})`);
+          resolve(base64);
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Handle file selection
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
       toast.error("File terlalu besar", { description: "Maksimal ukuran file 10MB" });
       return;
@@ -100,19 +145,15 @@ export default function UploadPage() {
     setPreviewUrl(blobUrl);
     console.log("[Upload] 📸 Preview URL (blob):", blobUrl);
     
-    // ✅ Convert to base64 (for sending to backend)
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
+    try {
+      // ✅ Compress and convert to base64 (for sending to backend)
+      const base64String = await compressImage(file, 1); // Max 1MB
       setImageBase64(base64String);
-      console.log("[Upload] 📦 Image converted to base64, length:", base64String.length);
-      console.log("[Upload] 📦 Base64 preview:", base64String.substring(0, 100) + "...");
-    };
-    reader.onerror = (error) => {
-      console.error("[Upload] ❌ Error reading file:", error);
-      toast.error("Error", { description: "Gagal membaca file" });
-    };
-    reader.readAsDataURL(file);
+      console.log("[Upload] 📦 Image ready, size:", Math.round(base64String.length / 1024), "KB");
+    } catch (error) {
+      console.error("[Upload] ❌ Error compressing image:", error);
+      toast.error("Error", { description: "Gagal memproses gambar" });
+    }
     
     setStage("preview");
     setError("");

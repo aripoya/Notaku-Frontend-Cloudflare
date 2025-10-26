@@ -64,7 +64,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs: number = 30000 // ✅ 30 second timeout
 ): Promise<T> {
   const token = getAuthToken();
 
@@ -79,11 +80,16 @@ async function request<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  // ✅ Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   const config: RequestInit = {
     ...options,
     headers,
     credentials: "include",
     mode: "cors",
+    signal: controller.signal, // ✅ Add abort signal
   };
 
   const url = `${API_BASE_URL}${endpoint}`;
@@ -97,8 +103,21 @@ async function request<T>(
 
   try {
     const response = await fetch(url, config);
+    clearTimeout(timeoutId); // ✅ Clear timeout if successful
     return handleResponse<T>(response);
-  } catch (error) {
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    // ✅ Handle timeout
+    if (error.name === 'AbortError') {
+      console.error(`[Receipts API] ⏱️ Request timeout after ${timeoutMs}ms:`, endpoint);
+      throw new ReceiptsAPIError(
+        `Request timeout. Server tidak merespons dalam ${timeoutMs / 1000} detik.`,
+        408,
+        'TIMEOUT'
+      );
+    }
+    
     if (DEBUG) {
       console.error(`[Receipts API Error] ${endpoint}:`, error);
     }
