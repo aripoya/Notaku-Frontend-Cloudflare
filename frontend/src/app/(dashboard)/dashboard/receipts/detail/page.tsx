@@ -67,6 +67,7 @@ interface ReceiptData {
   category: string | null;
   notes: string | null;
   image_path: string | null;
+  image_url?: string | null; // Alternative field name
   ocr_text: string | null;
   ocr_confidence: number | null;
   created_at: string;
@@ -118,9 +119,12 @@ export default function ReceiptDetailPage() {
         }
 
         const data = await response.json();
+        console.log("[ReceiptDetail] ✅ Fetched receipt data:", data);
+        console.log("[ReceiptDetail] 🖼️ Image path:", data.image_path);
+        console.log("[ReceiptDetail] 📊 All keys:", Object.keys(data));
         setReceipt(data);
       } catch (err) {
-        console.error("[ReceiptDetail] Error fetching receipt:", err);
+        console.error("[ReceiptDetail] ❌ Error fetching receipt:", err);
         setError(err instanceof Error ? err.message : "Gagal memuat data nota");
         toast.error("Error", {
           description: "Gagal memuat data nota. Silakan coba lagi.",
@@ -204,9 +208,12 @@ export default function ReceiptDetailPage() {
   };
 
   const handleDownloadImage = () => {
-    if (receipt?.image_path) {
-      window.open(receipt.image_path, "_blank");
+    const imageUrl = receipt?.image_path || receipt?.image_url;
+    if (imageUrl) {
+      console.log("[ReceiptDetail] 📥 Downloading image:", imageUrl);
+      window.open(imageUrl, "_blank");
     } else {
+      console.log("[ReceiptDetail] ⚠️ No image available for download");
       toast.info("Info", { description: "Gambar nota tidak tersedia" });
     }
   };
@@ -284,6 +291,10 @@ export default function ReceiptDetailPage() {
   const amount = typeof receipt.total_amount === "string" 
     ? parseFloat(receipt.total_amount) 
     : receipt.total_amount;
+  
+  // Try to get image from multiple possible field names
+  const imageUrl = receipt.image_path || receipt.image_url;
+  console.log("[ReceiptDetail] 🎨 Rendering with imageUrl:", imageUrl);
 
   return (
     <div className="space-y-6">
@@ -310,18 +321,32 @@ export default function ReceiptDetailPage() {
           <CardContent className="p-6">
             {/* Image viewer */}
             <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg flex flex-col items-center justify-center mb-4 overflow-hidden">
-              {receipt.image_path && !imageError ? (
-                <img
-                  src={receipt.image_path}
-                  alt={receipt.merchant_name}
-                  className="w-full h-full object-contain"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
+              {imageUrl && !imageError ? (
                 <>
-                  <Receipt className="h-24 w-24 text-gray-400 mb-4" />
-                  <p className="text-sm text-muted-foreground">No Image Available</p>
+                  <img
+                    src={imageUrl}
+                    alt={receipt.merchant_name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      console.error("[ReceiptDetail] ❌ Image load error:", imageUrl);
+                      setImageError(true);
+                    }}
+                    onLoad={() => {
+                      console.log("[ReceiptDetail] ✅ Image loaded successfully:", imageUrl);
+                    }}
+                  />
                 </>
+              ) : (
+                <div className="flex flex-col items-center text-center p-4">
+                  <Receipt className="h-24 w-24 text-gray-400 mb-4" />
+                  <p className="text-sm text-muted-foreground mb-2">No Image Available</p>
+                  {imageUrl && imageError && (
+                    <p className="text-xs text-red-500">Failed to load image</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-2 break-all max-w-xs">
+                    {imageUrl ? `Path: ${imageUrl}` : "No image path in database"}
+                  </p>
+                </div>
               )}
             </div>
 
