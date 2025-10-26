@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ReceiptsAPI } from "@/lib/receipts-api";
-import type { Receipt, ReceiptUpdateData } from "@/types/receipt";
+import type { Receipt, ReceiptUpdateData, ReceiptCreateData } from "@/types/receipt";
 import { CATEGORIES, formatCurrency, parseCurrency, formatDateForInput, formatDateDisplay } from "@/types/receipt";
 
 interface ReceiptEditFormProps {
@@ -277,16 +277,21 @@ export default function ReceiptEditForm({
           return;
         }
         
-        const createData = {
+        // ✅ CRITICAL FIX: Send image_base64 to backend, NOT blob URL
+        const createData: ReceiptCreateData = {
           ...saveData,
           user_id: initialData.user_id,
           ocr_text: initialData.ocr_text || "",
           ocr_confidence: initialData.ocr_confidence || 0,
-          image_path: initialData.image_path || "",
+          image_base64: initialData.image_base64, // ✅ Send base64 image
+          // ❌ DO NOT send image_path if it's a blob URL
         };
         
-        console.log("[ReceiptEditForm] Create data:", createData);
-        console.log("[ReceiptEditForm] Create data JSON:", JSON.stringify(createData, null, 2));
+        console.log("[ReceiptEditForm] Create data:", {
+          ...createData,
+          image_base64: createData.image_base64 ? `${createData.image_base64.substring(0, 50)}... (${createData.image_base64.length} chars)` : undefined
+        });
+        console.log("[ReceiptEditForm] ✅ Has image_base64:", !!createData.image_base64);
         
         try {
           savedReceipt = await ReceiptsAPI.createReceipt(createData);

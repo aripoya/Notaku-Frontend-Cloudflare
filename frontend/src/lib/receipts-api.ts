@@ -118,14 +118,17 @@ export class ReceiptsAPI {
   /**
    * Create a new receipt
    */
-  static async createReceipt(data: ReceiptUpdateData & { user_id: string; ocr_text?: string; ocr_confidence?: number; image_path?: string }): Promise<Receipt> {
+  static async createReceipt(data: ReceiptUpdateData & { user_id: string; ocr_text?: string; ocr_confidence?: number; image_path?: string; image_base64?: string }): Promise<Receipt> {
     console.log('[ReceiptsAPI] 📝 Creating new receipt');
     console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
     console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts`);
-    console.log('[ReceiptsAPI] Original frontend data:', data);
+    console.log('[ReceiptsAPI] Original frontend data:', {
+      ...data,
+      image_base64: data.image_base64 ? `${data.image_base64.substring(0, 50)}... (${data.image_base64.length} chars)` : undefined
+    });
     
-    // ✅ MAP FRONTEND FIELDS TO BACKEND FIELDS
-    const backendData = {
+    // ✅ CRITICAL FIX: Send image_base64 to backend, NOT blob URL
+    const backendData: any = {
       merchant_name: data.merchant,           // merchant → merchant_name
       transaction_date: data.date,            // date → transaction_date
       total_amount: data.total_amount,        // ✅ same
@@ -135,11 +138,26 @@ export class ReceiptsAPI {
       user_id: data.user_id,                  // ✅ same
       ocr_text: data.ocr_text || "",          // ✅ same
       ocr_confidence: data.ocr_confidence || 0, // ✅ same
-      image_path: data.image_path || "",      // ✅ same
     };
     
-    console.log('[ReceiptsAPI] ✅ Mapped to backend format:', backendData);
-    console.log('[ReceiptsAPI] Backend data JSON:', JSON.stringify(backendData, null, 2));
+    // ✅ Send image_base64 if available (backend will save to storage)
+    if (data.image_base64) {
+      backendData.image_base64 = data.image_base64;
+      console.log('[ReceiptsAPI] ✅ Sending image_base64 to backend');
+    }
+    
+    // ❌ DO NOT send image_path if it's a blob URL
+    if (data.image_path && !data.image_path.startsWith('blob:')) {
+      backendData.image_path = data.image_path;
+      console.log('[ReceiptsAPI] ✅ Sending image_path:', data.image_path);
+    } else if (data.image_path?.startsWith('blob:')) {
+      console.warn('[ReceiptsAPI] ⚠️ SKIPPING blob URL image_path:', data.image_path);
+    }
+    
+    console.log('[ReceiptsAPI] ✅ Mapped to backend format (without base64):', {
+      ...backendData,
+      image_base64: backendData.image_base64 ? '[BASE64 DATA]' : undefined
+    });
     
     const response = await request<any>(`${API_PREFIX}/receipts`, {
       method: "POST",

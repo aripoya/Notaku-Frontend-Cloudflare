@@ -31,6 +31,7 @@ export default function UploadPage() {
   const [stage, setStage] = useState<UploadStage>("select");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [imageBase64, setImageBase64] = useState<string>(""); // ✅ For sending to backend
   const [notes, setNotes] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [processingText, setProcessingText] = useState<string>("Membaca nota...");
@@ -93,7 +94,26 @@ export default function UploadPage() {
     }
 
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    
+    // ✅ Create preview URL (for display only)
+    const blobUrl = URL.createObjectURL(file);
+    setPreviewUrl(blobUrl);
+    console.log("[Upload] 📸 Preview URL (blob):", blobUrl);
+    
+    // ✅ Convert to base64 (for sending to backend)
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setImageBase64(base64String);
+      console.log("[Upload] 📦 Image converted to base64, length:", base64String.length);
+      console.log("[Upload] 📦 Base64 preview:", base64String.substring(0, 100) + "...");
+    };
+    reader.onerror = (error) => {
+      console.error("[Upload] ❌ Error reading file:", error);
+      toast.error("Error", { description: "Gagal membaca file" });
+    };
+    reader.readAsDataURL(file);
+    
     setStage("preview");
     setError("");
   };
@@ -255,6 +275,7 @@ export default function UploadPage() {
     setStage("select");
     setSelectedFile(null);
     setPreviewUrl("");
+    setImageBase64(""); // ✅ Clear base64
     setNotes("");
     setProgress(0);
     setJobId("");
@@ -470,6 +491,11 @@ export default function UploadPage() {
       useDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     }
     
+    // ✅ CRITICAL: Use backend's image_path, NOT previewUrl (which is blob URL)
+    const finalImagePath = result.image_path || result.image_url || "";
+    console.log("[MapResult] 🖼️ Image path from backend:", finalImagePath);
+    console.log("[MapResult] ⚠️ NOT using previewUrl (blob):", previewUrl);
+    
     const mappedReceipt = {
       id: result.job_id || result.id || result.receipt_id || "",
       user_id: user?.id || "",
@@ -480,7 +506,8 @@ export default function UploadPage() {
       notes: notes || null,
       ocr_text: result.ocr_text || result.ocrText || "",
       ocr_confidence: result.ocr_confidence || result.confidence || 0,
-      image_path: result.image_path || previewUrl || "",
+      image_path: finalImagePath, // ✅ Only use backend's permanent URL
+      image_base64: imageBase64, // ✅ Include base64 for backend to save
       is_edited: false,
       created_at: new Date().toISOString(),
     };

@@ -12,6 +12,7 @@ export interface Receipt {
   ocr_confidence: number;
   ocr_data?: any;
   image_path: string;
+  image_base64?: string; // ✅ For sending to backend (not stored in DB)
   is_edited: boolean;
   created_at: string;
   updated_at?: string;
@@ -23,6 +24,14 @@ export interface ReceiptUpdateData {
   date: string;
   category?: string | null;
   notes?: string | null;
+}
+
+export interface ReceiptCreateData extends ReceiptUpdateData {
+  user_id: string;
+  ocr_text: string;
+  ocr_confidence: number;
+  image_path?: string; // ✅ Optional - backend will generate if image_base64 provided
+  image_base64?: string; // ✅ Send base64 image to backend
 }
 
 export const CATEGORIES = [
