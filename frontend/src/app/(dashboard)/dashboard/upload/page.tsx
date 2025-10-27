@@ -532,6 +532,32 @@ export default function UploadPage() {
       useDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     }
     
+    // ✅ Parse time from date if it contains time (ISO format: 2025-09-22T15:22:00)
+    let parsedDate = useDate;
+    let parsedTime = null;
+    
+    if (useDate && typeof useDate === 'string' && useDate.includes('T')) {
+      const [datePart, timePart] = useDate.split('T');
+      parsedDate = datePart;
+      parsedTime = timePart.substring(0, 5); // Extract HH:MM only
+      console.log("[MapResult] ⏰ Parsed time from ISO datetime:", parsedTime);
+    }
+    
+    // Also check for separate time field from backend
+    const timeOptions = [
+      extracted.time,
+      extracted.transaction_time,
+      extracted.transactionTime,
+      result.time,
+      result.transaction_time,
+      result.transactionTime,
+    ];
+    const backendTime = timeOptions.find(v => v != null && v !== "") || null;
+    if (backendTime) {
+      parsedTime = backendTime;
+      console.log("[MapResult] ⏰ Found separate time field:", parsedTime);
+    }
+    
     // ✅ CRITICAL: Use backend's image_path, NOT previewUrl (which is blob URL)
     const finalImagePath = result.image_path || result.image_url || "";
     console.log("[MapResult] 🖼️ Image path from backend:", finalImagePath);
@@ -542,7 +568,8 @@ export default function UploadPage() {
       user_id: user?.id || "",
       merchant: useMerchant,
       total_amount: useAmount,
-      date: useDate,
+      date: parsedDate, // ✅ Use parsed date (without time part)
+      transaction_time: parsedTime, // ✅ ADD: Time field (HH:MM)
       category: null,
       notes: notes || null,
       ocr_text: result.ocr_text || result.ocrText || "",

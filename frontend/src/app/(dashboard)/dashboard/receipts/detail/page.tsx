@@ -63,6 +63,7 @@ interface ReceiptData {
   id: string;
   merchant_name: string;
   transaction_date: string;
+  transaction_time?: string | null; // ✅ ADD: Time field (HH:MM format)
   total_amount: string | number;
   currency: string;
   category: string | null;
@@ -123,7 +124,23 @@ export default function ReceiptDetailPage() {
         console.log("[ReceiptDetail] ✅ Fetched receipt data:", data);
         console.log("[ReceiptDetail] 🖼️ Image path:", data.image_path);
         console.log("[ReceiptDetail] 📊 All keys:", Object.keys(data));
-        setReceipt(data);
+        
+        // ✅ Parse datetime if transaction_date contains time
+        let date = data.transaction_date;
+        let time = data.transaction_time || null;
+        
+        if (date && date.includes('T')) {
+          const [datePart, timePart] = date.split('T');
+          date = datePart;
+          time = timePart.substring(0, 5); // Extract HH:MM
+          console.log("[ReceiptDetail] ⏰ Parsed time from ISO datetime:", time);
+        }
+        
+        setReceipt({
+          ...data,
+          transaction_date: date,
+          transaction_time: time
+        });
       } catch (err) {
         console.error("[ReceiptDetail] ❌ Error fetching receipt:", err);
         setError(err instanceof Error ? err.message : "Gagal memuat data nota");
@@ -144,6 +161,13 @@ export default function ReceiptDetailPage() {
     try {
       setIsSaving(true);
 
+      // ✅ Combine date and time if both exist
+      let fullDateTime = receipt.transaction_date;
+      if (receipt.transaction_time) {
+        fullDateTime = `${receipt.transaction_date}T${receipt.transaction_time}:00`;
+        console.log("[ReceiptDetail] 📅 Sending datetime:", fullDateTime);
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
         method: "PUT",
         credentials: "include",
@@ -152,7 +176,8 @@ export default function ReceiptDetailPage() {
         },
         body: JSON.stringify({
           merchant_name: receipt.merchant_name,
-          transaction_date: receipt.transaction_date,
+          transaction_date: fullDateTime,
+          transaction_time: receipt.transaction_time, // ✅ Also send time separately
           total_amount: typeof receipt.total_amount === "string" 
             ? parseFloat(receipt.total_amount) 
             : receipt.total_amount,
@@ -412,19 +437,40 @@ export default function ReceiptDetailPage() {
               />
             </div>
 
-            {/* Date */}
-            <div>
-              <Label>Tanggal Transaksi</Label>
-              <Input
-                type="date"
-                value={receipt.transaction_date}
-                onChange={(e) => setReceipt({ ...receipt, transaction_date: e.target.value })}
-                className="mt-1"
-                disabled={!isEditing}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {formatDate(receipt.transaction_date)}
-              </p>
+            {/* Date & Time */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Date */}
+              <div>
+                <Label>Tanggal Transaksi *</Label>
+                <Input
+                  type="date"
+                  value={receipt.transaction_date}
+                  onChange={(e) => setReceipt({ ...receipt, transaction_date: e.target.value })}
+                  className="mt-1"
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formatDate(receipt.transaction_date)}
+                </p>
+              </div>
+              
+              {/* Time */}
+              <div>
+                <Label>Waktu Transaksi (opsional)</Label>
+                <Input
+                  type="time"
+                  value={receipt.transaction_time || ''}
+                  onChange={(e) => setReceipt({ ...receipt, transaction_time: e.target.value })}
+                  className="mt-1"
+                  placeholder="HH:MM"
+                  disabled={!isEditing}
+                />
+                {receipt.transaction_time && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ⏰ {receipt.transaction_time}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Amount */}
