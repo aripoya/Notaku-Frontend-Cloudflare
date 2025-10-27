@@ -558,10 +558,14 @@ export default function UploadPage() {
       console.log("[MapResult] ⏰ Found separate time field:", parsedTime);
     }
     
-    // ✅ CRITICAL: Use backend's image_path, NOT previewUrl (which is blob URL)
-    const finalImagePath = result.image_path || result.image_url || "";
-    console.log("[MapResult] 🖼️ Image path from backend:", finalImagePath);
-    console.log("[MapResult] ⚠️ NOT using previewUrl (blob):", previewUrl);
+    // ✅ Image path: Use backend's permanent URL, fallback to previewUrl for display
+    const backendImagePath = result.image_path || result.image_url || "";
+    console.log("[MapResult] 🖼️ Backend image path:", backendImagePath);
+    
+    // ✅ For preview: Use backend URL if available, else use blob URL temporarily
+    const displayImagePath = backendImagePath || previewUrl;
+    console.log("[MapResult] 👁️ Display image path:", displayImagePath);
+    console.log("[MapResult] ⚠️ Using blob URL for preview:", !backendImagePath && !!previewUrl);
     
     const mappedReceipt = {
       id: result.job_id || result.id || result.receipt_id || "",
@@ -574,7 +578,7 @@ export default function UploadPage() {
       notes: notes || null,
       ocr_text: result.ocr_text || result.ocrText || "",
       ocr_confidence: result.ocr_confidence || result.confidence || 0,
-      image_path: finalImagePath, // ✅ Only use backend's permanent URL
+      image_path: displayImagePath, // ✅ Use backend URL or blob URL for preview
       image_base64: imageBase64, // ✅ Include base64 for backend to save
       is_edited: false,
       created_at: new Date().toISOString(),

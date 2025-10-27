@@ -482,11 +482,17 @@ export default function ReceiptEditForm({
                 className="relative aspect-[3/4] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => setShowImageModal(true)}
               >
+                {/* ✅ Display image: Can be backend URL or blob URL (for preview) */}
                 {displayData?.image_path ? (
                   <img
                     src={displayData.image_path}
                     alt="Receipt"
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      console.error("[ReceiptEditForm] ❌ Image failed to load:", displayData.image_path);
+                      // Hide broken image
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
