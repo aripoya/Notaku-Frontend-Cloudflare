@@ -277,49 +277,74 @@ export default function ReceiptEditForm({
           return;
         }
         
-        // ✅ CRITICAL FIX: Send image_base64 to backend, NOT blob URL
+        // ✅ NO API CALL - Build receipt object and call onSave callback
+        // Parent component (upload page) handles localStorage save
+        console.log("[ReceiptEditForm] 💾 Preparing receipt for localStorage save");
+        
+        savedReceipt = {
+          id: receiptId,
+          user_id: initialData.user_id,
+          merchant: saveData.merchant,
+          total_amount: saveData.total_amount,
+          date: saveData.date,
+          category: saveData.category,
+          notes: saveData.notes,
+          ocr_text: initialData.ocr_text || '',
+          ocr_confidence: initialData.ocr_confidence || 0,
+          image_path: initialData.image_path || '',
+          is_edited: true,
+          created_at: initialData.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        
+        console.log("[ReceiptEditForm] 📝 Receipt to save:", savedReceipt);
+        
+        /* DISABLED: API calls until backend ready
         const createData: ReceiptCreateData = {
           ...saveData,
           user_id: initialData.user_id,
           ocr_text: initialData.ocr_text || "",
           ocr_confidence: initialData.ocr_confidence || 0,
-          image_base64: initialData.image_base64, // ✅ Send base64 image
-          // ❌ DO NOT send image_path if it's a blob URL
+          image_base64: initialData.image_base64,
         };
-        
-        console.log("[ReceiptEditForm] Create data:", {
-          ...createData,
-          image_base64: createData.image_base64 ? `${createData.image_base64.substring(0, 50)}... (${createData.image_base64.length} chars)` : undefined
-        });
-        console.log("[ReceiptEditForm] ✅ Has image_base64:", !!createData.image_base64);
         
         try {
           savedReceipt = await ReceiptsAPI.createReceipt(createData);
           console.log("[ReceiptEditForm] ✅ Receipt created:", savedReceipt);
         } catch (createError: any) {
           console.error("[ReceiptEditForm] ❌ CREATE failed:", createError);
-          console.error("[ReceiptEditForm] Error message:", createError.message);
-          console.error("[ReceiptEditForm] Error statusCode:", createError.statusCode);
-          console.error("[ReceiptEditForm] Error details:", createError.details);
-          throw createError; // Re-throw to be caught by outer catch
+          throw createError;
         }
+        */
       } else {
-        // This is an existing receipt, UPDATE it
+        // UPDATE existing receipt
         console.log("[ReceiptEditForm] 🔄 Updating existing receipt");
-        console.log("[ReceiptEditForm] Update URL will be: /api/v1/receipts/" + receiptId);
+        
+        savedReceipt = {
+          ...receipt,
+          ...saveData,
+          is_edited: true,
+          updated_at: new Date().toISOString(),
+        } as Receipt;
+        
+        /* DISABLED: API calls until backend ready
         savedReceipt = await ReceiptsAPI.updateReceipt(receiptId, saveData);
         console.log("[ReceiptEditForm] ✅ Receipt updated:", savedReceipt);
+        */
       }
       
       setReceipt(savedReceipt);
       setIsDirty(false);
       
-      toast.success("Receipt saved!", {
-        description: "Your changes have been saved successfully",
-      });
-
+      // Call onSave callback (parent handles localStorage)
       if (onSave) {
+        console.log("[ReceiptEditForm] 📤 Calling onSave callback");
         onSave(savedReceipt);
+      } else {
+        console.warn("[ReceiptEditForm] ⚠️ No onSave callback provided");
+        toast.success("Data siap", {
+          description: "Tapi tidak ada handler untuk menyimpan",
+        });
       }
     } catch (error: any) {
       console.error("[ReceiptEditForm] ❌ Error saving receipt:", error);
