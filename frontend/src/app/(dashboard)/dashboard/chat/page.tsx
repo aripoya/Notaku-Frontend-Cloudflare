@@ -212,7 +212,25 @@ export default function ChatPage() {
                 break;
               }
               
-              // Handle token/chunk streaming
+              // ✅ Handle 'chunk' type - THIS IS THE FORMAT BACKEND USES!
+              if (data.type === 'chunk' && data.content) {
+                console.log('[Chat] 📝 Chunk received:', data.content);
+                fullResponse += data.content;
+                
+                // Update message in real-time
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: fullResponse,
+                    isStreaming: true,
+                  };
+                  return newMessages;
+                });
+                continue; // Move to next line
+              }
+              
+              // Handle token/chunk streaming (fallback)
               // Try different field names for token/content
               const token = data.token || 
                            data.content || 
