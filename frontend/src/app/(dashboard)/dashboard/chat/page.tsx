@@ -193,9 +193,34 @@ export default function ChatPage() {
             try {
               const data = JSON.parse(jsonStr);
               console.log('[Chat] ✅ Parsed data:', data);
+              console.log('[Chat] Data type:', data.type);
+              console.log('[Chat] Available fields:', Object.keys(data));
               
+              // Handle different message types from RAG Service
+              if (data.type === 'metadata') {
+                console.log('[Chat] 📊 Metadata received:', {
+                  sources: data.sources,
+                  question: data.question
+                });
+                // Just log metadata, don't add to response
+                continue;
+              }
+              
+              if (data.type === 'done') {
+                console.log('[Chat] ✅ Stream marked as done by backend');
+                // Backend signals completion
+                break;
+              }
+              
+              // Handle token/chunk streaming
               // Try different field names for token/content
-              const token = data.token || data.content || data.text || data.chunk || data.delta;
+              const token = data.token || 
+                           data.content || 
+                           data.text || 
+                           data.chunk || 
+                           data.delta ||
+                           data.answer ||  // RAG might use 'answer'
+                           data.result;    // Or 'result'
               
               if (token) {
                 console.log('[Chat] 📝 Token received:', token);
@@ -213,10 +238,11 @@ export default function ChatPage() {
                 });
               }
               
-              // Handle complete response
-              if (data.response) {
-                console.log('[Chat] 🎯 Complete response received:', data.response);
-                fullResponse = data.response;
+              // Handle complete response (non-streaming)
+              if (data.response || data.answer) {
+                const completeResponse = data.response || data.answer;
+                console.log('[Chat] 🎯 Complete response received:', completeResponse.substring(0, 100) + '...');
+                fullResponse = completeResponse;
                 
                 setMessages((prev) => {
                   const newMessages = [...prev];
@@ -229,9 +255,12 @@ export default function ChatPage() {
                 });
               }
               
-              // Log context if available
+              // Log context/sources if available
               if (data.context) {
                 console.log('[Chat] 📚 Context used:', data.context.length, 'sources');
+              }
+              if (data.sources && typeof data.sources === 'number') {
+                console.log('[Chat] 📚 Number of sources:', data.sources);
               }
             } catch (e) {
               console.warn('[Chat] ⚠️ Failed to parse JSON:', jsonStr, e);
