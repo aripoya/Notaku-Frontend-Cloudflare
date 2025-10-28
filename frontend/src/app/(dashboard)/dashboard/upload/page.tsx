@@ -233,6 +233,12 @@ export default function UploadPage() {
       console.log("[Upload] Indexed in RAG:", response.indexed);
       console.log("[Upload] Processing time:", response.processing_time);
       
+      // ✅ DEBUG: Log the results object
+      console.log("[Upload] 📦 Results object:", response.results);
+      console.log("[Upload] Merchant from response:", response.results?.merchant);
+      console.log("[Upload] Total from response:", response.results?.total);
+      console.log("[Upload] Date from response:", response.results?.date);
+      
       clearInterval(progressInterval);
       setProgress(100);
       
@@ -376,11 +382,14 @@ export default function UploadPage() {
       };
     }
 
-    // Handle different response formats (Premium vs Standard OCR)
-    const extracted = result.extracted || {};
-    console.log("[MapResult] 📦 Extracted object:", extracted);
-    console.log("[MapResult] Extracted keys:", extracted ? Object.keys(extracted) : 'no extracted');
-    console.log("[MapResult] Extracted JSON:", JSON.stringify(extracted, null, 2));
+    // ⚡ IMPORTANT: Integration Service returns data in 'results' not 'extracted'
+    // Handle different response formats:
+    // - Integration Service: { results: { merchant, total, date, ... } }
+    // - Legacy/Premium: { extracted: { ... } }
+    const extracted = result.results || result.extracted || {};
+    console.log("[MapResult] 📦 Data object:", extracted);
+    console.log("[MapResult] Data keys:", extracted ? Object.keys(extracted) : 'no data');
+    console.log("[MapResult] Data JSON:", JSON.stringify(extracted, null, 2));
     
     // ✅ EXPANDED: Try ALL possible field name variations
     const merchantOptions = [
@@ -751,9 +760,9 @@ export default function UploadPage() {
               <p>Stage: <span className="font-bold">{stage}</span></p>
               <p>Result exists: <span className="font-bold">{result ? 'YES' : 'NO'}</span></p>
               <p>Job ID: <span className="font-bold">{result?.job_id || result?.id || result?.receipt_id || 'MISSING'}</span></p>
-              <p>Merchant: <span className="font-bold">{result?.extracted?.merchant || result?.supplier || result?.merchant || 'N/A'}</span></p>
-              <p>Total: <span className="font-bold">{result?.extracted?.total_amount || result?.total || result?.total_amount || 0}</span></p>
-              <p>Date: <span className="font-bold">{result?.extracted?.date || result?.date || 'N/A'}</span></p>
+              <p>Merchant: <span className="font-bold">{result?.results?.merchant || result?.extracted?.merchant || result?.merchant || 'N/A'}</span></p>
+              <p>Total: <span className="font-bold">{result?.results?.total || result?.extracted?.total_amount || result?.total || 0}</span></p>
+              <p>Date: <span className="font-bold">{result?.results?.date || result?.extracted?.date || result?.date || 'N/A'}</span></p>
               <p>Confidence: <span className="font-bold">{result?.ocr_confidence || result?.confidence || 0}</span></p>
               <p>Result keys: <span className="font-bold">{result ? Object.keys(result).join(', ') : 'none'}</span></p>
             </div>
