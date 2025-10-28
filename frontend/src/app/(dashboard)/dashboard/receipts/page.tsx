@@ -40,8 +40,8 @@ export default function ReceiptsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ❌ TEMPORARILY DISABLED: Receipts list API not available yet
-  // TODO: Enable when backend endpoint is ready at Integration Service
+  // ✅ LOAD FROM LOCALSTORAGE: Temporary solution until backend ready
+  // Receipts are saved locally after upload and indexed in RAG for chat queries
   const fetchReceipts = async (showRefreshIndicator = false) => {
     try {
       if (showRefreshIndicator) {
@@ -51,14 +51,27 @@ export default function ReceiptsPage() {
       }
       setError(null);
 
-      // ❌ DISABLED: /api/v1/receipts/ endpoint doesn't exist
-      console.log('[ReceiptsList] ⚠️ Receipts list endpoint not available yet');
-      console.log('[ReceiptsList] Showing empty state until backend is ready');
+      console.log('[ReceiptsList] 📂 Loading receipts from localStorage');
       
-      // Show empty state
-      setReceipts([]);
+      // Load from localStorage
+      const saved = localStorage.getItem('notaku_receipts');
+      if (saved) {
+        const parsedReceipts = JSON.parse(saved);
+        console.log('[ReceiptsList] ✅ Loaded receipts:', parsedReceipts.length);
+        
+        // Sort by date (newest first)
+        const sorted = parsedReceipts.sort((a: any, b: any) => {
+          return new Date(b.saved_at || b.created_at).getTime() - 
+                 new Date(a.saved_at || a.created_at).getTime();
+        });
+        
+        setReceipts(sorted);
+      } else {
+        console.log('[ReceiptsList] 📭 No saved receipts found');
+        setReceipts([]);
+      }
       
-      /* DISABLED UNTIL BACKEND READY:
+      /* BACKEND API VERSION (DISABLED):
       const response = await fetch(`${API_BASE_URL}/api/v1/receipts/`, {
         method: "GET",
         credentials: "include",
@@ -66,17 +79,15 @@ export default function ReceiptsPage() {
           "Content-Type": "application/json",
         },
       });
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-
       const data = await response.json();
       setReceipts(Array.isArray(data) ? data : []);
       */
     } catch (err) {
-      console.error("[ReceiptsList] Error fetching receipts:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch receipts");
+      console.error("[ReceiptsList] Error loading receipts:", err);
+      setError(err instanceof Error ? err.message : "Failed to load receipts");
       toast.error("Error", {
         description: "Gagal memuat daftar nota. Silakan coba lagi.",
       });
@@ -141,31 +152,44 @@ export default function ReceiptsPage() {
     toast.info("Edit", { description: "Fitur edit akan segera hadir" });
   };
 
-  // ❌ TEMPORARILY DISABLED: Delete endpoint not available yet
+  // ✅ DELETE FROM LOCALSTORAGE
   const handleDeleteReceipt = async (id: string) => {
-    console.log('[ReceiptsList] ⚠️ Delete endpoint not available yet');
-    toast.info("Fitur Belum Tersedia", { 
-      description: "Fitur hapus nota akan segera hadir" 
-    });
-    
-    /* DISABLED UNTIL BACKEND READY:
     try {
+      console.log('[ReceiptsList] 🗑️ Deleting receipt:', id);
+      
+      // Get existing receipts
+      const saved = localStorage.getItem('notaku_receipts');
+      if (!saved) {
+        toast.error("Tidak ada nota untuk dihapus");
+        return;
+      }
+      
+      const receipts = JSON.parse(saved);
+      const filtered = receipts.filter((r: any) => r.id !== id);
+      
+      console.log('[ReceiptsList] 📊 Before:', receipts.length, 'After:', filtered.length);
+      
+      // Save back to localStorage
+      localStorage.setItem('notaku_receipts', JSON.stringify(filtered));
+      
+      toast.success("Terhapus", { description: "Nota berhasil dihapus" });
+      
+      // Refresh list
+      fetchReceipts();
+      
+      /* BACKEND API VERSION (DISABLED):
       const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
-
       if (!response.ok) {
         throw new Error("Failed to delete receipt");
       }
-
-      toast.success("Terhapus", { description: "Nota berhasil dihapus" });
-      // Refresh list
-      fetchReceipts();
+      */
     } catch (err) {
+      console.error('[ReceiptsList] ❌ Delete error:', err);
       toast.error("Error", { description: "Gagal menghapus nota" });
     }
-    */
   };
 
   const handleDownloadReceipt = (id: string) => {

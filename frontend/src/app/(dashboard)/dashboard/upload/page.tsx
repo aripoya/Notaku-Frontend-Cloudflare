@@ -565,13 +565,67 @@ export default function UploadPage() {
   };
 
   const handleSaveReceipt = (receipt: Receipt) => {
-    toast.success("Nota berhasil disimpan!", {
-      description: `${receipt.merchant || "Nota"} telah tersimpan`,
-    });
+    console.log("[Save] 💾 Saving receipt to localStorage:", receipt);
     
-    setTimeout(() => {
-      handleReset();
-    }, 1500);
+    try {
+      // Get existing receipts from localStorage
+      const savedReceipts = JSON.parse(
+        localStorage.getItem('notaku_receipts') || '[]'
+      );
+      console.log("[Save] 📂 Existing receipts:", savedReceipts.length);
+      
+      // Prepare receipt to save (normalize field names for localStorage)
+      const merchantName = receipt.merchant || 'Unknown';
+      const totalAmount = receipt.total_amount || 0;
+      
+      const receiptToSave = {
+        id: receipt.id || result?.receipt_id || `receipt_${Date.now()}`,
+        user_id: receipt.user_id || user?.id || '',
+        merchant: merchantName,  // Keep as 'merchant' for consistency
+        merchant_name: merchantName,  // Also save as 'merchant_name' for ReceiptCard
+        total_amount: totalAmount,
+        date: receipt.date || new Date().toISOString().split('T')[0],
+        category: receipt.category || null,
+        notes: receipt.notes || null,
+        ocr_text: receipt.ocr_text || '',
+        ocr_confidence: receipt.ocr_confidence || 0,
+        image_path: receipt.image_path || '',
+        is_edited: true,
+        created_at: receipt.created_at || new Date().toISOString(),
+        saved_at: new Date().toISOString(),
+      };
+      
+      console.log("[Save] 📝 Receipt to save:", receiptToSave);
+      
+      // Check if already exists (update) or new (add)
+      const existingIndex = savedReceipts.findIndex((r: any) => r.id === receiptToSave.id);
+      if (existingIndex >= 0) {
+        console.log("[Save] 🔄 Updating existing receipt at index:", existingIndex);
+        savedReceipts[existingIndex] = receiptToSave;
+      } else {
+        console.log("[Save] ➕ Adding new receipt");
+        savedReceipts.push(receiptToSave);
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('notaku_receipts', JSON.stringify(savedReceipts));
+      console.log("[Save] ✅ Saved! Total receipts:", savedReceipts.length);
+      
+      toast.success("Nota berhasil disimpan!", {
+        description: `${merchantName} - Rp ${totalAmount.toLocaleString('id-ID')}`,
+      });
+      
+      // Navigate to receipts list after short delay
+      setTimeout(() => {
+        router.push('/dashboard/receipts');
+      }, 1500);
+      
+    } catch (error) {
+      console.error("[Save] ❌ Save error:", error);
+      toast.error("Gagal menyimpan nota", {
+        description: "Silakan coba lagi"
+      });
+    }
   };
 
   const handleCancelEdit = () => {
