@@ -167,24 +167,57 @@ export default function ChatPage() {
       }
       
       let fullResponse = "";
+      let buffer = "";
       
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log('[Chat] Stream ended');
+          break;
+        }
         
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        buffer += chunk;
+        console.log('[Chat] 📦 Raw chunk received:', chunk.substring(0, 100) + '...');
+        
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ""; // Keep incomplete line in buffer
         
         for (const line of lines) {
+          console.log('[Chat] 📝 Processing line:', line.substring(0, 100));
+          
           if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6).trim();
+            console.log('[Chat] 🔍 JSON string:', jsonStr);
+            
             try {
-              const data = JSON.parse(line.slice(6));
+              const data = JSON.parse(jsonStr);
+              console.log('[Chat] ✅ Parsed data:', data);
               
-              if (data.token) {
-                // Append token to response
-                fullResponse += data.token;
+              // Try different field names for token/content
+              const token = data.token || data.content || data.text || data.chunk || data.delta;
+              
+              if (token) {
+                console.log('[Chat] 📝 Token received:', token);
+                fullResponse += token;
                 
                 // Update message in real-time
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: fullResponse,
+                    isStreaming: true,
+                  };
+                  return newMessages;
+                });
+              }
+              
+              // Handle complete response
+              if (data.response) {
+                console.log('[Chat] 🎯 Complete response received:', data.response);
+                fullResponse = data.response;
+                
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
@@ -201,25 +234,47 @@ export default function ChatPage() {
                 console.log('[Chat] 📚 Context used:', data.context.length, 'sources');
               }
             } catch (e) {
-              // Skip invalid JSON
+              console.warn('[Chat] ⚠️ Failed to parse JSON:', jsonStr, e);
+              // If not JSON, treat as plain text
+              const text = line.slice(6).trim();
+              if (text && text !== '[DONE]') {
+                console.log('[Chat] 📝 Plain text token:', text);
+                fullResponse += text;
+                
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: fullResponse,
+                    isStreaming: true,
+                  };
+                  return newMessages;
+                });
+              }
             }
           }
         }
       }
       
       // Mark streaming as complete
+      const finalContent = fullResponse || "Maaf, tidak ada response dari AI.";
+      console.log('[Chat] ✅ Streaming complete');
+      console.log('[Chat] Full response length:', fullResponse.length, 'chars');
+      console.log('[Chat] Final content:', finalContent.substring(0, 200) + '...');
+      
       setMessages((prev) => {
         const newMessages = [...prev];
         newMessages[newMessages.length - 1] = {
           role: "assistant",
-          content: fullResponse || "Maaf, tidak ada response dari AI.",
+          content: finalContent,
           isStreaming: false,
         };
         return newMessages;
       });
       
-      console.log('[Chat] ✅ Streaming complete');
-      console.log('[Chat] Full response length:', fullResponse.length, 'chars');
+      if (!fullResponse) {
+        console.error('[Chat] ⚠️ WARNING: No tokens received from stream!');
+      }
     } catch (error: any) {
       console.error('[Chat] ❌ Chat error:', error);
       console.error('[Chat] Error type:', error.constructor.name);
