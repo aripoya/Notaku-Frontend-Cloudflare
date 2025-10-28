@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SubscriptionAPI } from "@/lib/subscription-api";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { toast } from "sonner";
+import { getRAGUrl, RAG_DEFAULTS, API_CONFIG } from "@/config/services";
 
 interface Message {
   role: "user" | "assistant";
@@ -103,33 +104,33 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      // Call real backend API
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
-      const endpoint = `${API_URL}/api/v1/chat`; // Remove trailing slash
+      // ✅ Use RAG Service for chat
+      // This enables the chatbot to answer questions using indexed receipts
+      const endpoint = getRAGUrl('QUERY_STREAM');
       
-      console.log('[Chat] 📡 API Configuration:');
-      console.log('[Chat] API_URL:', API_URL);
+      console.log('[Chat] 🤖 RAG Configuration:');
+      console.log('[Chat] RAG Service URL:', API_CONFIG.RAG.BASE_URL);
       console.log('[Chat] Endpoint:', endpoint);
-      console.log('[Chat] NEXT_PUBLIC_API_URL env:', process.env.NEXT_PUBLIC_API_URL);
+      console.log('[Chat] Collection:', RAG_DEFAULTS.COLLECTION_NAME);
       
       const requestBody = {
-        message: message,
-        context: messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
+        question: message,
+        collection_name: RAG_DEFAULTS.COLLECTION_NAME,
+        top_k: RAG_DEFAULTS.TOP_K,
+        rerank_top_k: RAG_DEFAULTS.RERANK_TOP_K,
+        include_context: RAG_DEFAULTS.INCLUDE_CONTEXT,
       };
       
       console.log('[Chat] Request body:', requestBody);
-      console.log('[Chat] Context length:', requestBody.context.length);
+      console.log('[Chat] Query:', requestBody.question);
       
-      console.log('[Chat] Sending fetch request...');
+      console.log('[Chat] Sending RAG query request...');
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "text/event-stream",
         },
-        credentials: "include", // Include cookies for auth
         body: JSON.stringify(requestBody),
       });
 
@@ -156,34 +157,69 @@ export default function ChatPage() {
         }
       }
 
-      const data = await response.json();
-      console.log('[Chat] 📦 Response data:', data);
-      console.log('[Chat] Response keys:', Object.keys(data));
-      console.log('[Chat] Response.response:', data.response);
+      // ✅ Handle Server-Sent Events (SSE) streaming
+      console.log('[Chat] 📡 Reading SSE stream...');
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
       
-      const aiResponse = data.response || "Maaf, tidak ada response dari AI.";
-      console.log('[Chat] ✨ AI Response:', aiResponse);
-
-      // Simulate streaming by updating word by word
-      console.log('[Chat] 🎬 Starting streaming animation...');
-      const words = aiResponse.split(" ");
-      let currentText = "";
-
-      for (let i = 0; i < words.length; i++) {
-        currentText += (i > 0 ? " " : "") + words[i];
-        setMessages((prev) => {
-          const newMessages = [...prev];
-          newMessages[newMessages.length - 1] = {
-            role: "assistant",
-            content: currentText,
-            isStreaming: i < words.length - 1,
-          };
-          return newMessages;
-        });
-        await new Promise((resolve) => setTimeout(resolve, 50));
+      if (!reader) {
+        throw new Error('No response body for streaming');
       }
       
+      let fullResponse = "";
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.token) {
+                // Append token to response
+                fullResponse += data.token;
+                
+                // Update message in real-time
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: fullResponse,
+                    isStreaming: true,
+                  };
+                  return newMessages;
+                });
+              }
+              
+              // Log context if available
+              if (data.context) {
+                console.log('[Chat] 📚 Context used:', data.context.length, 'sources');
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+      
+      // Mark streaming as complete
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1] = {
+          role: "assistant",
+          content: fullResponse || "Maaf, tidak ada response dari AI.",
+          isStreaming: false,
+        };
+        return newMessages;
+      });
+      
       console.log('[Chat] ✅ Streaming complete');
+      console.log('[Chat] Full response length:', fullResponse.length, 'chars');
     } catch (error: any) {
       console.error('[Chat] ❌ Chat error:', error);
       console.error('[Chat] Error type:', error.constructor.name);
@@ -256,31 +292,30 @@ export default function ChatPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Test Connection Button (Debug) */}
+            {/* Test RAG Connection Button (Debug) */}
             <Button
               variant="outline"
               size="sm"
               onClick={async () => {
-                const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
-                const healthEndpoint = `${API_URL}/api/v1/chat/health`;
-                console.log('[Chat] 🔍 Testing connection to:', healthEndpoint);
+                const healthEndpoint = getRAGUrl('HEALTH');
+                console.log('[Chat] 🔍 Testing RAG Service:', healthEndpoint);
                 try {
                   const response = await fetch(healthEndpoint);
                   const data = await response.json();
-                  console.log('[Chat] ✅ Health check result:', data);
-                  toast.success('Connection OK', {
-                    description: JSON.stringify(data, null, 2)
+                  console.log('[Chat] ✅ RAG Service healthy:', data);
+                  toast.success('RAG Service OK', {
+                    description: `Status: ${data.status || 'healthy'}\nCollection: ${RAG_DEFAULTS.COLLECTION_NAME}`
                   });
                 } catch (error: any) {
-                  console.error('[Chat] ❌ Health check failed:', error);
-                  toast.error('Connection Failed', {
-                    description: error.message
+                  console.error('[Chat] ❌ RAG Service check failed:', error);
+                  toast.error('RAG Service Failed', {
+                    description: `Cannot connect to ${API_CONFIG.RAG.BASE_URL}`
                   });
                 }
               }}
               className="text-xs"
             >
-              Test API
+              Test RAG
             </Button>
             
             {/* AI Queries Remaining Badge */}

@@ -31,7 +31,7 @@ But getting "Failed to fetch" which means:
 POST /api/v1/receipts
 ```
 
-**Request body:**
+**Request body:**open ~/Downloads/complete_test_output.mp3
 ```json
 {
   "merchant": "UNIQLO PLAZA AMBARRUKMO",

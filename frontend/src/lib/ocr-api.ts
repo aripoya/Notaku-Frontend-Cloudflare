@@ -1,23 +1,25 @@
-// OCR API Client
+// OCR API Client - Now uses Integration Service
 import { UploadResponse, JobStatus, OCRResult, ClusterStats } from '@/types/ocr';
+import { getIntegrationUrl, API_CONFIG } from '@/config/services';
 
-// OCR API Base URL
-// Development: Use empty string to leverage Next.js rewrites (no CORS issues)
-// Production: Use full URL from environment variable
-const isDevelopment = process.env.NODE_ENV === 'development';
-const OCR_BASE_URL = isDevelopment 
-  ? '' // Use Next.js proxy in development
-  : (process.env.NEXT_PUBLIC_OCR_API_URL || 'http://172.16.1.7:8001');
+// ⚠️ IMPORTANT: Now uses Integration Service (not OCR directly)
+// Integration Service URL - handles complete pipeline:
+// Upload → OCR → Vision → Structure Extraction → RAG Indexing
+const INTEGRATION_URL = process.env.NEXT_PUBLIC_INTEGRATION_URL || 'http://172.16.1.9:8005';
+
+// Legacy OCR URL (DO NOT USE - for reference only)
+// const OCR_BASE_URL = 'http://172.16.1.7:8001';
 
 // Helper function to handle fetch errors
 async function handleFetchError(error: any, endpoint: string): Promise<never> {
-  console.error(`[OCR API] Error on ${endpoint}:`, error);
-  console.error(`[OCR API] OCR_BASE_URL:`, OCR_BASE_URL);
-  console.error(`[OCR API] isDevelopment:`, isDevelopment);
+  console.error(`[Integration API] ❌ Error on ${endpoint}:`, error);
+  console.error(`[Integration API] Integration URL:`, INTEGRATION_URL);
   
   if (error instanceof TypeError && error.message.includes('fetch')) {
-    const displayUrl = OCR_BASE_URL || 'Next.js proxy (/api/ocr)';
-    throw new Error(`Cannot connect to OCR service at ${displayUrl}. Please check if the service is running and accessible.`);
+    throw new Error(
+      `Cannot connect to Integration Service at ${INTEGRATION_URL}. ` +
+      `Please check if the service is running on 172.16.1.9:8005`
+    );
   }
   
   throw error;
@@ -25,7 +27,22 @@ async function handleFetchError(error: any, endpoint: string): Promise<never> {
 
 export class OCRApiClient {
   /**
-   * Upload receipt image for OCR processing (Standard)
+   * Upload receipt image for processing
+   * 
+   * ✅ NEW: Uses Integration Service for complete pipeline:
+   * - Upload → OCR extraction
+   * - Vision analysis (merchant type, quality score)
+   * - Structure extraction (items, totals)
+   * - RAG indexing (makes receipt searchable in chat)
+   * 
+   * Expected response:
+   * {
+   *   success: true,
+   *   receipt_id: "receipt_1761676565",
+   *   processing_time: "30.08s",
+   *   results: { merchant, date, total, items_count, quality_score },
+   *   indexed: true  // ← Confirms data is in RAG
+   * }
    */
   static async uploadReceipt(file: File, userId?: string): Promise<UploadResponse> {
     try {
@@ -35,8 +52,11 @@ export class OCRApiClient {
         formData.append('user_id', userId);
       }
 
-      const uploadUrl = OCR_BASE_URL ? `${OCR_BASE_URL}/api/v1/ocr/upload` : '/api/ocr/upload';
-      console.log(`[OCR API] Uploading to ${uploadUrl}`);
+      // ✅ Use Integration Service endpoint
+      const uploadUrl = `${INTEGRATION_URL}/api/v1/receipt/process`;
+      console.log(`[Integration API] 🚀 Processing receipt via Integration Service`);
+      console.log(`[Integration API] URL: ${uploadUrl}`);
+      console.log(`[Integration API] File: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
       
       const response = await fetch(uploadUrl, {
         method: 'POST',
@@ -45,10 +65,23 @@ export class OCRApiClient {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+        console.error(`[Integration API] ❌ Upload failed:`, error);
         throw new Error(error.message || `Upload failed: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`[Integration API] ✅ Receipt processed successfully`);
+      console.log(`[Integration API] Receipt ID: ${result.receipt_id}`);
+      console.log(`[Integration API] Indexed in RAG: ${result.indexed}`);
+      console.log(`[Integration API] Processing time: ${result.processing_time}`);
+      
+      // ⚠️ Verify RAG indexing
+      if (!result.indexed) {
+        console.warn(`[Integration API] ⚠️ WARNING: Receipt not indexed in RAG!`);
+        console.warn(`[Integration API] Chat will not be able to answer questions about this receipt`);
+      }
+      
+      return result;
     } catch (error) {
       return handleFetchError(error, 'upload');
     }
@@ -63,11 +96,11 @@ export class OCRApiClient {
       const formData = new FormData();
       formData.append('file', file);
 
-      const uploadUrl = OCR_BASE_URL 
-        ? `${OCR_BASE_URL}/api/v1/ocr/premium/upload` 
-        : '/api/ocr/premium/upload';
+      // Note: Premium OCR might have different endpoint
+      // For now, using same Integration Service endpoint
+      const uploadUrl = `${INTEGRATION_URL}/api/v1/receipt/process`;
       
-      console.log(`[OCR API] Uploading to Premium OCR: ${uploadUrl}`);
+      console.log(`[Integration API] 🚀 Uploading to Premium Processing: ${uploadUrl}`);
       
       const headers: HeadersInit = {};
       if (token) {
@@ -106,7 +139,8 @@ export class OCRApiClient {
    */
   static async checkStatus(jobId: string): Promise<JobStatus> {
     try {
-      const statusUrl = OCR_BASE_URL ? `${OCR_BASE_URL}/api/v1/ocr/status/${jobId}` : `/api/ocr/status/${jobId}`;
+      // Note: Status endpoint may need to be updated based on Integration Service API
+      const statusUrl = `${INTEGRATION_URL}/api/v1/receipt/status/${jobId}`;
       const response = await fetch(statusUrl);
 
       if (!response.ok) {
@@ -124,7 +158,8 @@ export class OCRApiClient {
    */
   static async getResult(jobId: string): Promise<OCRResult> {
     try {
-      const resultUrl = OCR_BASE_URL ? `${OCR_BASE_URL}/api/v1/ocr/result/${jobId}` : `/api/ocr/result/${jobId}`;
+      // Note: Result endpoint may need to be updated based on Integration Service API
+      const resultUrl = `${INTEGRATION_URL}/api/v1/receipt/result/${jobId}`;
       const response = await fetch(resultUrl);
 
       if (!response.ok) {
@@ -138,18 +173,22 @@ export class OCRApiClient {
   }
 
   /**
-   * Health check
+   * Health check - Integration Service
    */
   static async healthCheck(): Promise<{ status: string; timestamp: string }> {
     try {
-      const healthUrl = OCR_BASE_URL ? `${OCR_BASE_URL}/health` : '/api/ocr-health';
+      const healthUrl = `${INTEGRATION_URL}/health`;
+      console.log(`[Integration API] 🏥 Health check: ${healthUrl}`);
+      
       const response = await fetch(healthUrl);
 
       if (!response.ok) {
-        throw new Error('OCR service unavailable');
+        throw new Error('Integration Service unavailable');
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`[Integration API] ✅ Service healthy:`, result);
+      return result;
     } catch (error) {
       return handleFetchError(error, 'healthCheck');
     }
@@ -201,8 +240,17 @@ export class OCRApiClient {
   }
 }
 
+/**
+ * Get Integration Service stats
+ */
 export async function getStats() {
-  const response = await fetch(`${OCR_BASE_URL}/api/v1/stats`);
+  const statsUrl = `${INTEGRATION_URL}/stats`;
+  console.log(`[Integration API] 📊 Fetching stats: ${statsUrl}`);
+  
+  const response = await fetch(statsUrl);
   if (!response.ok) throw new Error('Failed to fetch stats');
-  return await response.json();
+  
+  const stats = await response.json();
+  console.log(`[Integration API] Stats:`, stats);
+  return stats;
 }
