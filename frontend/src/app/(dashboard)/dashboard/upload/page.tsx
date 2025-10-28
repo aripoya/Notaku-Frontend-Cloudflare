@@ -213,37 +213,43 @@ export default function UploadPage() {
       
       let response: any;
       
+      // ⚡ IMPORTANT: Integration Service is SYNCHRONOUS
+      // Both standard and premium now use the same synchronous flow
+      
       if (usePremiumOCR) {
         // Use Premium OCR (Google Vision)
         const token = localStorage.getItem('auth_token');
         console.log("[Upload] Using Premium OCR with token:", token ? 'present' : 'missing');
         response = await OCRApiClient.uploadPremiumReceipt(selectedFile, token || undefined);
-        console.log("[Upload] ✅ Premium OCR response:", response);
-        
-        // Premium OCR returns result immediately
-        clearInterval(progressInterval);
-        setProgress(100);
-        
-        setResult(response);
-        setStage("result");
-        toast.success("Nota berhasil diproses!");
       } else {
-        // Use Standard OCR (PaddleOCR)
+        // Use Standard OCR (Integration Service with PaddleOCR)
+        console.log("[Upload] ⚡ Using Integration Service (SYNCHRONOUS)");
+        console.log("[Upload] This will take 20-40 seconds - waiting for complete result...");
         response = await OCRApiClient.uploadReceipt(selectedFile, user.id);
-        console.log("[Upload] ✅ Upload response received:", response);
-        console.log("[Upload] Response status:", response.status);
-        console.log("[Upload] Response keys:", Object.keys(response));
-
-        clearInterval(progressInterval);
-        setProgress(100);
-        console.log("[Upload] Progress set to 100%");
-
-        // Standard OCR returns job_id for polling
-        console.log("[Upload] Starting poll for job:", response.job_id);
-        setJobId(response.job_id);
-        setStage("processing");
-        pollJobStatus(response.job_id);
       }
+      
+      console.log("[Upload] ✅ Receipt processed successfully:", response);
+      console.log("[Upload] Receipt ID:", response.receipt_id);
+      console.log("[Upload] Indexed in RAG:", response.indexed);
+      console.log("[Upload] Processing time:", response.processing_time);
+      
+      clearInterval(progressInterval);
+      setProgress(100);
+      
+      // ⚠️ Verify RAG indexing
+      if (!response.indexed) {
+        console.warn("[Upload] ⚠️ WARNING: Receipt not indexed in RAG!");
+        toast.warning("Upload sukses, tapi indexing gagal", {
+          description: "Chat mungkin tidak bisa menjawab pertanyaan tentang nota ini"
+        });
+      }
+      
+      // Set result and show success
+      setResult(response);
+      setStage("result");
+      toast.success("Nota berhasil diproses!", {
+        description: `${response.processing_time} - ${response.indexed ? 'Indexed ✅' : 'Not indexed ⚠️'}`
+      });
     } catch (err: any) {
       console.error("[Upload] ❌ Upload error:", err);
       console.error("[Upload] Error message:", err.message);
@@ -254,63 +260,8 @@ export default function UploadPage() {
     }
   };
 
-  const pollJobStatus = async (jobId: string) => {
-    console.log("[Poll] 🔄 Starting to poll job status for:", jobId);
-    const maxAttempts = 60;
-    let attempts = 0;
-
-    const poll = setInterval(async () => {
-      attempts++;
-      console.log(`[Poll] Attempt ${attempts}/${maxAttempts}`);
-      
-      if (attempts > maxAttempts) {
-        console.error("[Poll] ❌ Timeout reached");
-        clearInterval(poll);
-        setError("Timeout: Proses OCR memakan waktu terlalu lama");
-        setStage("preview");
-        toast.error("Timeout", { description: "Silakan coba lagi" });
-        return;
-      }
-
-      try {
-        const status = await OCRApiClient.checkStatus(jobId);
-        console.log(`[Poll] Status response:`, status);
-        console.log(`[Poll] Status value:`, status.status);
-        
-        if (status.status === "finished") {
-          console.log("[Poll] ✅ Job finished! Fetching result...");
-          clearInterval(poll);
-          
-          const resultData = await OCRApiClient.getResult(jobId);
-          console.log("[Poll] ✨ Result data received:", resultData);
-          console.log("[Poll] Result keys:", Object.keys(resultData));
-          console.log("[Poll] Result job_id:", resultData.job_id);
-          console.log("[Poll] Result extracted:", resultData.extracted);
-          console.log("[Poll] Result ocr_text:", resultData.ocr_text);
-          console.log("[Poll] Result ocr_confidence:", resultData.ocr_confidence);
-          
-          setResult(resultData);
-          console.log("[Poll] Result state updated, setting stage to 'result'");
-          setStage("result");
-          console.log("[Poll] Stage set to 'result'");
-          toast.success("Nota berhasil diproses!");
-        } else if (status.status === "failed") {
-          console.error("[Poll] ❌ Job failed");
-          clearInterval(poll);
-          setError("OCR processing gagal");
-          setStage("preview");
-          toast.error("Processing gagal", { description: "Silakan coba lagi" });
-        } else {
-          console.log(`[Poll] Job still processing, status: ${status.status}`);
-        }
-      } catch (err: any) {
-        console.error("[Poll] ❌ Error polling status:", err);
-        clearInterval(poll);
-        setError(err.message || "Gagal memeriksa status");
-        setStage("preview");
-      }
-    }, 1000);
-  };
+  // ❌ REMOVED: pollJobStatus() - Integration Service is synchronous
+  // No polling needed - uploadReceipt() waits for complete result
 
   const handleReset = () => {
     setStage("select");

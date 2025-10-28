@@ -29,21 +29,30 @@ async function handleFetchError(error: any, endpoint: string): Promise<never> {
 
 export class OCRApiClient {
   /**
-   * Upload receipt image for processing
+   * Upload receipt image for processing (SYNCHRONOUS)
    * 
-   * ✅ NEW: Uses Integration Service for complete pipeline:
-   * - Upload → OCR extraction
-   * - Vision analysis (merchant type, quality score)
-   * - Structure extraction (items, totals)
-   * - RAG indexing (makes receipt searchable in chat)
+   * ⚡ IMPORTANT: This is SYNCHRONOUS processing, NOT async!
+   * - Single request - waits for complete result (~20-40 seconds)
+   * - No job_id or polling needed
+   * - Returns full result immediately when done
+   * 
+   * ✅ Pipeline: Upload → OCR → Vision → Structure → RAG Indexing
    * 
    * Expected response:
    * {
    *   success: true,
-   *   receipt_id: "receipt_1761676565",
+   *   receipt_id: "receipt_1761676565",  // NOT job_id!
    *   processing_time: "30.08s",
-   *   results: { merchant, date, total, items_count, quality_score },
-   *   indexed: true  // ← Confirms data is in RAG
+   *   results: {
+   *     merchant: string,
+   *     date: string,
+   *     total: number,
+   *     items_count: number,
+   *     quality_score: number,
+   *     merchant_type: string,
+   *     items: [...],  // Full item list
+   *   },
+   *   indexed: true  // ← Confirms RAG indexing complete
    * }
    */
   static async uploadReceipt(file: File, userId?: string): Promise<UploadResponse> {
@@ -137,41 +146,31 @@ export class OCRApiClient {
   }
 
   /**
-   * Check OCR job status
+   * @deprecated Integration Service is SYNCHRONOUS - no status polling needed
+   * 
+   * This method is kept for backward compatibility but should NOT be used.
+   * The uploadReceipt() method now returns the complete result immediately.
    */
   static async checkStatus(jobId: string): Promise<JobStatus> {
-    try {
-      // Note: Status endpoint may need to be updated based on Integration Service API
-      const statusUrl = `${INTEGRATION_URL}/api/v1/receipt/status/${jobId}`;
-      const response = await fetch(statusUrl);
-
-      if (!response.ok) {
-        throw new Error(`Failed to check status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      return handleFetchError(error, 'checkStatus');
-    }
+    console.warn('[Integration API] ⚠️ checkStatus() is deprecated - Integration Service is synchronous');
+    throw new Error(
+      'Status polling not supported. Integration Service processes receipts synchronously. ' +
+      'Use uploadReceipt() which returns the complete result.'
+    );
   }
 
   /**
-   * Get OCR result
+   * @deprecated Integration Service is SYNCHRONOUS - no result fetching needed
+   * 
+   * This method is kept for backward compatibility but should NOT be used.
+   * The uploadReceipt() method now returns the complete result immediately.
    */
   static async getResult(jobId: string): Promise<OCRResult> {
-    try {
-      // Note: Result endpoint may need to be updated based on Integration Service API
-      const resultUrl = `${INTEGRATION_URL}/api/v1/receipt/result/${jobId}`;
-      const response = await fetch(resultUrl);
-
-      if (!response.ok) {
-        throw new Error(`Failed to get result: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      return handleFetchError(error, 'getResult');
-    }
+    console.warn('[Integration API] ⚠️ getResult() is deprecated - Integration Service is synchronous');
+    throw new Error(
+      'Result fetching not supported. Integration Service processes receipts synchronously. ' +
+      'Use uploadReceipt() which returns the complete result.'
+    );
   }
 
   /**
@@ -197,48 +196,22 @@ export class OCRApiClient {
   }
 
   /**
-   * Poll status until finished or failed
+   * @deprecated Integration Service is SYNCHRONOUS - no polling needed
+   * 
+   * This method is kept for backward compatibility but should NOT be used.
+   * The uploadReceipt() method now blocks until processing is complete (~20-40s).
    */
   static async pollStatus(
     jobId: string,
     onUpdate?: (status: JobStatus) => void,
     interval: number = 500,
-    maxAttempts: number = 120 // 60 seconds with 500ms interval
+    maxAttempts: number = 120
   ): Promise<JobStatus> {
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      
-      const poll = async () => {
-        try {
-          attempts++;
-          
-          if (attempts > maxAttempts) {
-            reject(new Error('OCR processing timeout. The job is taking too long. Please try again or contact support.'));
-            return;
-          }
-          
-          const status = await this.checkStatus(jobId);
-          
-          if (onUpdate) {
-            onUpdate(status);
-          }
-
-          if (status.status === 'finished' || status.status === 'failed') {
-            resolve(status);
-          } else if (status.status === 'queued' && attempts > 20) {
-            // If still queued after 10 seconds, show warning
-            console.warn(`[OCR] Job still queued after ${attempts * interval}ms`);
-            setTimeout(poll, interval);
-          } else {
-            setTimeout(poll, interval);
-          }
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      poll();
-    });
+    console.warn('[Integration API] ⚠️ pollStatus() is deprecated - Integration Service is synchronous');
+    throw new Error(
+      'Status polling not supported. Integration Service processes receipts synchronously. ' +
+      'Use uploadReceipt() and wait for the result (~20-40 seconds).'
+    );
   }
 }
 
