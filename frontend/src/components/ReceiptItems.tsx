@@ -67,37 +67,42 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
   // Calculate total price
   const calculatedTotal = formData.quantity * formData.unit_price;
 
-  // Fetch items
+  // Fetch items from localStorage
   const fetchItems = async () => {
-    console.log('[ReceiptItems] 📥 Fetching items for receipt:', receiptId);
+    console.log('[ReceiptItems] 📥 Loading items from localStorage for receipt:', receiptId);
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/receipts/${receiptId}/items`,
-        {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Load receipt from localStorage
+      const saved = localStorage.getItem('notaku_receipts');
+      if (!saved) {
+        console.log('[ReceiptItems] No receipts in localStorage');
+        setItems([]);
+        return;
       }
 
+      const receipts = JSON.parse(saved);
+      const receipt = receipts.find((r: any) => r.id === receiptId);
+      
+      if (!receipt) {
+        console.log('[ReceiptItems] Receipt not found');
+        setItems([]);
+        return;
+      }
+
+      const itemsData = receipt.items || [];
+      console.log('[ReceiptItems] ✅ Items loaded:', itemsData.length);
+      setItems(itemsData);
+      
+      /* DISABLED: API call until backend ready
+      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}/items`);
       const data = await response.json();
-      console.log('[ReceiptItems] ✅ Items fetched:', data);
       setItems(Array.isArray(data) ? data : []);
+      */
     } catch (err) {
-      console.error('[ReceiptItems] ❌ Error fetching items:', err);
+      console.error('[ReceiptItems] ❌ Error loading items:', err);
       setError(err instanceof Error ? err.message : 'Gagal memuat item');
-      toast.error('Error', {
-        description: 'Gagal memuat daftar item',
-      });
     } finally {
       setLoading(false);
     }
@@ -130,31 +135,35 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
     console.log('[ReceiptItems] ➕ Adding new item:', formData);
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/receipts/${receiptId}/items`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            item_name: formData.item_name.trim(),
-            quantity: formData.quantity,
-            unit_price: formData.unit_price,
-            total_price: calculatedTotal,
-            ocr_extracted: false, // Manual entry
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Gagal menambah item');
+      // Load receipts from localStorage
+      const saved = localStorage.getItem('notaku_receipts');
+      if (!saved) throw new Error('No receipts found');
+      
+      const receipts = JSON.parse(saved);
+      const receiptIndex = receipts.findIndex((r: any) => r.id === receiptId);
+      
+      if (receiptIndex === -1) throw new Error('Receipt not found');
+      
+      // Create new item
+      const newItem = {
+        id: `item_${Date.now()}`,
+        item_name: formData.item_name.trim(),
+        quantity: formData.quantity,
+        unit_price: formData.unit_price,
+        total_price: calculatedTotal,
+        ocr_extracted: false,
+        created_at: new Date().toISOString(),
+      };
+      
+      // Add item to receipt
+      if (!receipts[receiptIndex].items) {
+        receipts[receiptIndex].items = [];
       }
-
-      const newItem = await response.json();
-      console.log('[ReceiptItems] ✅ Item added:', newItem);
+      receipts[receiptIndex].items.push(newItem);
+      
+      // Save back to localStorage
+      localStorage.setItem('notaku_receipts', JSON.stringify(receipts));
+      console.log('[ReceiptItems] ✅ Item added to localStorage');
 
       // Refresh items list
       await fetchItems();
@@ -166,6 +175,13 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
       toast.success('Berhasil', {
         description: 'Item berhasil ditambahkan',
       });
+      
+      /* DISABLED: API call until backend ready
+      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}/items`, {
+        method: 'POST',
+        body: JSON.stringify({...}),
+      });
+      */
     } catch (err) {
       console.error('[ReceiptItems] ❌ Error adding item:', err);
       toast.error('Error', {
@@ -225,26 +241,32 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
     }
   };
 
-  // Delete item
+  // Delete item from localStorage
   const handleDeleteItem = async (itemId: string) => {
     console.log('[ReceiptItems] 🗑️ Deleting item:', itemId);
 
     try {
       setDeletingItemId(itemId);
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/receipts/items/${itemId}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Gagal menghapus item');
+      // Load receipts from localStorage
+      const saved = localStorage.getItem('notaku_receipts');
+      if (!saved) throw new Error('No receipts found');
+      
+      const receipts = JSON.parse(saved);
+      const receiptIndex = receipts.findIndex((r: any) => r.id === receiptId);
+      
+      if (receiptIndex === -1) throw new Error('Receipt not found');
+      
+      // Filter out deleted item
+      if (receipts[receiptIndex].items) {
+        receipts[receiptIndex].items = receipts[receiptIndex].items.filter(
+          (item: any) => item.id !== itemId
+        );
       }
-
-      console.log('[ReceiptItems] ✅ Item deleted');
+      
+      // Save back to localStorage
+      localStorage.setItem('notaku_receipts', JSON.stringify(receipts));
+      console.log('[ReceiptItems] ✅ Item deleted from localStorage');
 
       // Refresh items list
       await fetchItems();
@@ -252,6 +274,12 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
       toast.success('Berhasil', {
         description: 'Item berhasil dihapus',
       });
+      
+      /* DISABLED: API call until backend ready
+      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/items/${itemId}`, {
+        method: 'DELETE',
+      });
+      */
     } catch (err) {
       console.error('[ReceiptItems] ❌ Error deleting item:', err);
       toast.error('Error', {
