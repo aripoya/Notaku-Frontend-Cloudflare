@@ -10,6 +10,7 @@ import type {
   TiersResponse,
   CheckPermissionRequest,
 } from "@/types/subscription";
+import { SubscriptionTier, SubscriptionStatus } from "@/types/subscription";
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -129,8 +130,28 @@ export class SubscriptionAPI {
 
   /**
    * Get user quota information
+   * 
+   * ❌ TEMPORARILY DISABLED: Quota endpoint not available yet
+   * Returns mock data until backend is ready
    */
   static async getQuota(userId: string): Promise<QuotaInfo> {
+    console.log('[Subscription API] ⚠️ Quota endpoint not available - returning mock data');
+    
+    // Return mock quota data
+    return {
+      tier: SubscriptionTier.FREE,
+      status: SubscriptionStatus.ACTIVE,
+      monthly_limit: 10,
+      used: 0,
+      remaining: 10,
+      can_use_google_vision: false,
+      ai_queries_limit: 50,
+      ai_queries_used: 0,
+      total_cost: 0,
+      price: 0,
+    };
+    
+    /* DISABLED UNTIL BACKEND READY:
     const response = await request<QuotaResponse>(
       `${API_PREFIX}/subscription/quota/${userId}`,
       {
@@ -138,15 +159,28 @@ export class SubscriptionAPI {
       }
     );
     return response.quota;
+    */
   }
 
   /**
    * Check OCR permission before upload
+   * 
+   * ❌ TEMPORARILY DISABLED: Permission endpoint not available yet
+   * Always allows uploads until backend is ready
    */
   static async checkOCRPermission(
     userId: string,
     provider: "paddle" | "google"
   ): Promise<PermissionResult> {
+    console.log('[Subscription API] ⚠️ Permission check not available - allowing upload');
+    
+    // Always allow for now
+    return {
+      allowed: true,
+      message: 'Permission check temporarily disabled - allowing all uploads',
+    };
+    
+    /* DISABLED UNTIL BACKEND READY:
     const body: CheckPermissionRequest = {
       user_id: userId,
       provider,
@@ -161,12 +195,26 @@ export class SubscriptionAPI {
     );
 
     return response.permission;
+    */
   }
 
   /**
    * Check AI permission before sending chat message
+   * 
+   * ❌ TEMPORARILY DISABLED: AI permission endpoint not available yet
+   * Always allows chat until backend is ready
    */
   static async checkAIPermission(userId: string): Promise<AIPermissionResult> {
+    console.log('[Subscription API] ⚠️ AI permission check not available - allowing chat');
+    
+    // Always allow for now
+    return {
+      allowed: true,
+      remaining: 999,
+      message: 'AI permission check temporarily disabled - allowing all queries',
+    };
+    
+    /* DISABLED UNTIL BACKEND READY:
     const response = await request<AIPermissionResponse>(
       `${API_PREFIX}/subscription/ai-permission/${userId}`,
       {
@@ -175,6 +223,7 @@ export class SubscriptionAPI {
     );
 
     return response.permission;
+    */
   }
 
   /**

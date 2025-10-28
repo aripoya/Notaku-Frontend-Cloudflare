@@ -40,7 +40,8 @@ export default function ReceiptsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch receipts from API
+  // ❌ TEMPORARILY DISABLED: Receipts list API not available yet
+  // TODO: Enable when backend endpoint is ready at Integration Service
   const fetchReceipts = async (showRefreshIndicator = false) => {
     try {
       if (showRefreshIndicator) {
@@ -50,6 +51,14 @@ export default function ReceiptsPage() {
       }
       setError(null);
 
+      // ❌ DISABLED: /api/v1/receipts/ endpoint doesn't exist
+      console.log('[ReceiptsList] ⚠️ Receipts list endpoint not available yet');
+      console.log('[ReceiptsList] Showing empty state until backend is ready');
+      
+      // Show empty state
+      setReceipts([]);
+      
+      /* DISABLED UNTIL BACKEND READY:
       const response = await fetch(`${API_BASE_URL}/api/v1/receipts/`, {
         method: "GET",
         credentials: "include",
@@ -64,6 +73,7 @@ export default function ReceiptsPage() {
 
       const data = await response.json();
       setReceipts(Array.isArray(data) ? data : []);
+      */
     } catch (err) {
       console.error("[ReceiptsList] Error fetching receipts:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch receipts");
@@ -131,7 +141,14 @@ export default function ReceiptsPage() {
     toast.info("Edit", { description: "Fitur edit akan segera hadir" });
   };
 
+  // ❌ TEMPORARILY DISABLED: Delete endpoint not available yet
   const handleDeleteReceipt = async (id: string) => {
+    console.log('[ReceiptsList] ⚠️ Delete endpoint not available yet');
+    toast.info("Fitur Belum Tersedia", { 
+      description: "Fitur hapus nota akan segera hadir" 
+    });
+    
+    /* DISABLED UNTIL BACKEND READY:
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${id}`, {
         method: "DELETE",
@@ -148,6 +165,7 @@ export default function ReceiptsPage() {
     } catch (err) {
       toast.error("Error", { description: "Gagal menghapus nota" });
     }
+    */
   };
 
   const handleDownloadReceipt = (id: string) => {
