@@ -12,9 +12,11 @@
 
 | Feature | Old (❌) | New (✅) |
 |---------|---------|---------|
-| **Upload** | OCR direct (8001) | Integration Service (8005) |
+| **Upload** | http://172.16.1.9:8005 | https://upload.notaku.cloud |
 | **Pipeline** | OCR only | OCR → Vision → RAG |
-| **Chat** | Generic API | RAG with context |
+| **Chat** | Generic API | https://api.notaku.cloud |
+| **Protocol** | HTTP (insecure) | HTTPS (secure) |
+| **Access** | Private IP | Public Cloudflare Tunnel |
 | **Indexing** | Manual | Automatic |
 | **Streaming** | Simulated | Real SSE |
 
@@ -31,9 +33,9 @@ cat > .env.development << 'EOF'
 # API Server
 NEXT_PUBLIC_API_URL=https://api.notaku.cloud
 
-# ✨ NEW: Backend AI Pipeline
-NEXT_PUBLIC_INTEGRATION_URL=http://172.16.1.9:8005
-NEXT_PUBLIC_RAG_URL=http://172.16.1.9:8000
+# ✨ NEW: Backend AI Pipeline (Cloudflare Tunnel)
+NEXT_PUBLIC_INTEGRATION_URL=https://upload.notaku.cloud
+NEXT_PUBLIC_RAG_URL=https://api.notaku.cloud
 
 # Debug
 NEXT_PUBLIC_DEBUG=true
@@ -48,10 +50,10 @@ npm run dev
 Open browser console:
 ```javascript
 console.log(process.env.NEXT_PUBLIC_INTEGRATION_URL);
-// Should show: http://172.16.1.9:8005
+// Should show: https://upload.notaku.cloud
 
 console.log(process.env.NEXT_PUBLIC_RAG_URL);
-// Should show: http://172.16.1.9:8000
+// Should show: https://api.notaku.cloud
 ```
 
 ### **Step 3: Test Upload**
@@ -125,7 +127,7 @@ Collection: receipts
 **Check:**
 ```bash
 # Is RAG Service running?
-curl http://172.16.1.9:8000/health
+curl https://api.notaku.cloud/health
 ```
 
 **Fix:**
@@ -142,7 +144,7 @@ systemctl restart rag-service
 **Check:**
 ```bash
 # Are receipts in collection?
-curl http://172.16.1.9:8000/collections
+curl https://api.notaku.cloud/collections
 
 # Should show:
 {
@@ -162,7 +164,7 @@ curl http://172.16.1.9:8000/collections
 
 **Error:**
 ```
-Access to fetch at 'http://172.16.1.9:8005/...' blocked by CORS
+Access to fetch at 'https://upload.notaku.cloud/...' blocked by CORS
 ```
 
 **Fix (Backend):**
@@ -191,7 +193,7 @@ app.add_middleware(
 
 **Test manually:**
 ```bash
-curl -N -X POST http://172.16.1.9:8000/query/stream \
+curl -N -X POST https://api.notaku.cloud/query/stream \
   -H "Content-Type: application/json" \
   -H "Accept: text/event-stream" \
   -d '{"question": "test", "collection_name": "receipts", "top_k": 5}'
@@ -249,14 +251,14 @@ User asks: "Berapa total belanja?"
 
 ### **Quick Checks:**
 ```bash
-# 1. Integration Service health
-curl http://172.16.1.9:8005/health
+# 1. Integration Service health (via Cloudflare Tunnel)
+curl https://upload.notaku.cloud/health
 
-# 2. RAG Service health
-curl http://172.16.1.9:8000/health
+# 2. RAG Service health (via Cloudflare Tunnel)
+curl https://api.notaku.cloud/health
 
 # 3. Collections
-curl http://172.16.1.9:8000/collections
+curl https://api.notaku.cloud/collections
 ```
 
 ### **Logs:**

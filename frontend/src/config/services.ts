@@ -1,18 +1,28 @@
 /**
  * NotaKu Services Configuration
  * 
+ * ✨ CLOUDFLARE TUNNEL - Public HTTPS Endpoints
+ * All services are exposed via Cloudflare Tunnel for secure, public access
+ * 
  * Backend Architecture:
- * - Integration Service (RTX 3090) - Port 8005: Orchestrates all processing
- * - RAG Service (RTX 3090) - Port 8000: Handles queries with LLM
- * - OCR Service (R630) - Port 8001: Text extraction (internal use only)
- * - Vision Service (RTX 5080) - Port 8002: Image analysis (internal use only)
+ * - Integration Service: upload.notaku.cloud → 172.16.1.9:8005 (RTX 3090)
+ * - RAG Service: api.notaku.cloud → 172.16.1.9:8000 (RTX 3090)
+ * - OCR Service: Internal only (172.16.1.7:8001)
+ * - Vision Service: Internal only (172.16.1.9:8002)
+ * 
+ * Benefits:
+ * ✅ HTTPS secure connections
+ * ✅ No mixed content errors
+ * ✅ Public internet accessible
+ * ✅ DDoS protection
+ * ✅ Automatic SSL/TLS
  */
 
-// Service URLs
-const INTEGRATION_SERVICE_URL = process.env.NEXT_PUBLIC_INTEGRATION_URL || 'http://172.16.1.9:8005';
-const RAG_SERVICE_URL = process.env.NEXT_PUBLIC_RAG_URL || 'http://172.16.1.9:8000';
+// Service URLs - Public HTTPS endpoints via Cloudflare Tunnel
+const INTEGRATION_SERVICE_URL = process.env.NEXT_PUBLIC_INTEGRATION_URL || 'https://upload.notaku.cloud';
+const RAG_SERVICE_URL = process.env.NEXT_PUBLIC_RAG_URL || 'https://api.notaku.cloud';
 
-// Legacy URLs (for reference - DO NOT USE DIRECTLY)
+// Legacy/Internal URLs (for reference - DO NOT USE DIRECTLY)
 const OCR_SERVICE_URL = 'http://172.16.1.7:8001'; // Internal use only
 const VISION_SERVICE_URL = 'http://172.16.1.9:8002'; // Internal use only
 

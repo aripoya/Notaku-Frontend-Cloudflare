@@ -5,10 +5,12 @@ import { getIntegrationUrl, API_CONFIG } from '@/config/services';
 // ⚠️ IMPORTANT: Now uses Integration Service (not OCR directly)
 // Integration Service URL - handles complete pipeline:
 // Upload → OCR → Vision → Structure Extraction → RAG Indexing
-const INTEGRATION_URL = process.env.NEXT_PUBLIC_INTEGRATION_URL || 'http://172.16.1.9:8005';
+// ✨ Public HTTPS endpoint via Cloudflare Tunnel
+const INTEGRATION_URL = process.env.NEXT_PUBLIC_INTEGRATION_URL || 'https://upload.notaku.cloud';
 
-// Legacy OCR URL (DO NOT USE - for reference only)
-// const OCR_BASE_URL = 'http://172.16.1.7:8001';
+// Legacy URLs (DO NOT USE - for reference only)
+// const OCR_BASE_URL = 'http://172.16.1.7:8001'; // Old internal OCR
+// const OLD_INTEGRATION_URL = 'http://172.16.1.9:8005'; // Old private IP
 
 // Helper function to handle fetch errors
 async function handleFetchError(error: any, endpoint: string): Promise<never> {
@@ -18,7 +20,7 @@ async function handleFetchError(error: any, endpoint: string): Promise<never> {
   if (error instanceof TypeError && error.message.includes('fetch')) {
     throw new Error(
       `Cannot connect to Integration Service at ${INTEGRATION_URL}. ` +
-      `Please check if the service is running on 172.16.1.9:8005`
+      `Please check if Cloudflare Tunnel is active and the service is accessible.`
     );
   }
   

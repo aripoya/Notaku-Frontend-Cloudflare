@@ -16,12 +16,12 @@ NEXT_PUBLIC_WORKFLOWS_URL=https://workflows.notaku.cloud
 # Storage (MinIO)
 NEXT_PUBLIC_STORAGE_URL=https://storage.notaku.cloud
 
-# ✨ NEW: NotaKu Backend Services (AI Pipeline)
+# ✨ NEW: NotaKu Backend Services (AI Pipeline via Cloudflare Tunnel)
 # Integration Service - Handles upload pipeline (OCR + Vision + RAG Indexing)
-NEXT_PUBLIC_INTEGRATION_URL=http://172.16.1.9:8005
+NEXT_PUBLIC_INTEGRATION_URL=https://upload.notaku.cloud
 
 # RAG Service - Handles chat/query with LLM (Qwen 3.2 14B)
-NEXT_PUBLIC_RAG_URL=http://172.16.1.9:8000
+NEXT_PUBLIC_RAG_URL=https://api.notaku.cloud
 
 # Optional: Debug Mode
 NEXT_PUBLIC_DEBUG=true
@@ -41,12 +41,12 @@ NEXT_PUBLIC_WORKFLOWS_URL=https://workflows.notaku.cloud
 # Storage (MinIO)
 NEXT_PUBLIC_STORAGE_URL=https://storage.notaku.cloud
 
-# ✨ NEW: NotaKu Backend Services (AI Pipeline)
+# ✨ NEW: NotaKu Backend Services (AI Pipeline via Cloudflare Tunnel)
 # Integration Service - Handles upload pipeline (OCR + Vision + RAG Indexing)
-NEXT_PUBLIC_INTEGRATION_URL=http://172.16.1.9:8005
+NEXT_PUBLIC_INTEGRATION_URL=https://upload.notaku.cloud
 
 # RAG Service - Handles chat/query with LLM (Qwen 3.2 14B)
-NEXT_PUBLIC_RAG_URL=http://172.16.1.9:8000
+NEXT_PUBLIC_RAG_URL=https://api.notaku.cloud
 
 # Debug Mode (disabled in production)
 NEXT_PUBLIC_DEBUG=false
@@ -66,12 +66,12 @@ NEXT_PUBLIC_WORKFLOWS_URL=http://localhost:5678
 # Storage (local)
 NEXT_PUBLIC_STORAGE_URL=http://localhost:9001
 
-# ✨ NEW: NotaKu Backend Services (AI Pipeline)
+# ✨ NEW: NotaKu Backend Services (AI Pipeline via Cloudflare Tunnel)
 # Integration Service - Handles upload pipeline (OCR + Vision + RAG Indexing)
-NEXT_PUBLIC_INTEGRATION_URL=http://172.16.1.9:8005
+NEXT_PUBLIC_INTEGRATION_URL=https://upload.notaku.cloud
 
 # RAG Service - Handles chat/query with LLM (Qwen 3.2 14B)
-NEXT_PUBLIC_RAG_URL=http://172.16.1.9:8000
+NEXT_PUBLIC_RAG_URL=https://api.notaku.cloud
 
 # Debug Mode
 NEXT_PUBLIC_DEBUG=true
@@ -110,12 +110,12 @@ NEXT_PUBLIC_WORKFLOWS_URL=https://workflows.notaku.cloud
 # Storage (MinIO)
 NEXT_PUBLIC_STORAGE_URL=https://storage.notaku.cloud
 
-# ✨ NEW: NotaKu Backend Services (AI Pipeline)
+# ✨ NEW: NotaKu Backend Services (AI Pipeline via Cloudflare Tunnel)
 # Integration Service - Handles upload pipeline (OCR + Vision + RAG Indexing)
-NEXT_PUBLIC_INTEGRATION_URL=http://172.16.1.9:8005
+NEXT_PUBLIC_INTEGRATION_URL=https://upload.notaku.cloud
 
 # RAG Service - Handles chat/query with LLM (Qwen 3.2 14B)
-NEXT_PUBLIC_RAG_URL=http://172.16.1.9:8000
+NEXT_PUBLIC_RAG_URL=https://api.notaku.cloud
 
 # Debug Mode
 NEXT_PUBLIC_DEBUG=true
@@ -139,7 +139,7 @@ Frontend → RAG Service → Query with LLM (Diajeng AI)
 
 **1. Integration Service** (RTX 3090 - Port 8005)
 - **Purpose:** Orchestrates complete receipt processing pipeline
-- **URL:** `http://172.16.1.9:8005`
+- **URL:** `https://upload.notaku.cloud` (via Cloudflare Tunnel → 172.16.1.9:8005)
 - **Endpoint:** `/api/v1/receipt/process`
 - **Pipeline:**
   1. Upload receipt image
@@ -160,7 +160,7 @@ Frontend → RAG Service → Query with LLM (Diajeng AI)
 
 **2. RAG Service** (RTX 3090 - Port 8000)
 - **Purpose:** Handles chat/query with context from indexed receipts
-- **URL:** `http://172.16.1.9:8000`
+- **URL:** `https://api.notaku.cloud` (via Cloudflare Tunnel → 172.16.1.9:8000)
 - **Endpoint:** `/query/stream` (SSE streaming)
 - **Tech Stack:**
   - LLM: Qwen 3.2 14B (vLLM)
@@ -183,14 +183,23 @@ Frontend → RAG Service → Query with LLM (Diajeng AI)
 
 ### **Important Notes:**
 
-⚠️ **DO NOT** call OCR Service (8001) directly anymore!
-- Old: Frontend → OCR (8001) ❌
-- New: Frontend → Integration (8005) ✅
+⚠️ **DO NOT** call services via private IPs!
+- Old: Frontend → http://172.16.1.9:8005 ❌
+- New: Frontend → https://upload.notaku.cloud ✅
+
+✨ **Cloudflare Tunnel Benefits:**
+- ✅ HTTPS secure connections
+- ✅ No mixed content errors
+- ✅ Public internet accessible
+- ✅ DDoS protection
+- ✅ Automatic SSL/TLS
 
 ⚠️ **Legacy env vars** (can be removed):
 ```bash
-# DEPRECATED - Do not use
+# DEPRECATED - Do not use private IPs
 # NEXT_PUBLIC_OCR_URL=http://172.16.1.7:8001
+# NEXT_PUBLIC_INTEGRATION_URL=http://172.16.1.9:8005
+# NEXT_PUBLIC_RAG_URL=http://172.16.1.9:8000
 ```
 
 ✅ **Required for RAG indexing:**
@@ -207,9 +216,9 @@ After creating the file, restart dev server and check:
 console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
 // Should output: https://api.notaku.cloud
 
-// NEW: Backend Services
+// NEW: Backend Services (Cloudflare Tunnel)
 console.log('Integration:', process.env.NEXT_PUBLIC_INTEGRATION_URL);
-// Should output: http://172.16.1.9:8005
+// Should output: https://upload.notaku.cloud
 
 console.log('RAG:', process.env.NEXT_PUBLIC_RAG_URL);
-// Should output: http://172.16.1.9:8000
+// Should output: https://api.notaku.cloud
