@@ -137,11 +137,16 @@ export default function ReceiptDetailPage() {
           currency: 'IDR',
           category: foundReceipt.category,
           notes: foundReceipt.notes,
-          image_path: foundReceipt.image_path,
+          image_path: foundReceipt.image_base64 || foundReceipt.image_path,  // ✅ Use base64 if available
+          image_url: foundReceipt.image_base64,  // ✅ Also set as image_url
           ocr_text: foundReceipt.ocr_text,
           ocr_confidence: foundReceipt.ocr_confidence,
           created_at: foundReceipt.created_at || foundReceipt.saved_at,
+          items: foundReceipt.items || [],  // ✅ Load items from localStorage
         };
+        
+        console.log("[ReceiptDetail] 🖼️ Has image_base64:", !!foundReceipt.image_base64);
+        console.log("[ReceiptDetail] 📦 Items count:", data.items.length);
         
         // ✅ Parse datetime if transaction_date contains time
         let date = data.transaction_date;

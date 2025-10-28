@@ -590,6 +590,8 @@ export default function UploadPage() {
         ocr_text: receipt.ocr_text || '',
         ocr_confidence: receipt.ocr_confidence || 0,
         image_path: receipt.image_path || '',
+        image_base64: receipt.image_base64 || imageBase64 || '',  // ✅ SAVE base64 for display
+        items: receipt.items || [],  // ✅ SAVE items array
         is_edited: true,
         created_at: receipt.created_at || new Date().toISOString(),
         saved_at: new Date().toISOString(),
