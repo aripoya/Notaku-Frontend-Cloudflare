@@ -105,6 +105,62 @@ export default function ReceiptDetailPage() {
         setIsLoading(true);
         setError(null);
 
+        console.log("[ReceiptDetail] 📂 Loading receipt from localStorage:", receiptId);
+        
+        // ✅ Load from localStorage instead of API
+        const saved = localStorage.getItem('notaku_receipts');
+        
+        if (!saved) {
+          throw new Error("Tidak ada nota tersimpan");
+        }
+        
+        const receipts = JSON.parse(saved);
+        console.log("[ReceiptDetail] 📊 Total receipts in storage:", receipts.length);
+        
+        const foundReceipt = receipts.find((r: any) => r.id === receiptId);
+        
+        if (!foundReceipt) {
+          console.error("[ReceiptDetail] ❌ Receipt not found in localStorage");
+          throw new Error("Nota tidak ditemukan");
+        }
+
+        console.log("[ReceiptDetail] ✅ Found receipt:", foundReceipt);
+        console.log("[ReceiptDetail] 🖼️ Image path:", foundReceipt.image_path);
+        
+        // Map localStorage format to component format
+        const data = {
+          id: foundReceipt.id,
+          merchant_name: foundReceipt.merchant || foundReceipt.merchant_name,
+          transaction_date: foundReceipt.date || foundReceipt.transaction_date,
+          transaction_time: null,
+          total_amount: foundReceipt.total_amount,
+          currency: 'IDR',
+          category: foundReceipt.category,
+          notes: foundReceipt.notes,
+          image_path: foundReceipt.image_path,
+          ocr_text: foundReceipt.ocr_text,
+          ocr_confidence: foundReceipt.ocr_confidence,
+          created_at: foundReceipt.created_at || foundReceipt.saved_at,
+        };
+        
+        // ✅ Parse datetime if transaction_date contains time
+        let date = data.transaction_date;
+        let time = data.transaction_time;
+        
+        if (date && date.includes('T')) {
+          const [datePart, timePart] = date.split('T');
+          date = datePart;
+          time = timePart.substring(0, 5); // Extract HH:MM
+          console.log("[ReceiptDetail] ⏰ Parsed time from ISO datetime:", time);
+        }
+        
+        setReceipt({
+          ...data,
+          transaction_date: date,
+          transaction_time: time
+        });
+        
+        /* DISABLED: API call until backend ready
         const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
           method: "GET",
           credentials: "include",
@@ -121,31 +177,12 @@ export default function ReceiptDetailPage() {
         }
 
         const data = await response.json();
-        console.log("[ReceiptDetail] ✅ Fetched receipt data:", data);
-        console.log("[ReceiptDetail] 🖼️ Image path:", data.image_path);
-        console.log("[ReceiptDetail] 📊 All keys:", Object.keys(data));
-        
-        // ✅ Parse datetime if transaction_date contains time
-        let date = data.transaction_date;
-        let time = data.transaction_time || null;
-        
-        if (date && date.includes('T')) {
-          const [datePart, timePart] = date.split('T');
-          date = datePart;
-          time = timePart.substring(0, 5); // Extract HH:MM
-          console.log("[ReceiptDetail] ⏰ Parsed time from ISO datetime:", time);
-        }
-        
-        setReceipt({
-          ...data,
-          transaction_date: date,
-          transaction_time: time
-        });
+        */
       } catch (err) {
-        console.error("[ReceiptDetail] ❌ Error fetching receipt:", err);
+        console.error("[ReceiptDetail] ❌ Error loading receipt:", err);
         setError(err instanceof Error ? err.message : "Gagal memuat data nota");
         toast.error("Error", {
-          description: "Gagal memuat data nota. Silakan coba lagi.",
+          description: err instanceof Error ? err.message : "Gagal memuat data nota",
         });
       } finally {
         setIsLoading(false);
@@ -160,45 +197,64 @@ export default function ReceiptDetailPage() {
 
     try {
       setIsSaving(true);
+      
+      console.log("[ReceiptDetail] 💾 Saving to localStorage...");
 
       // ✅ Combine date and time if both exist
       let fullDateTime = receipt.transaction_date;
       if (receipt.transaction_time) {
         fullDateTime = `${receipt.transaction_date}T${receipt.transaction_time}:00`;
-        console.log("[ReceiptDetail] 📅 Sending datetime:", fullDateTime);
+        console.log("[ReceiptDetail] 📅 Combined datetime:", fullDateTime);
       }
-
+      
+      // Load existing receipts
+      const saved = localStorage.getItem('notaku_receipts');
+      if (!saved) {
+        throw new Error("No receipts in storage");
+      }
+      
+      const receipts = JSON.parse(saved);
+      const index = receipts.findIndex((r: any) => r.id === receiptId);
+      
+      if (index === -1) {
+        throw new Error("Receipt not found");
+      }
+      
+      // Update receipt
+      receipts[index] = {
+        ...receipts[index],
+        merchant: receipt.merchant_name,
+        merchant_name: receipt.merchant_name,
+        date: fullDateTime,
+        total_amount: typeof receipt.total_amount === "string" 
+          ? parseFloat(receipt.total_amount) 
+          : receipt.total_amount,
+        category: receipt.category,
+        notes: receipt.notes,
+        updated_at: new Date().toISOString(),
+      };
+      
+      // Save back to localStorage
+      localStorage.setItem('notaku_receipts', JSON.stringify(receipts));
+      console.log("[ReceiptDetail] ✅ Saved to localStorage");
+      
+      toast.success("Berhasil", {
+        description: "Perubahan berhasil disimpan",
+      });
+      setIsEditing(false);
+      
+      /* DISABLED: API call until backend ready
       const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
         method: "PUT",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          merchant_name: receipt.merchant_name,
-          transaction_date: fullDateTime,
-          transaction_time: receipt.transaction_time, // ✅ Also send time separately
-          total_amount: typeof receipt.total_amount === "string" 
-            ? parseFloat(receipt.total_amount) 
-            : receipt.total_amount,
-          currency: receipt.currency,
-          category: receipt.category,
-          notes: receipt.notes,
-        }),
+        body: JSON.stringify({...}),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to update receipt");
-      }
-
-      const updatedData = await response.json();
-      setReceipt(updatedData);
-      toast.success("Berhasil", {
-        description: "Perubahan berhasil disimpan",
-      });
-      setIsEditing(false);
+      */
     } catch (err) {
-      console.error("[ReceiptDetail] Error saving:", err);
+      console.error("[ReceiptDetail] ❌ Error saving:", err);
       toast.error("Error", {
         description: "Gagal menyimpan perubahan",
       });
@@ -211,22 +267,37 @@ export default function ReceiptDetailPage() {
     if (!receiptId) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete receipt");
+      console.log("[ReceiptDetail] 🗑️ Deleting from localStorage:", receiptId);
+      
+      // Load existing receipts
+      const saved = localStorage.getItem('notaku_receipts');
+      if (!saved) {
+        throw new Error("No receipts in storage");
       }
+      
+      const receipts = JSON.parse(saved);
+      const filtered = receipts.filter((r: any) => r.id !== receiptId);
+      
+      console.log("[ReceiptDetail] 📊 Before:", receipts.length, "After:", filtered.length);
+      
+      // Save back to localStorage
+      localStorage.setItem('notaku_receipts', JSON.stringify(filtered));
+      console.log("[ReceiptDetail] ✅ Deleted from localStorage");
 
       toast.success("Berhasil", {
         description: "Nota berhasil dihapus",
       });
       setShowDeleteDialog(false);
       router.push("/dashboard/receipts");
+      
+      /* DISABLED: API call until backend ready
+      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/${receiptId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      */
     } catch (err) {
-      console.error("[ReceiptDetail] Error deleting:", err);
+      console.error("[ReceiptDetail] ❌ Error deleting:", err);
       toast.error("Error", {
         description: "Gagal menghapus nota",
       });
