@@ -25,12 +25,76 @@ export default function ChatPage() {
   const [aiQueriesRemaining, setAiQueriesRemaining] = useState<number | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState("");
+  const [thinkingText, setThinkingText] = useState("Sedang berpikir...");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Thinking text animation with contextual messages
+  useEffect(() => {
+    if (isLoading) {
+      // Get the last user message to determine context
+      const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content.toLowerCase() || '';
+      
+      let thinkingStates = [
+        "Sedang berpikir...",
+        "Sedang mengumpulkan data...",
+        "Sedang menganalisa...",
+        "Menyiapkan jawaban...",
+      ];
+      
+      // Contextual messages based on question type
+      if (lastUserMessage.includes('berapa') || lastUserMessage.includes('total') || lastUserMessage.includes('jumlah')) {
+        thinkingStates = [
+          "Sedang menghitung...",
+          "Sedang mengumpulkan data transaksi...",
+          "Sedang menganalisa angka...",
+          "Menyiapkan laporan...",
+        ];
+      } else if (lastUserMessage.includes('supplier') || lastUserMessage.includes('merchant') || lastUserMessage.includes('toko')) {
+        thinkingStates = [
+          "Sedang mencari data supplier...",
+          "Sedang mengumpulkan informasi merchant...",
+          "Sedang menganalisa pola belanja...",
+          "Menyiapkan rekomendasi...",
+        ];
+      } else if (lastUserMessage.includes('bandingkan') || lastUserMessage.includes('vs') || lastUserMessage.includes('dibanding')) {
+        thinkingStates = [
+          "Sedang membandingkan data...",
+          "Sedang mengumpulkan periode...",
+          "Sedang menganalisa perbedaan...",
+          "Menyiapkan perbandingan...",
+        ];
+      } else if (lastUserMessage.includes('tips') || lastUserMessage.includes('saran') || lastUserMessage.includes('rekomendasi')) {
+        thinkingStates = [
+          "Sedang menganalisa pola...",
+          "Sedang mencari peluang hemat...",
+          "Sedang menyusun strategi...",
+          "Menyiapkan rekomendasi...",
+        ];
+      } else if (lastUserMessage.includes('tren') || lastUserMessage.includes('trend') || lastUserMessage.includes('grafik')) {
+        thinkingStates = [
+          "Sedang menganalisa tren...",
+          "Sedang mengumpulkan data historis...",
+          "Sedang menghitung perubahan...",
+          "Menyiapkan visualisasi...",
+        ];
+      }
+      
+      let index = 0;
+      setThinkingText(thinkingStates[0]);
+      
+      const interval = setInterval(() => {
+        index = (index + 1) % thinkingStates.length;
+        setThinkingText(thinkingStates[index]);
+      }, 1500); // Change every 1.5 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [isLoading, messages]);
 
   // Fetch AI queries remaining
   useEffect(() => {
@@ -510,8 +574,8 @@ export default function ChatPage() {
                   {message.role === "assistant" && message.isStreaming && !message.content ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                      <span className="text-sm text-muted-foreground">
-                        Sedang berpikir...
+                      <span className="text-sm text-muted-foreground animate-pulse">
+                        {thinkingText}
                       </span>
                     </div>
                   ) : (
