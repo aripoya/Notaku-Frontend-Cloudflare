@@ -37,12 +37,27 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ account, profile, user }) {
-      console.log("[NextAuth] 🔐 signIn callback triggered");
+      console.log("\n" + "=".repeat(60));
+      console.log("[NextAuth] 🔐 SIGN IN CALLBACK TRIGGERED");
+      console.log("=".repeat(60));
       console.log("[NextAuth] Provider:", account?.provider);
-      console.log("[NextAuth] User email:", profile?.email || user?.email);
+      console.log("[NextAuth] Account object:", JSON.stringify(account, null, 2));
+      console.log("[NextAuth] Profile object:", JSON.stringify(profile, null, 2));
+      console.log("[NextAuth] User object:", JSON.stringify(user, null, 2));
+      console.log("=".repeat(60) + "\n");
       
       if (account?.provider === "google") {
+        // Critical checks
+        if (!account.id_token) {
+          console.error("[NextAuth] ❌ CRITICAL: No ID token from Google!");
+          return false;
+        }
+        if (!account.access_token) {
+          console.warn("[NextAuth] ⚠️ WARNING: No access token from Google");
+        }
         console.log("[NextAuth] ✅ Google sign-in successful");
+        console.log("[NextAuth] ID Token:", account.id_token ? `${account.id_token.substring(0, 20)}...` : "MISSING");
+        console.log("[NextAuth] Access Token:", account.access_token ? `${account.access_token.substring(0, 20)}...` : "MISSING");
         return true;
       }
       
@@ -50,66 +65,116 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, account, profile, user }) {
-      console.log("[NextAuth] 🎫 JWT callback triggered");
+      console.log("\n" + "=".repeat(60));
+      console.log("[NextAuth] 🎫 JWT CALLBACK TRIGGERED");
+      console.log("=".repeat(60));
+      console.log("[NextAuth] Token (before):", JSON.stringify(token, null, 2));
+      console.log("[NextAuth] Account:", account ? JSON.stringify(account, null, 2) : "null");
+      console.log("[NextAuth] User:", user ? JSON.stringify(user, null, 2) : "null");
+      console.log("=".repeat(60) + "\n");
       
       // Initial sign in - exchange Google token with backend
       if (account && user) {
-        console.log("[NextAuth] New Google login - exchanging with backend");
+        console.log("[NextAuth] 🚀 NEW GOOGLE LOGIN - Exchanging with backend");
+        
+        // Prepare request body with multiple token formats for backend compatibility
+        const requestBody = {
+          // Try multiple field names for backend compatibility
+          token: account.id_token,           // Pattern A
+          idToken: account.id_token,         // Pattern B
+          googleToken: account.id_token,     // Pattern C
+          credential: account.id_token,      // Pattern D
+          accessToken: account.access_token, // Pattern E
+          email: user.email,
+          name: user.name,
+          picture: user.image,
+          image: user.image,
+          googleId: profile?.sub,
+          sub: profile?.sub
+        };
+        
+        console.log("[NextAuth] 📤 REQUEST TO BACKEND:");
+        console.log("[NextAuth] Endpoint:", `${API_URL}/auth/google`);
+        console.log("[NextAuth] Method: POST");
+        console.log("[NextAuth] Headers:", { 'Content-Type': 'application/json' });
+        console.log("[NextAuth] Body:", JSON.stringify(requestBody, null, 2));
         
         try {
+          const fetchStart = Date.now();
           const response = await fetch(`${API_URL}/auth/google`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              idToken: account.id_token,
-              accessToken: account.access_token,
-              email: user.email,
-              name: user.name,
-              image: user.image,
-              googleId: profile?.sub
-            })
+            body: JSON.stringify(requestBody)
           });
+          const fetchDuration = Date.now() - fetchStart;
+
+          console.log("[NextAuth] 📥 BACKEND RESPONSE:");
+          console.log("[NextAuth] Status:", response.status, response.statusText);
+          console.log("[NextAuth] Duration:", fetchDuration, "ms");
+          console.log("[NextAuth] Headers:", JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error("[NextAuth] ❌ Backend auth failed:", response.status, errorText);
-            throw new Error(`Backend authentication failed: ${response.status}`);
+            console.error("[NextAuth] ❌ BACKEND AUTH FAILED:");
+            console.error("[NextAuth] Status:", response.status);
+            console.error("[NextAuth] Error body:", errorText);
+            throw new Error(`Backend authentication failed: ${response.status} - ${errorText}`);
           }
           
           const data = await response.json();
-          console.log("[NextAuth] ✅ Backend auth successful");
+          console.log("[NextAuth] ✅ BACKEND AUTH SUCCESSFUL");
+          console.log("[NextAuth] Response data:", JSON.stringify(data, null, 2));
           
           // Store backend JWT and user data in token
-          return {
+          const updatedToken = {
             ...token,
-            backendToken: data.token || data.access_token,
-            userId: data.userId || data.user?.id,
+            backendToken: data.token || data.access_token || data.accessToken,
+            userId: data.userId || data.user_id || data.user?.id || data.id,
             userData: data.user,
-            googleAccessToken: account.access_token
+            googleAccessToken: account.access_token,
+            backendAuthenticated: true
           };
+          
+          console.log("[NextAuth] 💾 Updated token:", JSON.stringify(updatedToken, null, 2));
+          return updatedToken;
         } catch (error) {
-          console.error("[NextAuth] ❌ Backend auth error:", error);
+          console.error("[NextAuth] ❌ BACKEND AUTH ERROR:");
+          console.error("[NextAuth] Error type:", error instanceof Error ? error.constructor.name : typeof error);
+          console.error("[NextAuth] Error message:", error instanceof Error ? error.message : String(error));
+          console.error("[NextAuth] Error stack:", error instanceof Error ? error.stack : "No stack trace");
+          
           return { 
             ...token, 
             error: "BackendAuthError",
-            errorMessage: error instanceof Error ? error.message : 'Unknown error'
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
+            errorDetails: String(error)
           };
         }
       }
       
       // Return previous token if not initial sign in
+      console.log("[NextAuth] ↩️ Returning existing token (not initial sign in)");
       return token;
     },
     async session({ session, token }) {
-      console.log("[NextAuth] 📋 Session callback triggered");
+      console.log("\n" + "=".repeat(60));
+      console.log("[NextAuth] 📋 SESSION CALLBACK TRIGGERED");
+      console.log("=".repeat(60));
+      console.log("[NextAuth] Session (before):", JSON.stringify(session, null, 2));
+      console.log("[NextAuth] Token:", JSON.stringify(token, null, 2));
+      console.log("=".repeat(60) + "\n");
       
       // Check for backend auth error
       if (token.error) {
-        console.error("[NextAuth] ❌ Session has error:", token.error);
+        console.error("[NextAuth] ❌ SESSION HAS ERROR:");
+        console.error("[NextAuth] Error:", token.error);
+        console.error("[NextAuth] Message:", token.errorMessage);
+        console.error("[NextAuth] Details:", token.errorDetails);
         return { 
           ...session, 
           error: token.error,
-          errorMessage: token.errorMessage 
+          errorMessage: token.errorMessage,
+          errorDetails: token.errorDetails
         } as any;
       }
       
@@ -117,6 +182,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session as any).backendToken = token.backendToken;
         (session as any).userId = token.userId;
+        (session as any).backendAuthenticated = token.backendAuthenticated;
         (session.user as any).id = token.userId;
         
         // Merge backend user data if available
@@ -127,9 +193,14 @@ export const authOptions: NextAuthOptions = {
           };
         }
         
-        console.log("[NextAuth] ✅ Session configured with backend token");
+        console.log("[NextAuth] ✅ SESSION CONFIGURED");
+        console.log("[NextAuth] Backend Token:", token.backendToken ? `${String(token.backendToken).substring(0, 20)}...` : "MISSING");
+        console.log("[NextAuth] User ID:", token.userId || "MISSING");
+        console.log("[NextAuth] Backend Authenticated:", token.backendAuthenticated || false);
       }
       
+      console.log("[NextAuth] Session (after):", JSON.stringify(session, null, 2));
+      console.log("=".repeat(60) + "\n");
       return session;
     },
     async redirect({ url, baseUrl }) {
