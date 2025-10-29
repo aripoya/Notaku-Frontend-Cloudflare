@@ -128,15 +128,17 @@ export default function LoginPage() {
                 {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
               </div>
 
-              {/* Remember + Forgot */}
+              {/* Remember */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-sm text-slate-600">
                   <input type="checkbox" className="h-4 w-4 rounded border-slate-300" {...register("remember")} />
                   <span>Ingat saya</span>
                 </label>
+                {/* TODO: Add forgot password functionality later
                 <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
                   Lupa password?
                 </Link>
+                */}
               </div>
 
               {/* Submit */}
