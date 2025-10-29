@@ -39,6 +39,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('[AuthContext] Session:', session);
     console.log('[AuthContext] ============================================');
     
+    // PRIORITY 0: Check demo/mock login FIRST (from localStorage)
+    // If demo login exists, skip NextAuth completely
+    if (typeof window !== 'undefined') {
+      const existingToken = localStorage.getItem(TOKEN_KEY);
+      const storedUser = localStorage.getItem('mock_user');
+      
+      // Demo login detected - skip NextAuth session check
+      if (existingToken && existingToken.startsWith('mock_token_')) {
+        console.log('[AuthContext] ✅ Demo/Mock login detected - skipping NextAuth');
+        setBackendToken(existingToken);
+        
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            console.log('[AuthContext] ✅ Demo user loaded from localStorage');
+          } catch (e) {
+            console.error('[AuthContext] Error parsing stored user:', e);
+          }
+        }
+        
+        setError(null);
+        setIsLoading(false);
+        return; // ← SKIP NextAuth checks!
+      }
+    }
+    
+    // Only check NextAuth if NOT demo login
     if (status === 'loading') {
       setIsLoading(true);
       return;
@@ -79,10 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // Check for auth errors from backend
+      // Check for auth errors from backend (only for Google OAuth)
       if (session && (session as any).error) {
         const errorMsg = (session as any).errorMessage || 'Authentication failed with backend';
-        console.error('[AuthContext] ❌ Auth error:', errorMsg);
+        console.error('[AuthContext] ❌ Google OAuth error:', errorMsg);
         setError(errorMsg);
         setIsLoading(false);
         
@@ -93,26 +121,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // PRIORITY 2: Check existing token (demo login or previous Google login)
+      // PRIORITY 2: Check existing token (previous Google login)
       if (typeof window !== 'undefined') {
         const existingToken = localStorage.getItem(TOKEN_KEY);
         const storedUser = localStorage.getItem('mock_user');
         
         if (existingToken) {
-          console.log('[AuthContext] ✅ Found existing token in localStorage');
+          console.log('[AuthContext] ✅ Found existing Google token in localStorage');
           setBackendToken(existingToken);
           
           if (storedUser) {
             try {
               const parsedUser = JSON.parse(storedUser);
               setUser(parsedUser);
-              console.log('[AuthContext] ✅ User loaded from localStorage');
+              console.log('[AuthContext] ✅ Google user loaded from localStorage');
             } catch (e) {
               console.error('[AuthContext] Error parsing stored user:', e);
             }
           }
         } else {
-          console.log('[AuthContext] ⚠️ No token found in localStorage');
+          console.log('[AuthContext] ⚠️ No OAuth token found - user may use demo login');
         }
       }
       
