@@ -1,9 +1,9 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
+import NextAuth, { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
-    Google({
+    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
@@ -22,18 +22,7 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ account, profile }) {
       if (account?.provider === "google") {
-        // Store user in localStorage for consistency with mock auth
-        if (typeof window !== "undefined" && profile) {
-          const user = {
-            id: profile.sub || `google_${Date.now()}`,
-            email: profile.email,
-            username: profile.email?.split('@')[0] || 'user',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            isActive: true,
-          };
-          localStorage.setItem('mock_user', JSON.stringify(user));
-        }
+        console.log("[NextAuth] Google sign-in successful:", profile?.email);
         return true;
       }
       return true;
@@ -46,7 +35,7 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token.id) {
         session.user.id = token.id as string;
       }
       return session;
@@ -56,6 +45,8 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
