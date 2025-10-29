@@ -1,6 +1,8 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.notaku.cloud';
+
 // ⚠️ NextAuth requires Node.js runtime (not Edge) because it uses:
 // - crypto module
 // - http/https modules  
@@ -50,22 +52,82 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, account, profile, user }) {
       console.log("[NextAuth] 🎫 JWT callback triggered");
       
-      if (account) {
-        console.log("[NextAuth] New account login - adding to token");
-        token.accessToken = account.access_token;
-        token.id = profile?.sub || user?.id;
-        console.log("[NextAuth] Token ID set to:", token.id);
+      // Initial sign in - exchange Google token with backend
+      if (account && user) {
+        console.log("[NextAuth] New Google login - exchanging with backend");
+        
+        try {
+          const response = await fetch(`${API_URL}/auth/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              idToken: account.id_token,
+              accessToken: account.access_token,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              googleId: profile?.sub
+            })
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[NextAuth] ❌ Backend auth failed:", response.status, errorText);
+            throw new Error(`Backend authentication failed: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log("[NextAuth] ✅ Backend auth successful");
+          
+          // Store backend JWT and user data in token
+          return {
+            ...token,
+            backendToken: data.token || data.access_token,
+            userId: data.userId || data.user?.id,
+            userData: data.user,
+            googleAccessToken: account.access_token
+          };
+        } catch (error) {
+          console.error("[NextAuth] ❌ Backend auth error:", error);
+          return { 
+            ...token, 
+            error: "BackendAuthError",
+            errorMessage: error instanceof Error ? error.message : 'Unknown error'
+          };
+        }
       }
       
+      // Return previous token if not initial sign in
       return token;
     },
     async session({ session, token }) {
       console.log("[NextAuth] 📋 Session callback triggered");
-      console.log("[NextAuth] Token ID:", token.id);
       
-      if (session.user && token.id) {
-        (session.user as any).id = token.id as string;
-        console.log("[NextAuth] ✅ Session user ID set to:", token.id);
+      // Check for backend auth error
+      if (token.error) {
+        console.error("[NextAuth] ❌ Session has error:", token.error);
+        return { 
+          ...session, 
+          error: token.error,
+          errorMessage: token.errorMessage 
+        } as any;
+      }
+      
+      // Add backend token and user data to session
+      if (session.user) {
+        (session as any).backendToken = token.backendToken;
+        (session as any).userId = token.userId;
+        (session.user as any).id = token.userId;
+        
+        // Merge backend user data if available
+        if (token.userData) {
+          session.user = {
+            ...session.user,
+            ...(token.userData as any)
+          };
+        }
+        
+        console.log("[NextAuth] ✅ Session configured with backend token");
       }
       
       return session;

@@ -2,8 +2,12 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Receipt, PieChart as PieChartIcon, ArrowUp, Upload, MessageSquare, BarChart3, Eye, Edit } from "lucide-react";
+import { TrendingUp, Receipt, PieChart as PieChartIcon, ArrowUp, Upload, MessageSquare, BarChart3, Eye, Edit, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, PieChart, Pie, Cell, Legend } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 
 // Generate 30 days of spending data
 const spendingData = Array.from({ length: 30 }, (_, i) => ({
@@ -36,6 +40,65 @@ const categoryData = [
 ];
 
 export default function DashboardPage() {
+  const { user, isAuthenticated, isLoading, error } = useAuth();
+  const router = useRouter();
+  const [hasRedirected, setHasRedirected] = useState(false);
+
+  useEffect(() => {
+    console.log('[Dashboard] Auth state:', { isLoading, isAuthenticated, error, user });
+    
+    // Prevent multiple redirects
+    if (!isLoading && !isAuthenticated && !hasRedirected) {
+      console.log('[Dashboard] Not authenticated, redirecting to login...');
+      setHasRedirected(true);
+      router.push('/login');
+    }
+  }, [isAuthenticated, isLoading, router, hasRedirected, error, user]);
+
+  // Loading state - IMPORTANT to prevent blank page
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-600" />
+          <p className="text-muted-foreground">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-red-600">Authentication Error</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">{error}</p>
+            <Button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full">
+              Login Ulang
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Not authenticated - show redirecting message
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-600" />
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated - show dashboard
   return (
     <div className="space-y-6">
       {/* Page Header */}
