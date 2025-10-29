@@ -18,7 +18,7 @@ export interface TierFeature {
   name: string;
   price: number;
   monthly_limit: number;
-  google_vision: boolean;
+  ai_premium: boolean;
   ai_queries: number;
   features: string[];
 }
@@ -39,7 +39,7 @@ export interface QuotaInfo {
   monthly_limit: number;
   used: number;
   remaining: number;
-  can_use_google_vision: boolean;
+  can_use_ai_premium: boolean;
   ai_queries_used: number;
   ai_queries_limit: number;
   total_cost: number;

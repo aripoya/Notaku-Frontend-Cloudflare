@@ -44,7 +44,7 @@ export function QuotaDisplay({ userId, compact = false, onUpgradeClick }: QuotaD
         monthly_limit: 100,
         used: 0,
         remaining: 100,
-        can_use_google_vision: false,
+        can_use_ai_premium: false,
         ai_queries_used: 0,
         ai_queries_limit: 10,
         total_cost: 0,
@@ -192,14 +192,14 @@ export function QuotaDisplay({ userId, compact = false, onUpgradeClick }: QuotaD
 
         {/* Features Grid */}
         <div className="grid grid-cols-2 gap-4 pt-2">
-          {/* Google Vision */}
+          {/* AI Premium */}
           <div className="flex items-center gap-2">
-            {quota.can_use_google_vision ? (
+            {quota.can_use_ai_premium ? (
               <Check className="h-4 w-4 text-green-600" />
             ) : (
               <X className="h-4 w-4 text-gray-400" />
             )}
-            <span className="text-sm text-muted-foreground">Google Vision</span>
+            <span className="text-sm text-muted-foreground">AI Premium</span>
           </div>
 
           {/* AI Queries */}

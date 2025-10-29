@@ -144,7 +144,7 @@ export class SubscriptionAPI {
       monthly_limit: 10,
       used: 0,
       remaining: 10,
-      can_use_google_vision: false,
+      can_use_ai_premium: false,
       ai_queries_limit: 50,
       ai_queries_used: 0,
       total_cost: 0,
@@ -227,14 +227,14 @@ export class SubscriptionAPI {
   }
 
   /**
-   * Helper: Check if user can use Google Vision
+   * Helper: Check if user can use AI Premium
    */
   static async canUseGoogleVision(userId: string): Promise<boolean> {
     try {
       const quota = await this.getQuota(userId);
-      return quota.can_use_google_vision;
+      return quota.can_use_ai_premium;
     } catch (error) {
-      console.error("[Subscription API] Error checking Google Vision access:", error);
+      console.error("[Subscription API] Error checking AI Premium access:", error);
       return false;
     }
   }

@@ -739,7 +739,7 @@ export default function UploadPage() {
                   <div className="flex items-center gap-2">
                     <Crown className="h-5 w-5 text-amber-600" />
                     <div>
-                      <p className="font-semibold text-amber-900">Google Vision API</p>
+                      <p className="font-semibold text-amber-900">AI Premium</p>
                       <p className="text-xs text-amber-700">Akurasi lebih tinggi untuk nota Anda</p>
                     </div>
                   </div>
@@ -800,7 +800,7 @@ export default function UploadPage() {
             <div>
               <h3 className="text-lg font-semibold mb-2">{processingText}</h3>
               <p className="text-sm text-muted-foreground">
-                {usePremiumOCR ? "Menggunakan Google Vision API" : "Menggunakan PaddleOCR"}
+                {usePremiumOCR ? "Menggunakan AI Premium" : "Menggunakan Notaku AI"}
               </p>
             </div>
           </div>
@@ -834,7 +834,7 @@ export default function UploadPage() {
               <div className="flex-1">
                 <h3 className="font-semibold text-green-800">Nota Berhasil Diproses!</h3>
                 <p className={`text-sm ${result.isPremium ? 'text-amber-700' : 'text-green-700'}`}>
-                  {result.isPremium ? 'Diproses dengan Google Vision API' : 'Data telah diekstrak dari nota Anda'}
+                  {result.isPremium ? 'Diproses dengan AI Premium' : 'Data telah diekstrak dari nota Anda'}
                 </p>
               </div>
               {(result.confidence !== undefined || result.ocr_confidence !== undefined) && (

@@ -133,7 +133,7 @@ export default function OCRPage() {
       {/* Footer Info */}
       <div className="text-center text-xs text-muted-foreground pt-6 border-t border-slate-200 dark:border-slate-700">
         <p>
-          Powered by PaddleOCR • 15 Workers • ~21 requests/second
+          Powered by Notaku AI • 15 Workers • ~21 requests/second
         </p>
       </div>
     </div>
