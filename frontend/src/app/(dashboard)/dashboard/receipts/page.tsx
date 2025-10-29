@@ -27,6 +27,7 @@ import ReceiptCard, { Receipt } from "@/components/receipts/ReceiptCard";
 import ReceiptCardSkeleton from "@/components/receipts/ReceiptCardSkeleton";
 import StatsCard from "@/components/receipts/StatsCard";
 import { calculateStats, formatCurrency } from "@/lib/receipt-utils";
+import { getRAGUrl, RAG_DEFAULTS } from "@/config/services";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
 
@@ -40,7 +41,7 @@ export default function ReceiptsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ LOAD FROM LOCALSTORAGE: Temporary solution until backend ready
+  // ✅ LOAD FROM MULTIPLE SOURCES: localStorage + RAG Service
   // Receipts are saved locally after upload and indexed in RAG for chat queries
   const fetchReceipts = async (showRefreshIndicator = false) => {
     try {
@@ -51,27 +52,104 @@ export default function ReceiptsPage() {
       }
       setError(null);
 
-      console.log('[ReceiptsList] 📂 Loading receipts from localStorage');
+      console.log('[ReceiptsList] 📂 Loading receipts from multiple sources');
       
-      // Load from localStorage
+      // 1. Load from localStorage (immediate)
       const saved = localStorage.getItem('notaku_receipts');
+      let localReceipts: any[] = [];
       if (saved) {
-        const parsedReceipts = JSON.parse(saved);
-        console.log('[ReceiptsList] ✅ Loaded receipts:', parsedReceipts.length);
-        
-        // Sort by date (newest first)
-        const sorted = parsedReceipts.sort((a: any, b: any) => {
-          return new Date(b.saved_at || b.created_at).getTime() - 
-                 new Date(a.saved_at || a.created_at).getTime();
-        });
-        
-        setReceipts(sorted);
-      } else {
-        console.log('[ReceiptsList] 📭 No saved receipts found');
-        setReceipts([]);
+        localReceipts = JSON.parse(saved);
+        console.log('[ReceiptsList] 📱 Local receipts:', localReceipts.length);
       }
       
-      /* BACKEND API VERSION (DISABLED):
+      // 2. Try to fetch from RAG Service (indexed receipts)
+      let ragReceipts: any[] = [];
+      try {
+        console.log('[ReceiptsList] 🔍 Fetching indexed receipts from RAG...');
+        const ragUrl = getRAGUrl('SEARCH');
+        const ragResponse = await fetch(ragUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: '*', // Get all receipts
+            collection_name: RAG_DEFAULTS.COLLECTION_NAME,
+            top_k: 100, // Get up to 100 receipts
+            include_metadata: true,
+          }),
+        });
+        
+        if (ragResponse.ok) {
+          const ragData = await ragResponse.json();
+          console.log('[ReceiptsList] 🎯 RAG response:', ragData);
+          
+          // Extract receipts from RAG response
+          if (ragData.results && Array.isArray(ragData.results)) {
+            ragReceipts = ragData.results.map((item: any) => {
+              const metadata = item.metadata || {};
+              return {
+                id: metadata.receipt_id || metadata.id || `rag_${Date.now()}_${Math.random()}`,
+                merchant_name: metadata.merchant || metadata.merchant_name || 'Unknown',
+                total_amount: metadata.total || metadata.total_amount || 0,
+                currency: 'IDR',
+                category: metadata.category || null,
+                transaction_date: metadata.date || metadata.transaction_date || new Date().toISOString(),
+                created_at: metadata.created_at || new Date().toISOString(),
+                image_path: metadata.image_path || null,
+                notes: metadata.notes || null,
+                ocr_data: metadata,
+                source: 'rag', // Mark as RAG source
+              };
+            });
+            console.log('[ReceiptsList] 🗂️ RAG receipts processed:', ragReceipts.length);
+          }
+        } else {
+          console.warn('[ReceiptsList] ⚠️ RAG fetch failed:', ragResponse.status);
+        }
+      } catch (ragError) {
+        console.warn('[ReceiptsList] ⚠️ RAG service unavailable:', ragError);
+      }
+      
+      // 3. Merge and deduplicate receipts
+      const allReceipts = [...localReceipts, ...ragReceipts];
+      const uniqueReceipts = allReceipts.reduce((acc: any[], receipt: any) => {
+        // Check if receipt already exists (by ID or merchant+amount+date)
+        const exists = acc.find(r => 
+          r.id === receipt.id || 
+          (r.merchant_name === receipt.merchant_name && 
+           r.total_amount === receipt.total_amount && 
+           r.transaction_date?.split('T')[0] === receipt.transaction_date?.split('T')[0])
+        );
+        
+        if (!exists) {
+          acc.push(receipt);
+        } else {
+          // Prefer local version over RAG version
+          if (receipt.source !== 'rag') {
+            const index = acc.findIndex(r => r.id === exists.id);
+            if (index >= 0) acc[index] = receipt;
+          }
+        }
+        return acc;
+      }, []);
+      
+      console.log('[ReceiptsList] 🔄 Total unique receipts:', uniqueReceipts.length);
+      console.log('[ReceiptsList] 📊 Sources - Local:', localReceipts.length, 'RAG:', ragReceipts.length, 'Unique:', uniqueReceipts.length);
+      
+      // Sort by date (newest first)
+      const sorted = uniqueReceipts.sort((a: any, b: any) => {
+        return new Date(b.saved_at || b.created_at || b.transaction_date).getTime() - 
+               new Date(a.saved_at || a.created_at || a.transaction_date).getTime();
+      });
+      
+      setReceipts(sorted);
+      
+      if (sorted.length === 0) {
+        console.log('[ReceiptsList] 📭 No receipts found from any source');
+      }
+      
+      /* FUTURE: Backend API integration
       const response = await fetch(`${API_BASE_URL}/api/v1/receipts/`, {
         method: "GET",
         credentials: "include",
