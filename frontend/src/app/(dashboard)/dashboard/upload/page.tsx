@@ -12,6 +12,7 @@ import { Camera, Upload, X, RotateCw, Check, Loader2, FileImage, Eye, AlertCircl
 import { toast } from "sonner";
 import { OCRApiClient } from "@/lib/ocr-api";
 import { useAuth } from "@/hooks/useAuth";
+import { useImageCompression } from "@/hooks/useImageCompression";
 import { OcrStatusIndicator } from "@/components/OcrStatusIndicator";
 import { formatIndonesianDate, formatLongDate, formatCurrency } from "@/lib/formatters";
 import { SubscriptionAPI } from "@/lib/subscription-api";
@@ -43,6 +44,9 @@ export default function UploadPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   const [upgradeReason, setUpgradeReason] = useState<string>("");
   const [ocrProvider, setOcrProvider] = useState<"paddle" | "google">("paddle");
+  
+  // Image compression hook
+  const { compressImage, isCompressing, compressionStats, resetStats } = useImageCompression();
 
   // Check if user is premium and can use Google Vision
   useEffect(() => {
@@ -81,50 +85,7 @@ export default function UploadPage() {
     }
   }, [stage]);
 
-  // ✅ Helper: Compress image to reduce size
-  const compressImage = (file: File, maxSizeMB: number = 1): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          
-          // Calculate new dimensions (max 1920px width)
-          const maxWidth = 1920;
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          
-          // Start with quality 0.8, reduce if needed
-          let quality = 0.8;
-          let base64 = canvas.toDataURL('image/jpeg', quality);
-          
-          // If still too large, reduce quality
-          while (base64.length > maxSizeMB * 1024 * 1024 * 1.37 && quality > 0.3) {
-            quality -= 0.1;
-            base64 = canvas.toDataURL('image/jpeg', quality);
-          }
-          
-          console.log(`[Upload] 🗜️ Compressed: ${file.size} → ${Math.round(base64.length / 1.37)} bytes (quality: ${quality})`);
-          resolve(base64);
-        };
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    });
-  };
+  // ✅ REMOVED: Old client-side compression - now using compression service
 
   // Handle file selection
   const handleFileSelect = async (file: File) => {
@@ -145,13 +106,17 @@ export default function UploadPage() {
     setPreviewUrl(blobUrl);
     console.log("[Upload] 📸 Preview URL (blob):", blobUrl);
     
+    // ✅ Create base64 for preview (will be replaced by compression service)
     try {
-      // ✅ Compress and convert to base64 (for sending to backend)
-      const base64String = await compressImage(file, 1); // Max 1MB
-      setImageBase64(base64String);
-      console.log("[Upload] 📦 Image ready, size:", Math.round(base64String.length / 1024), "KB");
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string;
+        setImageBase64(base64String);
+        console.log("[Upload] 📦 Image ready for preview");
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
-      console.error("[Upload] ❌ Error compressing image:", error);
+      console.error("[Upload] ❌ Error reading image:", error);
       toast.error("Error", { description: "Gagal memproses gambar" });
     }
     
@@ -204,12 +169,30 @@ export default function UploadPage() {
     setError("");
 
     try {
+      // Step 1: Compress image for faster upload
+      console.log("[Upload] 🗜️ Step 1: Compressing image...");
+      const compressedFile = await compressImage(selectedFile);
+      
+      // Show compression result
+      if (compressionStats) {
+        toast.success(
+          `Image optimized: ${compressionStats.reductionPercent.toFixed(0)}% smaller`,
+          { 
+            description: `${compressionStats.originalSizeKB}KB → ${compressionStats.compressedSizeKB}KB`,
+            duration: 3000 
+          }
+        );
+      }
+      
+      // Step 2: Upload compressed file
+      console.log("[Upload] 📤 Step 2: Uploading compressed file...");
       const progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + 10, 90));
       }, 200);
 
       console.log("[Upload] Calling OCRApiClient.uploadReceipt...");
       console.log("[Upload] Using provider:", usePremiumOCR ? "google (premium)" : "paddle (standard)");
+      console.log("[Upload] File size after compression:", `${(compressedFile.size / 1024).toFixed(0)}KB`);
       
       let response: any;
       
@@ -220,12 +203,12 @@ export default function UploadPage() {
         // Use Premium OCR (Google Vision)
         const token = localStorage.getItem('auth_token');
         console.log("[Upload] Using Premium OCR with token:", token ? 'present' : 'missing');
-        response = await OCRApiClient.uploadPremiumReceipt(selectedFile, token || undefined);
+        response = await OCRApiClient.uploadPremiumReceipt(compressedFile, token || undefined);
       } else {
         // Use Standard OCR (Integration Service with PaddleOCR)
         console.log("[Upload] ⚡ Using Integration Service (SYNCHRONOUS)");
-        console.log("[Upload] This will take 20-40 seconds - waiting for complete result...");
-        response = await OCRApiClient.uploadReceipt(selectedFile, user.id);
+        console.log("[Upload] This will take 15-30 seconds (faster with compression!)...");
+        response = await OCRApiClient.uploadReceipt(compressedFile, user.id);
       }
       
       console.log("[Upload] ✅ Receipt processed successfully:", response);
@@ -279,6 +262,7 @@ export default function UploadPage() {
     setJobId("");
     setResult(null);
     setError("");
+    resetStats(); // ✅ Clear compression stats
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
@@ -762,14 +746,37 @@ export default function UploadPage() {
                 </Alert>
               )}
 
+              {/* Compression status */}
+              {isCompressing && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span>Mengoptimalkan gambar untuk upload yang lebih cepat...</span>
+                </div>
+              )}
+
+              {/* Compression stats (show after compression) */}
+              {compressionStats && !isCompressing && (
+                <div className="text-xs text-muted-foreground bg-green-50 px-3 py-2 rounded-md border border-green-200">
+                  <div className="font-medium mb-1 text-green-800">✅ Optimasi berhasil:</div>
+                  <div className="flex gap-4">
+                    <span>Original: {compressionStats.originalSizeKB.toFixed(0)}KB</span>
+                    <span>→</span>
+                    <span>Compressed: {compressionStats.compressedSizeKB.toFixed(0)}KB</span>
+                    <span className="text-green-600 font-medium">
+                      ({compressionStats.reductionPercent.toFixed(0)}% lebih kecil)
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleReset} className="flex-1">
                   <X className="mr-2 h-4 w-4" />
                   Batal
                 </Button>
-                <Button onClick={handleUpload} className="flex-1">
+                <Button onClick={handleUpload} className="flex-1" disabled={isCompressing}>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Proses Nota
+                  {isCompressing ? 'Mengoptimalkan...' : 'Proses Nota'}
                 </Button>
               </div>
             </CardContent>
@@ -782,9 +789,18 @@ export default function UploadPage() {
           <div className="text-center space-y-4">
             <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
             <div>
-              <h3 className="text-lg font-semibold mb-2">Mengupload Nota...</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {isCompressing ? 'Mengoptimalkan Gambar...' : 'Mengupload Nota...'}
+              </h3>
               <Progress value={progress} className="mb-2" />
               <p className="text-sm text-muted-foreground">{progress}%</p>
+              
+              {/* Show compression status during upload */}
+              {compressionStats && (
+                <div className="text-xs text-green-600 mt-2">
+                  ✅ Gambar dioptimalkan: {compressionStats.reductionPercent.toFixed(0)}% lebih kecil
+                </div>
+              )}
             </div>
           </div>
         </Card>

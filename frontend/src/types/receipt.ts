@@ -13,6 +13,7 @@ export interface Receipt {
   ocr_data?: any;
   image_path: string;
   image_base64?: string; // ✅ For sending to backend (not stored in DB)
+  items?: any[]; // ✅ Items array from OCR extraction
   is_edited: boolean;
   created_at: string;
   updated_at?: string;

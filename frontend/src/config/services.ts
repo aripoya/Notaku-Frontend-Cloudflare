@@ -21,6 +21,7 @@
 // Service URLs - Public HTTPS endpoints via Cloudflare Tunnel
 const INTEGRATION_SERVICE_URL = process.env.NEXT_PUBLIC_INTEGRATION_URL || 'https://upload.notaku.cloud';
 const RAG_SERVICE_URL = process.env.NEXT_PUBLIC_RAG_URL || 'https://api.notaku.cloud';
+const COMPRESSION_SERVICE_URL = process.env.NEXT_PUBLIC_COMPRESSION_URL || 'https://compress.notaku.cloud';
 
 // Legacy/Internal URLs (for reference - DO NOT USE DIRECTLY)
 const OCR_SERVICE_URL = 'http://172.16.1.7:8001'; // Internal use only
@@ -77,6 +78,24 @@ export const API_CONFIG = {
       INDEX_RECEIPT: '/index/receipt',
       INDEX_BATCH: '/index/batch',
     }
+  },
+  
+  /**
+   * Compression Service - Optimizes images before upload
+   * Reduces file size by 50-70% for faster uploads
+   */
+  COMPRESSION: {
+    BASE_URL: COMPRESSION_SERVICE_URL,
+    ENDPOINTS: {
+      // Optimize image for upload (JPEG Q70, resize if needed)
+      OPTIMIZE: '/api/optimize-for-upload',
+      
+      // General compression endpoint
+      COMPRESS: '/api/compress',
+      
+      // Health check
+      HEALTH: '/health',
+    }
   }
 } as const;
 
@@ -118,6 +137,13 @@ export function getRAGUrl(endpoint: keyof typeof API_CONFIG.RAG.ENDPOINTS, param
 }
 
 /**
+ * Get full URL for Compression Service endpoint
+ */
+export function getCompressionUrl(endpoint: keyof typeof API_CONFIG.COMPRESSION.ENDPOINTS): string {
+  return `${API_CONFIG.COMPRESSION.BASE_URL}${API_CONFIG.COMPRESSION.ENDPOINTS[endpoint]}`;
+}
+
+/**
  * Check if Integration Service is available
  */
 export async function checkIntegrationHealth(): Promise<boolean> {
@@ -150,11 +176,28 @@ export async function checkRAGHealth(): Promise<boolean> {
 }
 
 /**
+ * Check if Compression Service is available
+ */
+export async function checkCompressionHealth(): Promise<boolean> {
+  try {
+    const response = await fetch(getCompressionUrl('HEALTH'), {
+      method: 'GET',
+      signal: AbortSignal.timeout(5000),
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('[Compression Service] Health check failed:', error);
+    return false;
+  }
+}
+
+/**
  * Export service URLs for direct access if needed
  */
 export const SERVICE_URLS = {
   INTEGRATION: INTEGRATION_SERVICE_URL,
   RAG: RAG_SERVICE_URL,
+  COMPRESSION: COMPRESSION_SERVICE_URL,
   // Internal services (reference only)
   OCR: OCR_SERVICE_URL,
   VISION: VISION_SERVICE_URL,
