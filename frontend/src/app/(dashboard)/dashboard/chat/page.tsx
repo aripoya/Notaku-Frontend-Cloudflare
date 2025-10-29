@@ -507,7 +507,7 @@ export default function ChatPage() {
                       : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  {message.role === "assistant" && message.isStreaming ? (
+                  {message.role === "assistant" && message.isStreaming && !message.content ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                       <span className="text-sm text-muted-foreground">
@@ -515,11 +515,19 @@ export default function ChatPage() {
                       </span>
                     </div>
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap">
-                      {message.role === "assistant"
-                        ? formatMessage(message.content)
-                        : message.content}
-                    </p>
+                    <div>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {message.role === "assistant"
+                          ? formatMessage(message.content)
+                          : message.content}
+                      </p>
+                      {message.role === "assistant" && message.isStreaming && message.content && (
+                        <div className="flex items-center gap-1 mt-2">
+                          <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
+                          <span className="text-xs text-muted-foreground">Mengetik...</span>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
