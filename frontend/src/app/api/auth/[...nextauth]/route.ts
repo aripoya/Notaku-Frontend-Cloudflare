@@ -1,6 +1,20 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+// ⚠️ NextAuth requires Node.js runtime (not Edge) because it uses:
+// - crypto module
+// - http/https modules  
+// - Other Node.js APIs
+// 
+// This means:
+// ✅ Works on: Vercel, Railway, Render, fly.io
+// ❌ Limited on: Cloudflare Workers (Edge runtime only)
+//
+// For Cloudflare Workers, consider using:
+// - @auth/core with edge-compatible adapters
+// - Lucia auth (edge-native)
+// - Or deploy to Vercel instead
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
