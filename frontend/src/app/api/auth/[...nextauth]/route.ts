@@ -99,6 +99,35 @@ export const authOptions: NextAuthOptions = {
         console.log("[NextAuth] Headers:", { 'Content-Type': 'application/json' });
         console.log("[NextAuth] Body:", JSON.stringify(requestBody, null, 2));
         
+        // TEMPORARY: Skip backend exchange for testing
+        // TODO: Re-enable when backend /auth/google endpoint is ready
+        const SKIP_BACKEND = true; // ← Set to false when backend ready
+        
+        if (SKIP_BACKEND) {
+          console.log("[NextAuth] ⚠️ SKIPPING BACKEND - Using Google user directly (temporary)");
+          
+          // Create mock token for testing
+          const mockBackendToken = `google_${account.access_token?.substring(0, 20)}`;
+          
+          const updatedToken = {
+            ...token,
+            backendToken: mockBackendToken,
+            userId: user.email,
+            userData: {
+              id: user.email,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+            },
+            googleAccessToken: account.access_token,
+            backendAuthenticated: false, // Mark as not backend authenticated
+            temporaryBypass: true
+          };
+          
+          console.log("[NextAuth] 💾 Updated token (temporary bypass):", JSON.stringify(updatedToken, null, 2));
+          return updatedToken;
+        }
+        
         try {
           const fetchStart = Date.now();
           const response = await fetch(`${API_URL}/auth/google`, {
