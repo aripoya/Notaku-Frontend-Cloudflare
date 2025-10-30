@@ -168,13 +168,13 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      // ✅ Use RAG Service for chat
+      // ✅ Use RAG Service for chat (via proxy to avoid CORS)
       // This enables the chatbot to answer questions using indexed receipts
-      const endpoint = getRAGUrl('QUERY_STREAM');
+      const endpoint = '/api/rag-proxy'; // Use local proxy to avoid CORS
       
       console.log('[Chat] 🤖 RAG Configuration:');
-      console.log('[Chat] RAG Service URL:', API_CONFIG.RAG.BASE_URL);
-      console.log('[Chat] Endpoint:', endpoint);
+      console.log('[Chat] Using CORS proxy endpoint:', endpoint);
+      console.log('[Chat] Target RAG Service:', API_CONFIG.RAG.BASE_URL);
       console.log('[Chat] Collection:', RAG_DEFAULTS.COLLECTION_NAME);
       
       const requestBody = {
@@ -188,7 +188,7 @@ export default function ChatPage() {
       console.log('[Chat] Request body:', requestBody);
       console.log('[Chat] Query:', requestBody.question);
       
-      console.log('[Chat] Sending RAG query request...');
+      console.log('[Chat] Sending RAG query request via proxy...');
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
