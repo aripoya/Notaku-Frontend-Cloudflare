@@ -24,11 +24,21 @@ export async function POST(request: NextRequest) {
       // Handle Cloudflare 520 errors specifically
       if (ragResponse.status === 520) {
         console.error('[RAG Proxy] Cloudflare 520 error - RAG service is down or overloaded');
+        console.error('[RAG Proxy] This usually means:');
+        console.error('[RAG Proxy] 1. Ollama model not loaded or crashed');
+        console.error('[RAG Proxy] 2. GPU memory insufficient');
+        console.error('[RAG Proxy] 3. RAG service backend timeout');
+        
         return NextResponse.json(
           { 
             error: 'RAG service temporarily unavailable',
-            details: 'The AI service is currently experiencing issues. Please try again in a few minutes.',
-            fallback_response: 'Maaf, layanan AI sedang mengalami gangguan. Silakan coba lagi dalam beberapa menit. Sementara itu, Anda dapat melihat nota-nota Anda di halaman Receipts.'
+            details: 'Ollama running tapi RAG service tidak merespons. Kemungkinan model belum loaded atau GPU memory penuh.',
+            fallback_response: '🤖 **Layanan AI Sedang Bermasalah**\n\nOllama berjalan tapi RAG service tidak merespons (Error 520).\n\n**Kemungkinan penyebab:**\n• Model Qwen belum di-load\n• GPU memory penuh\n• RAG service backend crash\n\n**Solusi:**\n1. Restart RAG service\n2. Check GPU memory: `nvidia-smi`\n3. Reload model Ollama\n\nSementara itu, Anda dapat melihat nota-nota di halaman Receipts.',
+            troubleshooting: {
+              'check_gpu': 'nvidia-smi',
+              'restart_rag': 'sudo systemctl restart rag-service',
+              'check_ollama': 'ollama list && ollama ps'
+            }
           },
           { 
             status: 503, // Service Unavailable
