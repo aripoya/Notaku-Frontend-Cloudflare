@@ -192,7 +192,7 @@ export default function ChatPage() {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
       const token = localStorage.getItem('auth_token');
       
-      const response = await fetch(`${backendUrl}/api/v1/chat/stream`, {
+      const response = await fetch(`${backendUrl}/api/v1/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

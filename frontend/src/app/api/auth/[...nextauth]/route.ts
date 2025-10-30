@@ -1,7 +1,9 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
+const API_VERSION = "v1";
+const API_PREFIX = `/api/${API_VERSION}`;
 
 // ⚠️ NextAuth requires Node.js runtime (not Edge) because it uses:
 // - crypto module
@@ -94,14 +96,13 @@ export const authOptions: NextAuthOptions = {
         };
         
         console.log("[NextAuth] 📤 REQUEST TO BACKEND:");
-        console.log("[NextAuth] Endpoint:", `${API_URL}/auth/google`);
+        console.log("[NextAuth] Endpoint:", `${API_BASE_URL}${API_PREFIX}/auth/google`);
         console.log("[NextAuth] Method: POST");
         console.log("[NextAuth] Headers:", { 'Content-Type': 'application/json' });
         console.log("[NextAuth] Body:", JSON.stringify(requestBody, null, 2));
         
-        // TEMPORARY: Skip backend exchange for testing
-        // TODO: Re-enable when backend /auth/google endpoint is ready
-        const SKIP_BACKEND = true; // ← Set to false when backend ready
+        // Backend exchange is now properly configured with /api/v1 prefix
+        const SKIP_BACKEND = false; // Backend endpoint is ready
         
         if (SKIP_BACKEND) {
           console.log("[NextAuth] ⚠️ SKIPPING BACKEND - Using Google user directly (temporary)");
@@ -130,10 +131,14 @@ export const authOptions: NextAuthOptions = {
         
         try {
           const fetchStart = Date.now();
-          const response = await fetch(`${API_URL}/auth/google`, {
+          const response = await fetch(`${API_BASE_URL}${API_PREFIX}/auth/google`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            credentials: 'include',
+            mode: 'cors'
           });
           const fetchDuration = Date.now() - fetchStart;
 

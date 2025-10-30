@@ -547,7 +547,7 @@ export class ApiClient {
     onError: (error: Error) => void
   ): Promise<void> {
     try {
-      const response = await fetch(buildUrl(`${API_PREFIX}/chat/stream`), {
+      const response = await fetch(buildUrl(`${API_PREFIX}/chat`), {
         method: "POST",
         headers: DEFAULT_HEADERS,
         body: JSON.stringify(data),
