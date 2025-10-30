@@ -15,6 +15,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   isStreaming?: boolean;
+  isError?: boolean;
 }
 
 export default function ChatPage() {
@@ -204,11 +205,43 @@ export default function ChatPage() {
       console.log('[Chat] Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[Chat] ❌ Error response body:', errorText);
+        let errorData;
+        const contentType = response.headers.get('content-type') || '';
+        
+        try {
+          if (contentType.includes('application/json')) {
+            errorData = await response.json();
+          } else {
+            errorData = { error: await response.text() };
+          }
+        } catch (e) {
+          errorData = { error: 'Failed to parse error response' };
+        }
+        
+        console.error('[Chat] ❌ Error response:', errorData);
         
         // Handle specific error codes
-        if (response.status === 401) {
+        if (response.status === 503 && errorData.fallback_response) {
+          // RAG service is down, show fallback message
+          console.log('[Chat] 🔄 Using fallback response for service unavailable');
+          
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage && lastMessage.role === 'assistant') {
+              lastMessage.content = errorData.fallback_response;
+              lastMessage.isStreaming = false;
+              lastMessage.isError = true;
+            }
+            return newMessages;
+          });
+          
+          toast.error('Layanan AI Tidak Tersedia', {
+            description: 'Silakan coba lagi dalam beberapa menit'
+          });
+          
+          return; // Don't throw error, we handled it gracefully
+        } else if (response.status === 401) {
           throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
         } else if (response.status === 403) {
           throw new Error('Akses ditolak. Periksa izin Anda.');
@@ -217,7 +250,7 @@ export default function ChatPage() {
         } else if (response.status === 404) {
           throw new Error('Endpoint tidak ditemukan. Periksa konfigurasi API.');
         } else {
-          throw new Error(`API error ${response.status}: ${errorText}`);
+          throw new Error(errorData.details || errorData.error || `API error ${response.status}`);
         }
       }
 
@@ -568,6 +601,8 @@ export default function ChatPage() {
                   className={`max-w-[70%] rounded-2xl px-4 py-3 ${
                     message.role === "user"
                       ? "bg-blue-600 text-white"
+                      : message.isError
+                      ? "bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800"
                       : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                   }`}
                 >

@@ -19,7 +19,26 @@ export async function POST(request: NextRequest) {
 
     if (!ragResponse.ok) {
       const errorText = await ragResponse.text();
-      console.error('[RAG Proxy] RAG service error:', errorText);
+      console.error('[RAG Proxy] RAG service error:', ragResponse.status, errorText);
+      
+      // Handle Cloudflare 520 errors specifically
+      if (ragResponse.status === 520) {
+        console.error('[RAG Proxy] Cloudflare 520 error - RAG service is down or overloaded');
+        return NextResponse.json(
+          { 
+            error: 'RAG service temporarily unavailable',
+            details: 'The AI service is currently experiencing issues. Please try again in a few minutes.',
+            fallback_response: 'Maaf, layanan AI sedang mengalami gangguan. Silakan coba lagi dalam beberapa menit. Sementara itu, Anda dapat melihat nota-nota Anda di halaman Receipts.'
+          },
+          { 
+            status: 503, // Service Unavailable
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+            }
+          }
+        );
+      }
+      
       throw new Error(`RAG service error: ${ragResponse.status} - ${errorText}`);
     }
 
