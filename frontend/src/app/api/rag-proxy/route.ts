@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
           { 
             error: 'RAG service temporarily unavailable',
             details: 'Ollama running tapi RAG service tidak merespons. Kemungkinan model belum loaded atau GPU memory penuh.',
-            fallback_response: '🤖 **Layanan AI Sedang Bermasalah**\n\nOllama berjalan tapi RAG service tidak merespons (Error 520).\n\n**Kemungkinan penyebab:**\n• Model Qwen belum di-load\n• GPU memory penuh\n• RAG service backend crash\n\n**Solusi:**\n1. Restart RAG service\n2. Check GPU memory: `nvidia-smi`\n3. Reload model Ollama\n\nSementara itu, Anda dapat melihat nota-nota di halaman Receipts.',
+            fallback_response: '🤖 **Layanan AI Sedang Bermasalah**\n\nKami mohon maaf atas ketidaknyamanan ini, secepatnya kami perbaiki.\n\n**Kemungkinan penyebab:**\n• Model Qwen belum di-load\n• GPU memory penuh\n• RAG service backend crash\n\n**Solusi:**\n1. Restart RAG service\n2. Check GPU memory: `nvidia-smi`\n3. Reload model Ollama\n\nSementara itu, Anda dapat melihat nota-nota di halaman Receipts.',
             troubleshooting: {
               'check_gpu': 'nvidia-smi',
               'restart_rag': 'sudo systemctl restart rag-service',
