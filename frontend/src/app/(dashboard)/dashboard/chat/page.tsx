@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SubscriptionAPI } from "@/lib/subscription-api";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { toast } from "sonner";
-import { getRAGUrl, RAG_DEFAULTS, API_CONFIG } from "@/config/services";
+// Removed RAG service imports - now using Backend API for Diajeng chat
 
 interface Message {
   role: "user" | "assistant";
@@ -169,37 +169,40 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      // ✅ Use RAG Service for chat (via proxy to avoid CORS)
-      // This enables the chatbot to answer questions using indexed receipts
-      const endpoint = '/api/rag-proxy'; // Use local proxy to avoid CORS
-      
-      console.log('[Chat] 🤖 RAG Configuration:');
-      console.log('[Chat] Using CORS proxy endpoint:', endpoint);
-      console.log('[Chat] Target RAG Service:', API_CONFIG.RAG.BASE_URL);
-      console.log('[Chat] Collection:', RAG_DEFAULTS.COLLECTION_NAME);
+      // ✅ Use Backend API for chat with Diajeng
+      // This connects to the new backend with proper authentication
+      console.log('[Chat] 🤖 Diajeng Chat Configuration:');
+      console.log('[Chat] Using Backend API for chat with Diajeng');
+      console.log('[Chat] User:', user?.name || user?.email);
       
       const requestBody = {
-        question: message,
-        collection_name: RAG_DEFAULTS.COLLECTION_NAME,
-        top_k: RAG_DEFAULTS.TOP_K,
-        rerank_top_k: RAG_DEFAULTS.RERANK_TOP_K,
-        include_context: RAG_DEFAULTS.INCLUDE_CONTEXT,
+        message: message,
+        conversationId: `user-${user?.id || 'anonymous'}`,
+        context: {
+          userName: user?.name || user?.email?.split('@')[0] || 'User',
+          timestamp: new Date().toISOString()
+        }
       };
       
       console.log('[Chat] Request body:', requestBody);
-      console.log('[Chat] Query:', requestBody.question);
+      console.log('[Chat] Message to Diajeng:', requestBody.message);
       
-      console.log('[Chat] Sending RAG query request via proxy...');
-      const response = await fetch(endpoint, {
+      // Use Backend API streaming chat endpoint
+      console.log('[Chat] Sending chat request to Backend API...');
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
+      const token = localStorage.getItem('auth_token');
+      
+      const response = await fetch(`${backendUrl}/api/v1/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "text/event-stream",
+          "Authorization": token ? `Bearer ${token}` : '',
         },
         body: JSON.stringify(requestBody),
       });
 
-      console.log('[Chat] ✅ Response received');
+      console.log('[Chat] ✅ Response received from Backend API');
       console.log('[Chat] Response status:', response.status);
       console.log('[Chat] Response statusText:', response.statusText);
       console.log('[Chat] Response headers:', Object.fromEntries(response.headers.entries()));
@@ -293,7 +296,7 @@ export default function ChatPage() {
               console.log('[Chat] Data type:', data.type);
               console.log('[Chat] Available fields:', Object.keys(data));
               
-              // Handle different message types from RAG Service
+              // Handle different message types from Backend API (Diajeng)
               if (data.type === 'metadata') {
                 console.log('[Chat] 📊 Metadata received:', {
                   sources: data.sources,
@@ -311,7 +314,7 @@ export default function ChatPage() {
               
               // ✅ Handle 'chunk' type - THIS IS THE FORMAT BACKEND USES!
               if (data.type === 'chunk' && data.content) {
-                console.log('[Chat] 📝 Chunk received:', data.content);
+                console.log('[Chat] 📝 Chunk received from Diajeng:', data.content);
                 fullResponse += data.content;
                 
                 // Update message in real-time
@@ -328,14 +331,14 @@ export default function ChatPage() {
               }
               
               // Handle token/chunk streaming (fallback)
-              // Try different field names for token/content
+              // Try different field names for token/content from Diajeng
               const token = data.token || 
                            data.content || 
                            data.text || 
                            data.chunk || 
                            data.delta ||
-                           data.answer ||  // RAG might use 'answer'
-                           data.result;    // Or 'result'
+                           data.message ||  // Backend might use 'message'
+                           data.response;   // Or 'response'
               
               if (token) {
                 console.log('[Chat] 📝 Token received:', token);
@@ -496,25 +499,26 @@ export default function ChatPage() {
               variant="outline"
               size="sm"
               onClick={async () => {
-                const healthEndpoint = getRAGUrl('HEALTH');
-                console.log('[Chat] 🔍 Testing RAG Service:', healthEndpoint);
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
+                const healthEndpoint = `${backendUrl}/health`;
+                console.log('[Chat] 🔍 Testing Backend API:', healthEndpoint);
                 try {
                   const response = await fetch(healthEndpoint);
                   const data = await response.json();
-                  console.log('[Chat] ✅ RAG Service healthy:', data);
-                  toast.success('RAG Service OK', {
-                    description: `Status: ${data.status || 'healthy'}\nCollection: ${RAG_DEFAULTS.COLLECTION_NAME}`
+                  console.log('[Chat] ✅ Backend API healthy:', data);
+                  toast.success('Backend API OK', {
+                    description: `Status: ${data.status || 'healthy'}\nDiajeng ready for chat`
                   });
                 } catch (error: any) {
-                  console.error('[Chat] ❌ RAG Service check failed:', error);
-                  toast.error('RAG Service Failed', {
-                    description: `Cannot connect to ${API_CONFIG.RAG.BASE_URL}`
+                  console.error('[Chat] ❌ Backend API check failed:', error);
+                  toast.error('Backend API Failed', {
+                    description: `Cannot connect to ${backendUrl}`
                   });
                 }
               }}
               className="text-xs"
             >
-              Test RAG
+              Test Backend
             </Button>
             
             {/* AI Queries Remaining Badge */}
