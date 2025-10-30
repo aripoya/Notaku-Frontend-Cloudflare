@@ -3,7 +3,7 @@
 import type { Receipt, ReceiptUpdateData } from "@/types/receipt";
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = "https://backend.notaku.cloud";
 const API_VERSION = "v1";
 const API_PREFIX = `/api/${API_VERSION}`;
 
@@ -44,6 +44,16 @@ async function handleResponse<T>(response: Response): Promise<T> {
         errorDetails = errorData.details;
       } catch (e) {
         // Ignore JSON parse errors
+      }
+    }
+
+    // Handle authentication errors
+    if (response.status === 401) {
+      console.error('[Receipts API] 401 Unauthorized - clearing token and redirecting to login');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('current_user');
+        window.location.href = '/login?error=session_expired';
       }
     }
 
@@ -137,64 +147,22 @@ export class ReceiptsAPI {
   /**
    * Create a new receipt
    */
-  static async createReceipt(data: ReceiptUpdateData & { user_id: string; ocr_text?: string; ocr_confidence?: number; image_path?: string; image_base64?: string }): Promise<Receipt> {
+  static async createReceipt(data: { merchant_name: string; total_amount: number; currency?: string; transaction_date: string; category?: string; notes?: string; }): Promise<Receipt> {
     console.log('[ReceiptsAPI] 📝 Creating new receipt');
     console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
     console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts`);
-    console.log('[ReceiptsAPI] Original frontend data:', {
-      ...data,
-      image_base64: data.image_base64 ? `${data.image_base64.substring(0, 50)}... (${data.image_base64.length} chars)` : undefined
-    });
+    console.log('[ReceiptsAPI] Request data:', data);
     
-    // ✅ CRITICAL FIX: Send image_base64 to backend, NOT blob URL
-    const backendData: any = {
-      merchant_name: data.merchant,           // merchant → merchant_name
-      transaction_date: data.date,            // date → transaction_date
-      total_amount: data.total_amount,        // ✅ same
-      currency: "IDR",                        // ✅ add currency
-      category: data.category || null,        // ✅ same
-      notes: data.notes || null,              // ✅ same
-      user_id: data.user_id,                  // ✅ same
-      ocr_text: data.ocr_text || "",          // ✅ same
-      ocr_confidence: data.ocr_confidence || 0, // ✅ same
-    };
-    
-    // ✅ Send image_base64 if available (backend will save to storage)
-    if (data.image_base64) {
-      backendData.image_base64 = data.image_base64;
-      console.log('[ReceiptsAPI] ✅ Sending image_base64 to backend');
-    }
-    
-    // ❌ DO NOT send image_path if it's a blob URL
-    if (data.image_path && !data.image_path.startsWith('blob:')) {
-      backendData.image_path = data.image_path;
-      console.log('[ReceiptsAPI] ✅ Sending image_path:', data.image_path);
-    } else if (data.image_path?.startsWith('blob:')) {
-      console.warn('[ReceiptsAPI] ⚠️ SKIPPING blob URL image_path:', data.image_path);
-    }
-    
-    console.log('[ReceiptsAPI] ✅ Mapped to backend format (without base64):', {
-      ...backendData,
-      image_base64: backendData.image_base64 ? '[BASE64 DATA]' : undefined
-    });
-    
-    const response = await request<any>(`${API_PREFIX}/receipts`, {
+    const response = await request<Receipt>(`${API_PREFIX}/receipts`, {
       method: "POST",
-      body: JSON.stringify(backendData),
+      body: JSON.stringify({
+        ...data,
+        currency: data.currency || "IDR",
+      }),
     });
     
-    console.log('[ReceiptsAPI] Backend response:', response);
-    
-    // ✅ MAP BACKEND RESPONSE BACK TO FRONTEND FORMAT
-    const mappedReceipt: Receipt = {
-      ...response,
-      merchant: response.merchant_name || response.merchant,     // merchant_name → merchant
-      date: response.transaction_date || response.date,          // transaction_date → date
-    };
-    
-    console.log('[ReceiptsAPI] ✅ Mapped response to frontend format:', mappedReceipt);
-    
-    return mappedReceipt;
+    console.log('[ReceiptsAPI] ✅ Receipt created:', response);
+    return response;
   }
 
   /**
@@ -202,49 +170,24 @@ export class ReceiptsAPI {
    */
   static async updateReceipt(
     receiptId: string,
-    data: ReceiptUpdateData
+    data: { merchant_name?: string; total_amount?: number; transaction_date?: string; category?: string; notes?: string; }
   ): Promise<Receipt> {
     console.log('[ReceiptsAPI] 🔄 Updating receipt');
     console.log('[ReceiptsAPI] Receipt ID:', receiptId);
-    console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
-    console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts/${receiptId}`);
-    console.log('[ReceiptsAPI] Original frontend data:', data);
+    console.log('[ReceiptsAPI] Request data:', data);
     
     if (!receiptId || receiptId === 'undefined') {
       console.error('[ReceiptsAPI] ❌ ERROR: Invalid receiptId:', receiptId);
       throw new ReceiptsAPIError('Invalid receipt ID', 400, 'INVALID_ID');
     }
     
-    // ✅ MAP FRONTEND FIELDS TO BACKEND FIELDS
-    const backendData = {
-      merchant_name: data.merchant,           // merchant → merchant_name
-      transaction_date: data.date,            // date → transaction_date
-      total_amount: data.total_amount,        // ✅ same
-      currency: "IDR",                        // ✅ add currency
-      category: data.category || null,        // ✅ same
-      notes: data.notes || null,              // ✅ same
-    };
-    
-    console.log('[ReceiptsAPI] ✅ Mapped to backend format:', backendData);
-    console.log('[ReceiptsAPI] Backend data JSON:', JSON.stringify(backendData, null, 2));
-    
-    const response = await request<any>(`${API_PREFIX}/receipts/${receiptId}`, {
+    const response = await request<Receipt>(`${API_PREFIX}/receipts/${receiptId}`, {
       method: "PUT",
-      body: JSON.stringify(backendData),
+      body: JSON.stringify(data),
     });
     
-    console.log('[ReceiptsAPI] Backend response:', response);
-    
-    // ✅ MAP BACKEND RESPONSE BACK TO FRONTEND FORMAT
-    const mappedReceipt: Receipt = {
-      ...response,
-      merchant: response.merchant_name || response.merchant,     // merchant_name → merchant
-      date: response.transaction_date || response.date,          // transaction_date → date
-    };
-    
-    console.log('[ReceiptsAPI] ✅ Mapped response to frontend format:', mappedReceipt);
-    
-    return mappedReceipt;
+    console.log('[ReceiptsAPI] ✅ Receipt updated:', response);
+    return response;
   }
 
   /**
@@ -260,28 +203,28 @@ export class ReceiptsAPI {
   }
 
   /**
-   * Get all receipts for a user
+   * Get all receipts for current user
    */
   static async getReceipts(
-    userId: string,
     params?: {
       limit?: number;
       offset?: number;
       category?: string;
       start_date?: string;
       end_date?: string;
+      search?: string;
     }
-  ): Promise<{ receipts: Receipt[]; total: number }> {
+  ): Promise<{ receipts: Receipt[]; total: number; has_more: boolean }> {
     const queryParams = new URLSearchParams();
-    queryParams.append("user_id", userId);
     
     if (params?.limit) queryParams.append("limit", params.limit.toString());
     if (params?.offset) queryParams.append("offset", params.offset.toString());
     if (params?.category) queryParams.append("category", params.category);
     if (params?.start_date) queryParams.append("start_date", params.start_date);
     if (params?.end_date) queryParams.append("end_date", params.end_date);
+    if (params?.search) queryParams.append("search", params.search);
 
-    return request<{ receipts: Receipt[]; total: number }>(
+    return request<{ receipts: Receipt[]; total: number; has_more: boolean }>(
       `${API_PREFIX}/receipts?${queryParams.toString()}`
     );
   }

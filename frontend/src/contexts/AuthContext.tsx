@@ -39,22 +39,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('[AuthContext] Session:', session);
     console.log('[AuthContext] ============================================');
     
-    // PRIORITY 0: Check demo/mock login FIRST (from localStorage)
-    // If demo login exists, skip NextAuth completely
+    // PRIORITY 0: Check existing backend token (from real API or migrated mock)
     if (typeof window !== 'undefined') {
       const existingToken = localStorage.getItem(TOKEN_KEY);
-      const storedUser = localStorage.getItem('mock_user');
+      const storedUser = localStorage.getItem('current_user') || localStorage.getItem('mock_user');
       
-      // Demo login detected - skip NextAuth session check
-      if (existingToken && existingToken.startsWith('mock_token_')) {
-        console.log('[AuthContext] ✅ Demo/Mock login detected - skipping NextAuth');
+      // Backend token detected (real or migrated mock)
+      if (existingToken) {
+        console.log('[AuthContext] ✅ Backend token detected - using stored auth');
         setBackendToken(existingToken);
         
         if (storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            console.log('[AuthContext] ✅ Demo user loaded from localStorage');
+            // Convert old mock format to new format if needed
+            const normalizedUser = parsedUser.username ? {
+              id: parsedUser.id,
+              email: parsedUser.email,
+              name: parsedUser.username || parsedUser.name || parsedUser.email.split('@')[0],
+              subscription_tier: 'free',
+              created_at: parsedUser.createdAt || new Date().toISOString(),
+              is_active: parsedUser.isActive !== false,
+            } : parsedUser;
+            
+            setUser(normalizedUser);
+            console.log('[AuthContext] ✅ User loaded from localStorage');
+            
+            // Update storage format if needed
+            if (parsedUser.username) {
+              localStorage.setItem('current_user', JSON.stringify(normalizedUser));
+              localStorage.removeItem('mock_user');
+            }
           } catch (e) {
             console.error('[AuthContext] Error parsing stored user:', e);
           }
@@ -121,26 +136,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // PRIORITY 2: Check existing token (previous Google login)
+      // PRIORITY 2: Check existing token (previous login)
       if (typeof window !== 'undefined') {
         const existingToken = localStorage.getItem(TOKEN_KEY);
-        const storedUser = localStorage.getItem('mock_user');
+        const storedUser = localStorage.getItem('current_user');
         
         if (existingToken) {
-          console.log('[AuthContext] ✅ Found existing Google token in localStorage');
+          console.log('[AuthContext] ✅ Found existing token in localStorage');
           setBackendToken(existingToken);
           
           if (storedUser) {
             try {
               const parsedUser = JSON.parse(storedUser);
               setUser(parsedUser);
-              console.log('[AuthContext] ✅ Google user loaded from localStorage');
+              console.log('[AuthContext] ✅ User loaded from localStorage');
             } catch (e) {
               console.error('[AuthContext] Error parsing stored user:', e);
             }
           }
         } else {
-          console.log('[AuthContext] ⚠️ No OAuth token found - user may use demo login');
+          console.log('[AuthContext] ⚠️ No token found - user needs to login');
         }
       }
       

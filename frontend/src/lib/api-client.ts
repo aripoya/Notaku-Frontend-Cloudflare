@@ -10,6 +10,8 @@ import type {
   UpdateNoteInput,
   Receipt,
   CreateReceiptInput,
+  UpdateReceiptInput,
+  ReceiptsResponse,
   Attachment,
   HealthResponse,
   SystemInfo,
@@ -24,7 +26,7 @@ import type {
 } from "@/types/api";
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+const API_BASE_URL = "https://backend.notaku.cloud";
 const API_VERSION = "v1";
 const API_PREFIX = `/api/${API_VERSION}`;
 
@@ -88,10 +90,20 @@ async function handleResponse<T>(response: Response): Promise<T> {
     if (isJson) {
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorMessage = errorData.message || errorData.error || errorData.detail || errorMessage;
         errorDetails = errorData.details;
       } catch (e) {
         // Ignore JSON parse errors
+      }
+    }
+    
+    // Handle authentication errors
+    if (response.status === 401) {
+      console.error('[API] 401 Unauthorized - clearing token and redirecting to login');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem('current_user');
+        window.location.href = '/login?error=session_expired';
       }
     }
     
@@ -170,183 +182,111 @@ export class ApiClient {
   }
   
   // ==================== Authentication ====================
-  // ⚠️ TEMPORARY: Mock authentication until auth backend ready
-  // Auth endpoints don't exist in current RAG Service
   
   static async register(data: UserRegistration): Promise<AuthResponse> {
-    console.log('[Auth] ⚠️ Using MOCK registration (backend not ready)');
+    console.log('[Auth] 🚀 Registering user with backend API');
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Create mock user
-    const mockUser: User = {
-      id: `user_${Date.now()}`,
-      email: data.email,
-      username: data.username || data.email.split('@')[0],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isActive: true,
-    };
-    
-    const mockToken = `mock_token_${Date.now()}`;
-    
-    // Store in localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem(TOKEN_KEY, mockToken);
-      localStorage.setItem('mock_user', JSON.stringify(mockUser));
-      console.log('[Auth] Mock user registered and stored');
-    }
-    
-    return {
-      user: mockUser,
-      token: mockToken,
-      message: 'Registration successful (mock)',
-    };
-    
-    /* DISABLED: Real API call until backend ready
-    return request<AuthResponse>(`${API_PREFIX}/auth/register`, {
+    const response = await request<AuthResponse>(`${API_PREFIX}/auth/register`, {
       method: "POST",
       body: JSON.stringify(data),
     });
-    */
+    
+    // Store token in localStorage
+    if (response.token && typeof window !== "undefined") {
+      localStorage.setItem(TOKEN_KEY, response.token);
+      localStorage.setItem('current_user', JSON.stringify(response.user));
+      console.log('[Auth] ✅ User registered and token stored');
+    }
+    
+    return response;
   }
   
   static async login(data: UserLogin): Promise<AuthResponse> {
-    console.log('[Auth] ⚠️ Using MOCK login (backend not ready)');
+    console.log('[Auth] 🚀 Logging in user with backend API');
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Check if user exists in localStorage
-    let mockUser: User | null = null;
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem('mock_user');
-      if (stored) {
-        mockUser = JSON.parse(stored);
-      }
-    }
-    
-    // If no stored user, create one
-    if (!mockUser) {
-      mockUser = {
-        id: `user_${Date.now()}`,
-        email: data.email,
-        username: data.email.split('@')[0],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isActive: true,
-      };
-      
-      if (typeof window !== "undefined") {
-        localStorage.setItem('mock_user', JSON.stringify(mockUser));
-      }
-    } else {
-      // Update last login
-      mockUser.lastLogin = new Date().toISOString();
-      if (typeof window !== "undefined") {
-        localStorage.setItem('mock_user', JSON.stringify(mockUser));
-      }
-    }
-    
-    const mockToken = `mock_token_${Date.now()}`;
-    
-    // Store token
-    if (typeof window !== "undefined") {
-      localStorage.setItem(TOKEN_KEY, mockToken);
-      console.log('[Auth] Mock user logged in');
-    }
-    
-    return {
-      user: mockUser!,
-      token: mockToken,
-      message: 'Login successful (mock)',
-    };
-    
-    /* DISABLED: Real API call until backend ready
     const response = await request<AuthResponse>(`${API_PREFIX}/auth/login`, {
       method: "POST",
       body: JSON.stringify(data),
     });
     
+    // Store token and user in localStorage
     if (response.token && typeof window !== "undefined") {
       localStorage.setItem(TOKEN_KEY, response.token);
-      if (DEBUG) {
-        console.log("[Auth] Token stored");
-      }
+      localStorage.setItem('current_user', JSON.stringify(response.user));
+      console.log('[Auth] ✅ User logged in and token stored');
     }
     
     return response;
-    */
   }
   
   static async logout(): Promise<ApiResponse> {
-    console.log('[Auth] Logging out (mock)');
+    console.log('[Auth] 🚀 Logging out user');
     
     // Clear localStorage
     if (typeof window !== "undefined") {
       localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem('mock_user');
-      console.log("[Auth] Token and user cleared");
+      localStorage.removeItem('current_user');
+      localStorage.removeItem('mock_user'); // Clean up old mock data
+      console.log("[Auth] ✅ Token and user data cleared");
     }
     
     return {
       success: true,
       message: 'Logout successful',
     };
-    
-    /* DISABLED: Real API call until backend ready
-    try {
-      const response = await request<ApiResponse>(`${API_PREFIX}/auth/logout`, {
-        method: "POST",
-      });
-      return response;
-    } finally {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem(TOKEN_KEY);
-        if (DEBUG) {
-          console.log("[Auth] Token cleared");
-        }
-      }
-    }
-    */
   }
   
   static async getCurrentUser(): Promise<User> {
-    console.log('[Auth] Getting current user (mock)');
+    console.log('[Auth] Getting current user from localStorage');
     
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem('mock_user');
+      // Try new format first
+      const stored = localStorage.getItem('current_user');
       if (stored) {
         return JSON.parse(stored);
+      }
+      
+      // Fallback to old mock format for migration
+      const mockStored = localStorage.getItem('mock_user');
+      if (mockStored) {
+        const mockUser = JSON.parse(mockStored);
+        // Convert mock format to new format
+        const convertedUser: User = {
+          id: mockUser.id,
+          email: mockUser.email,
+          name: mockUser.username || mockUser.name || mockUser.email.split('@')[0],
+          subscription_tier: 'free',
+          created_at: mockUser.createdAt || new Date().toISOString(),
+          is_active: mockUser.isActive !== false,
+        };
+        // Store in new format and remove old
+        localStorage.setItem('current_user', JSON.stringify(convertedUser));
+        localStorage.removeItem('mock_user');
+        return convertedUser;
       }
     }
     
     throw new ApiClientError('Not authenticated', 401);
-    
-    /* DISABLED: Real API call until backend ready
-    return request<User>(`${API_PREFIX}/auth/me`);
-    */
   }
   
   static async refreshToken(): Promise<AuthResponse> {
-    console.log('[Auth] ⚠️ Token refresh not implemented (mock auth)');
+    console.log('[Auth] ⚠️ Token refresh not implemented yet');
     
+    // For now, just return current user with existing token
     const user = await this.getCurrentUser();
-    const newToken = `mock_token_${Date.now()}`;
+    const token = this.getToken();
     
-    if (typeof window !== "undefined") {
-      localStorage.setItem(TOKEN_KEY, newToken);
+    if (!token) {
+      throw new ApiClientError('No token to refresh', 401);
     }
     
     return {
       user,
-      token: newToken,
-      message: 'Token refreshed (mock)',
+      token,
+      token_type: 'bearer',
     };
     
-    /* DISABLED: Real API call until backend ready
+    /* TODO: Implement when backend supports token refresh
     return request<AuthResponse>(`${API_PREFIX}/auth/refresh`, {
       method: "POST",
     });
@@ -410,18 +350,47 @@ export class ApiClient {
   
   // ==================== Receipts ====================
   
-  static async getReceipts(params?: ReceiptQueryParams): Promise<PaginatedResponse<Receipt>> {
+  static async getReceipts(params?: ReceiptQueryParams): Promise<ReceiptsResponse> {
     const endpoint = `${API_PREFIX}/receipts`;
-    const url = buildUrl(endpoint, params);
+    const queryParams: Record<string, string> = {};
+    
+    if (params?.limit) queryParams.limit = params.limit.toString();
+    if (params?.offset) queryParams.offset = params.offset.toString();
+    if (params?.category) queryParams.category = params.category;
+    if (params?.start_date) queryParams.start_date = params.start_date;
+    if (params?.end_date) queryParams.end_date = params.end_date;
+    if (params?.search) queryParams.search = params.search;
+    
+    const url = buildUrl(endpoint, queryParams);
     const response = await fetch(url, {
       ...REQUEST_CONFIG,
       headers: DEFAULT_HEADERS,
     });
-    return handleResponse<PaginatedResponse<Receipt>>(response);
+    return handleResponse<ReceiptsResponse>(response);
   }
   
   static async getReceipt(receiptId: string): Promise<Receipt> {
     return request<Receipt>(`${API_PREFIX}/receipts/${receiptId}`);
+  }
+  
+  static async createReceipt(data: CreateReceiptInput): Promise<Receipt> {
+    return request<Receipt>(`${API_PREFIX}/receipts`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+  
+  static async updateReceipt(receiptId: string, data: UpdateReceiptInput): Promise<Receipt> {
+    return request<Receipt>(`${API_PREFIX}/receipts/${receiptId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+  
+  static async deleteReceipt(receiptId: string): Promise<ApiResponse> {
+    return request<ApiResponse>(`${API_PREFIX}/receipts/${receiptId}`, {
+      method: "DELETE",
+    });
   }
   
   static async uploadReceipt(
@@ -498,18 +467,7 @@ export class ApiClient {
     });
   }
   
-  static async updateReceipt(receiptId: string, data: Partial<Receipt>): Promise<Receipt> {
-    return request<Receipt>(`${API_PREFIX}/receipts/${receiptId}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    });
-  }
-  
-  static async deleteReceipt(receiptId: string): Promise<ApiResponse> {
-    return request<ApiResponse>(`${API_PREFIX}/receipts/${receiptId}`, {
-      method: "DELETE",
-    });
-  }
+  // Receipt CRUD methods moved above - avoiding duplicates
   
   // ==================== Attachments ====================
   

@@ -14,20 +14,27 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+// Backend API Response Format
+export interface BackendResponse<T = any> {
+  success?: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
 // User Types
 export interface User {
   id: string;
   email: string;
-  username: string;
-  createdAt: string;
-  updatedAt: string;
-  lastLogin?: string;
-  isActive: boolean;
+  name: string;
+  subscription_tier: 'free' | 'premium';
+  created_at: string;
+  is_active: boolean;
 }
 
 export interface UserRegistration {
   email: string;
-  username: string;
+  name: string;
   password: string;
 }
 
@@ -38,8 +45,8 @@ export interface UserLogin {
 
 export interface AuthResponse {
   user: User;
-  token?: string;
-  message: string;
+  token: string;
+  token_type: 'bearer';
 }
 
 // Note Types
@@ -71,39 +78,55 @@ export interface UpdateNoteInput {
 // Receipt Types
 export interface Receipt {
   id: string;
-  userId: string;
-  merchantName: string;
-  totalAmount: number;
+  user_id: string;
+  merchant_name: string;
+  total_amount: string;
   currency: string;
-  transactionDate: string;
-  ocrData: OCRData;
-  imagePath: string;
-  createdAt: string;
+  transaction_date: string;
+  category?: string;
+  notes?: string;
+  ocr_text?: string;
+  ocr_confidence?: number;
+  image_path?: string;
+  image_url?: string;
+  is_edited: boolean;
+  rag_indexed: boolean;
+  created_at: string;
+  updated_at: string;
+  items: ReceiptItem[];
 }
 
-export interface OCRData {
-  merchantName?: string;
-  totalAmount?: number;
-  items?: OCRItem[];
-  date?: string;
-  tax?: number;
-  subtotal?: number;
-  rawText?: string;
-  confidence?: number;
-}
-
-export interface OCRItem {
-  name: string;
-  quantity: number;
-  price: number;
-  total: number;
+export interface ReceiptItem {
+  id: string;
+  receipt_id: string;
+  item_name: string;
+  quantity?: number;
+  unit_price?: number;
+  total_price: number;
+  created_at: string;
 }
 
 export interface CreateReceiptInput {
-  merchantName?: string;
-  totalAmount?: number;
+  merchant_name: string;
+  total_amount: number;
   currency?: string;
-  transactionDate?: string;
+  transaction_date: string;
+  category?: string;
+  notes?: string;
+}
+
+export interface UpdateReceiptInput {
+  merchant_name?: string;
+  total_amount?: number;
+  transaction_date?: string;
+  category?: string;
+  notes?: string;
+}
+
+export interface ReceiptsResponse {
+  receipts: Receipt[];
+  total: number;
+  has_more: boolean;
 }
 
 // Attachment Types
@@ -203,9 +226,10 @@ export interface NoteQueryParams extends PaginationParams {
 }
 
 export interface ReceiptQueryParams extends PaginationParams {
-  startDate?: string;
-  endDate?: string;
-  minAmount?: number;
-  maxAmount?: number;
-  merchantName?: string;
+  start_date?: string;
+  end_date?: string;
+  category?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
 }
