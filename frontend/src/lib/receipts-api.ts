@@ -3,7 +3,7 @@
 import type { Receipt, ReceiptUpdateData } from "@/types/receipt";
 
 // API Configuration
-const API_BASE_URL = "https://backend.notaku.cloud";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
 const API_VERSION = "v1";
 const API_PREFIX = `/api/${API_VERSION}`;
 

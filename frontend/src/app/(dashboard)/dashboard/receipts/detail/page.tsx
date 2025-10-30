@@ -50,7 +50,7 @@ import { toast } from "sonner";
 import { formatCurrency, formatDate, getCategoryColor } from "@/lib/receipt-utils";
 import ReceiptItems from "@/components/ReceiptItems";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
 
 interface ReceiptItem {
   name: string;

@@ -32,7 +32,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+        const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
         const response = await fetch(`${API_URL}/api/v1/user/profile`, {
           credentials: 'include',
         });
@@ -58,7 +58,7 @@ export default function SettingsPage() {
     setLoading(true);
     
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+      const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
       const response = await fetch(`${API_URL}/api/v1/user/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

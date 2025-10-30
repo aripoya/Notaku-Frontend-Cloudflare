@@ -23,7 +23,7 @@ export async function testApiConnection(): Promise<TestResult[]> {
   const results: TestResult[] = [];
   
   console.log('🚀 Starting API Connection Tests...');
-  console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
+  console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
   console.log('---');
 
   // Test 1: Health Check

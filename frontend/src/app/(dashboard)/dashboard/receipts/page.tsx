@@ -29,7 +29,7 @@ import StatsCard from "@/components/receipts/StatsCard";
 import { calculateStats, formatCurrency } from "@/lib/receipt-utils";
 import { getRAGUrl, RAG_DEFAULTS } from "@/config/services";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
 
 export default function ReceiptsPage() {
   const router = useRouter();

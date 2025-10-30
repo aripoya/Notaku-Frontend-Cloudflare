@@ -1,4 +1,4 @@
-const base = process.env.NEXT_PUBLIC_API_URL || "";
+const base = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
 
 export async function api<T = any>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${base}${path}`, {

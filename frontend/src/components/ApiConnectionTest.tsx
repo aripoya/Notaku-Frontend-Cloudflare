@@ -55,7 +55,7 @@ export default function ApiConnectionTest() {
             Test connection to Notaku API Server
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            API URL: <code className="bg-gray-100 px-2 py-1 rounded">{process.env.NEXT_PUBLIC_API_URL}</code>
+            Backend URL: <code className="bg-gray-100 px-2 py-1 rounded">{process.env.NEXT_PUBLIC_BACKEND_URL}</code>
           </p>
         </div>
 

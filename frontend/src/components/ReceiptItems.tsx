@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.notaku.cloud";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
 
 // Types
 interface ReceiptItem {

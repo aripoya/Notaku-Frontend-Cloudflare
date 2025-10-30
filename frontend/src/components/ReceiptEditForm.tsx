@@ -29,7 +29,7 @@ export default function ReceiptEditForm({
   console.log('[ReceiptEditForm] Props received:');
   console.log('[ReceiptEditForm]   - receiptId:', receiptId);
   console.log('[ReceiptEditForm]   - initialData:', initialData);
-  console.log('[ReceiptEditForm]   - API_URL:', process.env.NEXT_PUBLIC_API_URL);
+  console.log('[ReceiptEditForm]   - Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
   
   // State
   const [receipt, setReceipt] = useState<Receipt | null>(initialData || null);
@@ -220,7 +220,7 @@ export default function ReceiptEditForm({
     console.log("[ReceiptEditForm] Receipt ID:", receiptId);
     console.log("[ReceiptEditForm] Initial data:", initialData);
     console.log("[ReceiptEditForm] Current receipt state:", receipt);
-    console.log("[ReceiptEditForm] API_URL:", process.env.NEXT_PUBLIC_API_URL);
+    console.log("[ReceiptEditForm] Backend URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
     
     // ✅ CRITICAL: Validate receiptId before proceeding
     if (!receiptId) {
