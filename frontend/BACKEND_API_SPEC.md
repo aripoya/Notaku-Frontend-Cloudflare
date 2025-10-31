@@ -2,7 +2,7 @@
 
 ## 📋 **API Overview**
 
-**Base URL**: `https://backend.notaku.cloud/api/v1`  
+**Base URL**: `https://api.notaku.cloud/api/v1`  
 **Authentication**: JWT Bearer Token  
 **Content-Type**: `application/json`
 
@@ -387,7 +387,7 @@ Content-Type: application/json
 
 **Create Receipt:**
 ```bash
-curl -X POST https://backend.notaku.cloud/api/v1/receipts \
+curl -X POST https://api.notaku.cloud/api/v1/receipts \
   -H "Authorization: Bearer your_jwt_token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -401,7 +401,7 @@ curl -X POST https://backend.notaku.cloud/api/v1/receipts \
 
 **Get Receipts:**
 ```bash
-curl -X GET "https://backend.notaku.cloud/api/v1/receipts?limit=10" \
+curl -X GET "https://api.notaku.cloud/api/v1/receipts?limit=10" \
   -H "Authorization: Bearer your_jwt_token"
 ```
 

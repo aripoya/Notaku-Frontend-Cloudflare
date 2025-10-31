@@ -24,11 +24,7 @@ import type {
   UploadProgress,
   ApiError,
 } from "@/types/api";
-
-// API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
-const API_VERSION = "v1";
-const API_PREFIX = `/api/${API_VERSION}`;
+import { API_BASE_URL, API_PREFIX } from "./api-config";
 
 // Debug mode
 const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true";

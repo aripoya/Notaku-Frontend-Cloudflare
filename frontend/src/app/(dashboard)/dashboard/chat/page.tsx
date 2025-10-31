@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { SubscriptionAPI } from "@/lib/subscription-api";
+import { API_BASE_URL } from "@/lib/api-config";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { toast } from "sonner";
 // Removed RAG service imports - now using Backend API for Diajeng chat
@@ -189,10 +190,9 @@ export default function ChatPage() {
       
       // Use Backend API streaming chat endpoint
       console.log('[Chat] Sending chat request to Backend API...');
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
       const token = localStorage.getItem('auth_token');
       
-      const response = await fetch(`${backendUrl}/api/v1/chat`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/chat/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -499,8 +499,7 @@ export default function ChatPage() {
               variant="outline"
               size="sm"
               onClick={async () => {
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
-                const healthEndpoint = `${backendUrl}/health`;
+                const healthEndpoint = `${API_BASE_URL}/health`;
                 console.log('[Chat] 🔍 Testing Backend API:', healthEndpoint);
                 try {
                   const response = await fetch(healthEndpoint);
@@ -512,7 +511,7 @@ export default function ChatPage() {
                 } catch (error: any) {
                   console.error('[Chat] ❌ Backend API check failed:', error);
                   toast.error('Backend API Failed', {
-                    description: `Cannot connect to ${backendUrl}`
+                    description: `Cannot connect to ${API_BASE_URL}`
                   });
                 }
               }}

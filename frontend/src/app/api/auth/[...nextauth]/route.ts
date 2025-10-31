@@ -1,9 +1,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend.notaku.cloud';
-const API_VERSION = "v1";
-const API_PREFIX = `/api/${API_VERSION}`;
+import { API_BASE_URL, API_PREFIX } from "@/lib/api-config";
 
 // ⚠️ NextAuth requires Node.js runtime (not Edge) because it uses:
 // - crypto module

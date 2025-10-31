@@ -28,8 +28,7 @@ import ReceiptCardSkeleton from "@/components/receipts/ReceiptCardSkeleton";
 import StatsCard from "@/components/receipts/StatsCard";
 import { calculateStats, formatCurrency } from "@/lib/receipt-utils";
 import { getRAGUrl, RAG_DEFAULTS } from "@/config/services";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
+import { API_BASE_URL } from "@/lib/api-config";
 
 export default function ReceiptsPage() {
   const router = useRouter();

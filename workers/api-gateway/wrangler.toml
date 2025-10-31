@@ -1,11 +1,16 @@
-name = "expense-ai-api"
+name = "notaku-api-gateway"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
-[[kv_namespaces]]
-binding = "KV_CACHE"
-id = "YOUR_KV_ID"
+[vars]
+BACKEND_FASTAPI_URL = "http://172.16.1.7:8000"
 
-[[r2_buckets]]
-binding = "R2_RECEIPTS"
-bucket_name = "expense-ai-receipts"
+[[routes]]
+pattern = "backend.notaku.cloud/*"
+zone_name = "notaku.cloud"
+
+[build]
+command = "npm install && npm run build"
+
+[observability]
+enabled = true

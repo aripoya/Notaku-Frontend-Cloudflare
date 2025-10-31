@@ -1,66 +1,140 @@
-import { authHandlers } from "./handlers/auth";
-import { uploadHandler } from "./handlers/upload";
-import { receiptsHandlers } from "./handlers/receipts";
-import { analyticsHandlers } from "./handlers/analytics";
-import { chatHandler } from "./handlers/chat";
-import { cors, handleOptions } from "./utils/cors";
+import type { ExportedHandler } from "@cloudflare/workers-types";
 
 export interface Env {
-  KV_CACHE: KVNamespace;
-  R2_RECEIPTS: R2Bucket;
-  DB: D1Database;
-  BACKEND_URL: string;
-  JWT_SECRET: string;
+  BACKEND_FASTAPI_URL: string;
+  OPENAI_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
+  GOOGLE_CLOUD_API_KEY?: string;
 }
 
-function notFound(req: Request) {
-  return new Response("Not found", { status: 404, headers: cors(req) });
+const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie",
+  "Access-Control-Allow-Credentials": "true",
+};
+
+function applyCors(headers: Headers): Headers {
+  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+    headers.set(key, value);
+  }
+  return headers;
 }
 
-export default {
-  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    if (req.method === "OPTIONS") return handleOptions(req);
-    const url = new URL(req.url);
-    const path = url.pathname;
+function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
+  const headers = applyCors(new Headers(init.headers));
+  headers.set("content-type", "application/json");
+  return new Response(JSON.stringify(body), {
+    ...init,
+    headers,
+  });
+}
+
+function handlePreflight(): Response {
+  const headers = applyCors(new Headers());
+  headers.set("content-length", "0");
+  return new Response(null, { status: 204, headers });
+}
+
+async function proxyToBackend(request: Request, env: Env, pathWithSearch: string): Promise<Response> {
+  const backendUrl = `${env.BACKEND_FASTAPI_URL}${pathWithSearch}`;
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+
+  const init: RequestInit = {
+    method: request.method,
+    headers,
+    redirect: "manual",
+  };
+
+  const upperMethod = request.method.toUpperCase();
+  if (upperMethod !== "GET" && upperMethod !== "HEAD") {
+    init.body = request.body;
+  }
+
+  const backendRequest = new Request(backendUrl, init);
+
+  const backendResponse = await fetch(backendRequest);
+  const responseHeaders = applyCors(new Headers(backendResponse.headers));
+
+  // TODO: Implement response caching when specific endpoints benefit from it.
+  return new Response(backendResponse.body, {
+    status: backendResponse.status,
+    statusText: backendResponse.statusText,
+    headers: responseHeaders,
+  });
+}
+
+function logRequest(method: string, pathname: string, status: number, start: number): void {
+  const duration = Date.now() - start;
+  console.log(`[Gateway] ${method} ${pathname} → ${status} (${duration}ms)`);
+}
+
+const worker: ExportedHandler<Env> = {
+  async fetch(request, env) {
+    const start = Date.now();
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+    const pathWithSearch = `${pathname}${url.search}`;
 
     try {
-      // Auth
-      if (req.method === "POST" && path === "/api/auth/register") return withCors(req, await authHandlers.register(req, env));
-      if (req.method === "POST" && path === "/api/auth/login") return withCors(req, await authHandlers.login(req, env));
-      if (req.method === "POST" && path === "/api/auth/refresh") return withCors(req, await authHandlers.refresh(req, env));
-      if (req.method === "GET" && path === "/api/auth/me") return withCors(req, await authHandlers.me(req, env));
-
-      // Receipts
-      if (req.method === "POST" && path === "/api/receipts/upload") return withCors(req, await uploadHandler(req, env));
-      if (req.method === "GET" && path === "/api/receipts") return withCors(req, await receiptsHandlers.list(req, env));
-      const receiptMatch = path.match(/^\/api\/receipts\/(\w[\w-]*)$/);
-      if (receiptMatch) {
-        const id = receiptMatch[1];
-        if (req.method === "GET") return withCors(req, await receiptsHandlers.get(req, env, id));
-        if (req.method === "PUT") return withCors(req, await receiptsHandlers.update(req, env, id));
-        if (req.method === "DELETE") return withCors(req, await receiptsHandlers.del(req, env, id));
+      if (request.method === "OPTIONS") {
+        const response = handlePreflight();
+        logRequest(request.method, pathname, response.status, start);
+        return response;
       }
 
-      // Analytics
-      if (req.method === "GET" && path === "/api/analytics/summary") return withCors(req, await analyticsHandlers.summary());
-      if (req.method === "GET" && path === "/api/analytics/spending") return withCors(req, await analyticsHandlers.spending());
-      if (req.method === "GET" && path === "/api/analytics/categories") return withCors(req, await analyticsHandlers.categories());
-      if (req.method === "GET" && path === "/api/analytics/suppliers") return withCors(req, await analyticsHandlers.suppliers());
+      if (pathname === "/health") {
+        const response = jsonResponse({
+          status: "ok",
+          gateway: "notaku-api-gateway",
+          timestamp: new Date().toISOString(),
+        });
+        logRequest(request.method, pathname, response.status, start);
+        return response;
+      }
 
-      // Chat
-      if (req.method === "POST" && path === "/api/chat") return withCors(req, await chatHandler(req, env));
-      if (req.method === "GET" && path === "/api/chat/history") return withCors(req, new Response(JSON.stringify([]), { headers: { "content-type": "application/json" } }));
+      if (pathname === "/api/chat") {
+        const response = jsonResponse({
+          message: "Legacy route moved to /api/v1/chat",
+        }, { status: 301, headers: { Location: "/api/v1/chat" } });
+        logRequest(request.method, pathname, response.status, start);
+        return response;
+      }
 
-      return notFound(req);
-    } catch (err: any) {
-      return new Response(JSON.stringify({ error: err?.message || "Server error" }), { status: 500, headers: { ...cors(req), "content-type": "application/json" } });
+      if (pathname.startsWith("/api/auth/")) {
+        const newLocation = pathname.replace("/api/auth", "/api/v1/auth");
+        const response = jsonResponse({
+          message: "Legacy route moved to /api/v1/auth",
+        }, { status: 301, headers: { Location: newLocation } });
+        logRequest(request.method, pathname, response.status, start);
+        return response;
+      }
+
+      if (pathname.startsWith("/api/v1/")) {
+        const response = await proxyToBackend(request, env, pathWithSearch);
+        logRequest(request.method, pathname, response.status, start);
+        return response;
+      }
+
+      const response = jsonResponse({ error: "Not Found" }, { status: 404 });
+      logRequest(request.method, pathname, response.status, start);
+      return response;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      const response = jsonResponse({
+        error: "Gateway error",
+        detail: message,
+      }, { status: 502 });
+      logRequest(request.method, pathname, response.status, start);
+      console.error(`[Gateway] ${request.method} ${pathname} → 502`, error);
+
+      // TODO: Add rate limiting to protect backend resources per user/token.
+      // TODO: Route chat requests to different LLM providers based on model selection.
+
+      return response;
     }
   },
-} satisfies ExportedHandler<Env>;
+};
 
-function withCors(req: Request, res: Response) {
-  const headers = new Headers(res.headers);
-  const c = cors(req);
-  for (const [k, v] of Object.entries(c)) headers.set(k, v);
-  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
-}
+export default worker;

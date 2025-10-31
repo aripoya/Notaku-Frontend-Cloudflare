@@ -1,7 +1,7 @@
-const base = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
+import { API_BASE_URL } from "./api-config";
 
 export async function api<T = any>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${base}${path}`, {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
     credentials: "include",
     ...init,

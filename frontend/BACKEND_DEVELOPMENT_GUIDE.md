@@ -100,7 +100,7 @@ CREATE INDEX idx_receipt_items_receipt_id ON receipt_items(receipt_id);
 
 ## 🚀 **API Endpoints Specification**
 
-### **Base URL**: `https://backend.notaku.cloud/api/v1`
+### **Base URL**: `https://api.notaku.cloud/api/v1`
 
 ### **Authentication Endpoints**
 
@@ -356,7 +356,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```bash
 # Expose backend via Cloudflare Tunnel
 cloudflared tunnel create notaku-backend
-cloudflared tunnel route dns notaku-backend backend.notaku.cloud
+cloudflared tunnel route dns notaku-backend api.notaku.cloud
 ```
 
 ---

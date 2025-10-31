@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ReceiptsAPI } from "@/lib/receipts-api";
+import { API_BASE_URL } from "@/lib/api-config";
 import type { Receipt, ReceiptUpdateData, ReceiptCreateData } from "@/types/receipt";
 import { CATEGORIES, formatCurrency, parseCurrency, formatDateForInput, formatDateDisplay } from "@/types/receipt";
 
@@ -29,7 +30,7 @@ export default function ReceiptEditForm({
   console.log('[ReceiptEditForm] Props received:');
   console.log('[ReceiptEditForm]   - receiptId:', receiptId);
   console.log('[ReceiptEditForm]   - initialData:', initialData);
-  console.log('[ReceiptEditForm]   - Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+  console.log('[ReceiptEditForm]   - Backend URL:', API_BASE_URL);
   
   // State
   const [receipt, setReceipt] = useState<Receipt | null>(initialData || null);
@@ -220,7 +221,7 @@ export default function ReceiptEditForm({
     console.log("[ReceiptEditForm] Receipt ID:", receiptId);
     console.log("[ReceiptEditForm] Initial data:", initialData);
     console.log("[ReceiptEditForm] Current receipt state:", receipt);
-    console.log("[ReceiptEditForm] Backend URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
+    console.log("[ReceiptEditForm] Backend URL:", API_BASE_URL);
     
     // ✅ CRITICAL: Validate receiptId before proceeding
     if (!receiptId) {

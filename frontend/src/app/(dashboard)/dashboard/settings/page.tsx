@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { API_BASE_URL, API_PREFIX } from "@/lib/api-config";
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
@@ -32,8 +33,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
-        const response = await fetch(`${API_URL}/api/v1/user/profile`, {
+        const response = await fetch(`${API_BASE_URL}${API_PREFIX}/user/profile`, {
           credentials: 'include',
         });
         
@@ -58,8 +58,7 @@ export default function SettingsPage() {
     setLoading(true);
     
     try {
-      const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend.notaku.cloud";
-      const response = await fetch(`${API_URL}/api/v1/user/profile`, {
+      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/user/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

@@ -9,7 +9,11 @@
  * 3. Import this file in your App.tsx or run in browser console
  */
 
-import ApiClient from '@/lib/api-client';
+import { AnalyticsAPI } from "@/lib/analytics-api";
+import { ReceiptsAPI } from "@/lib/receipts-api";
+import { SubscriptionAPI } from "@/lib/subscription-api";
+import { ApiClient } from "@/lib/api-client";
+import { API_BASE_URL } from "@/lib/api-config";
 
 interface TestResult {
   test: string;
@@ -23,7 +27,7 @@ export async function testApiConnection(): Promise<TestResult[]> {
   const results: TestResult[] = [];
   
   console.log('🚀 Starting API Connection Tests...');
-  console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+  console.log('Backend URL:', API_BASE_URL);
   console.log('---');
 
   // Test 1: Health Check
