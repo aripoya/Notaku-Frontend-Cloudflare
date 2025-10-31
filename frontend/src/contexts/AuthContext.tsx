@@ -1,197 +1,143 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter, usePathname } from 'next/navigation';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { API_BASE_URL, API_PREFIX } from '@/lib/api-config';
 
-const TOKEN_KEY = 'auth_token'; // Same as demo login!
+const STORAGE_KEY_USER = 'current_user';
 
-interface AuthContextType {
-  user: any;
-  backendToken: string | null;
-  userId: string | null;
-  isLoading: boolean;
-  error: string | null;
-  isAuthenticated: boolean;
+interface AuthUser {
+  id: string;
+  email: string;
+  username?: string;
+  preferred_name?: string;
+  name?: string | null;
+  image?: string | null;
+  is_active?: boolean;
+  [key: string]: any;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  backendToken: null,
-  userId: null,
-  isLoading: true,
-  error: null,
-  isAuthenticated: false,
-});
+interface AuthContextType {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+async function fetchJson(input: RequestInfo, init?: RequestInit) {
+  const response = await fetch(input, init);
+  const data = await (response.headers.get('content-type')?.includes('application/json')
+    ? response.json()
+    : response.text());
+  if (!response.ok) {
+    throw new Error(typeof data === 'string' ? data : data?.message || 'Request failed');
+  }
+  return data;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
-  const [backendToken, setBackendToken] = useState<string | null>(null);
-  const router = useRouter();
-  const pathname = usePathname();
+
+  const persistUser = useCallback((userData: AuthUser | null) => {
+    if (typeof window === 'undefined') return;
+    if (userData) {
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userData));
+    } else {
+      localStorage.removeItem(STORAGE_KEY_USER);
+    }
+  }, []);
+
+  const checkAuth = useCallback(async () => {
+    console.log('[Auth] Starting auth check...');
+    setIsLoading(true);
+
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(STORAGE_KEY_USER);
+        if (saved) {
+          try {
+            const parsed: AuthUser = JSON.parse(saved);
+            setUser(parsed);
+            setIsAuthenticated(true);
+          } catch {
+            localStorage.removeItem(STORAGE_KEY_USER);
+          }
+        }
+      }
+
+      const data: AuthUser = await fetchJson(`${API_BASE_URL}${API_PREFIX}/auth/me`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      setUser(data);
+      setIsAuthenticated(true);
+      persistUser(data);
+      console.log('[Auth] Auth check completed: authenticated');
+    } catch (error) {
+      console.warn('[Auth] Auth check failed or unauthenticated:', error);
+      setUser(null);
+      setIsAuthenticated(false);
+      persistUser(null);
+    } finally {
+      setIsLoading(false);
+      console.log('[Auth] isLoading set to false');
+    }
+  }, [persistUser]);
 
   useEffect(() => {
-    console.log('[AuthContext] ============================================');
-    console.log('[AuthContext] Status:', status);
-    console.log('[AuthContext] Session:', session);
-    console.log('[AuthContext] ============================================');
-    
-    // PRIORITY 0: Check existing backend token (from real API or migrated mock)
-    if (typeof window !== 'undefined') {
-      const existingToken = localStorage.getItem(TOKEN_KEY);
-      const storedUser = localStorage.getItem('current_user') || localStorage.getItem('mock_user');
-      
-      // Backend token detected (real or migrated mock)
-      if (existingToken) {
-        console.log('[AuthContext] ✅ Backend token detected - using stored auth');
-        setBackendToken(existingToken);
-        
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            // Convert old mock format to new format if needed
-            const normalizedUser = parsedUser.username ? {
-              id: parsedUser.id,
-              email: parsedUser.email,
-              name: parsedUser.username || parsedUser.name || parsedUser.email.split('@')[0],
-              subscription_tier: 'free',
-              created_at: parsedUser.createdAt || new Date().toISOString(),
-              is_active: parsedUser.isActive !== false,
-            } : parsedUser;
-            
-            setUser(normalizedUser);
-            console.log('[AuthContext] ✅ User loaded from localStorage');
-            
-            // Update storage format if needed
-            if (parsedUser.username) {
-              localStorage.setItem('current_user', JSON.stringify(normalizedUser));
-              localStorage.removeItem('mock_user');
-            }
-          } catch (e) {
-            console.error('[AuthContext] Error parsing stored user:', e);
-          }
-        }
-        
-        setError(null);
-        setIsLoading(false);
-        return; // ← SKIP NextAuth checks!
-      }
-    }
-    
-    // Only check NextAuth if NOT demo login
-    if (status === 'loading') {
-      setIsLoading(true);
-      return;
-    }
-    
-    const checkAuth = () => {
-      // PRIORITY 1: Check NextAuth session (Google login)
-      if (session && (session as any).backendToken) {
-        console.log('[AuthContext] ✅ Found NextAuth session with backend token');
-        
-        const token = (session as any).backendToken || (session as any).accessToken;
-        const userId = (session as any).userId;
-        const userData = session.user;
-        
-        // CRITICAL: Store token same as demo login!
-        if (typeof window !== 'undefined' && token) {
-          console.log('[AuthContext] 💾 Storing token to localStorage...');
-          localStorage.setItem(TOKEN_KEY, token);
-          
-          if (userData) {
-            // Store user with same structure as demo login
-            const userToStore = {
-              id: userId || userData.email,
-              email: userData.email,
-              name: userData.name,
-              image: userData.image,
-              ...userData
-            };
-            localStorage.setItem('mock_user', JSON.stringify(userToStore));
-            console.log('[AuthContext] ✅ Token and user stored to localStorage');
-          }
-        }
-        
-        setBackendToken(token);
-        setUser(userData);
-        setError(null);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Check for auth errors from backend (only for Google OAuth)
-      if (session && (session as any).error) {
-        const errorMsg = (session as any).errorMessage || 'Authentication failed with backend';
-        console.error('[AuthContext] ❌ Google OAuth error:', errorMsg);
-        setError(errorMsg);
-        setIsLoading(false);
-        
-        // Don't redirect if already on login/error page
-        if (!pathname?.startsWith('/login') && !pathname?.startsWith('/auth/error')) {
-          router.push('/login?error=backend_auth_failed');
-        }
-        return;
-      }
-      
-      // PRIORITY 2: Check existing token (previous login)
-      if (typeof window !== 'undefined') {
-        const existingToken = localStorage.getItem(TOKEN_KEY);
-        const storedUser = localStorage.getItem('current_user');
-        
-        if (existingToken) {
-          console.log('[AuthContext] ✅ Found existing token in localStorage');
-          setBackendToken(existingToken);
-          
-          if (storedUser) {
-            try {
-              const parsedUser = JSON.parse(storedUser);
-              setUser(parsedUser);
-              console.log('[AuthContext] ✅ User loaded from localStorage');
-            } catch (e) {
-              console.error('[AuthContext] Error parsing stored user:', e);
-            }
-          }
-        } else {
-          console.log('[AuthContext] ⚠️ No token found - user needs to login');
-        }
-      }
-      
-      setIsLoading(false);
-    };
-    
     checkAuth();
-  }, [status, session, router, pathname]);
+  }, [checkAuth]);
 
-  const value: AuthContextType = {
-    user: user || session?.user || null,
-    backendToken,
-    userId: (session as any)?.userId || user?.id || null,
-    isLoading,
-    error,
-    isAuthenticated: (!!backendToken || (!!session && !(session as any).error && status === 'authenticated')),
-  };
+  const login = useCallback(async (email: string, password: string) => {
+    setIsLoading(true);
+    try {
+      const data = await fetchJson(`${API_BASE_URL}${API_PREFIX}/auth/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-  console.log('[AuthContext] Current state:', {
-    isAuthenticated: value.isAuthenticated,
-    hasToken: !!backendToken,
-    hasUser: !!user,
-    isLoading
-  });
+      const userData = (data as any)?.user ?? data;
+      setUser(userData);
+      setIsAuthenticated(true);
+      persistUser(userData);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [persistUser]);
+
+  const logout = useCallback(async () => {
+    try {
+      await fetchJson(`${API_BASE_URL}${API_PREFIX}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.warn('[Auth] Logout request failed (continuing):', error);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      persistUser(null);
+    }
+  }, [persistUser]);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
-};
+}
