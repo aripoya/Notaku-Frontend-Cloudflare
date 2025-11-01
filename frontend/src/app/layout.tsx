@@ -1,37 +1,67 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Providers from "./providers";
-import { Toaster } from "@/components/ui/sonner";
+// File: src/app/layout.tsx
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import Providers from './providers'  // Import existing providers
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// Initialize Inter font
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+})
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
+// Metadata for the app
 export const metadata: Metadata = {
-  title: "NotaKu",
-  description: "Platform kecerdasan finansial untuk UMKM Indonesia",
-};
+  title: 'Notaku - UMKM Management System',
+  description: 'Platform untuk pengelolaan UMKM Indonesia',
+  keywords: 'UMKM, management, Indonesia, bisnis, usaha kecil menengah',
+  authors: [{ name: 'Notaku Team' }],
+  viewport: 'width=device-width, initial-scale=1',
+  robots: 'index, follow',
+  openGraph: {
+    title: 'Notaku - UMKM Management System',
+    description: 'Platform untuk pengelolaan UMKM Indonesia',
+    url: 'https://www.notaku.cloud',
+    siteName: 'Notaku',
+    images: [
+      {
+        url: 'https://www.notaku.cloud/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Notaku Platform',
+      },
+    ],
+    locale: 'id_ID',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Notaku - UMKM Management System',
+    description: 'Platform untuk pengelolaan UMKM Indonesia',
+    images: ['https://www.notaku.cloud/twitter-image.png'],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  },
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100`}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
+      <body className={`${inter.className} min-h-screen bg-gray-50 antialiased`}>
         <Providers>
           {children}
-          <Toaster richColors closeButton />
         </Providers>
       </body>
     </html>
-  );
+  )
 }

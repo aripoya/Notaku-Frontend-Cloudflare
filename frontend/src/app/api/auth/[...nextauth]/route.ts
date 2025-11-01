@@ -1,22 +1,46 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import { API_BASE_URL, API_PREFIX } from "@/lib/api-config";
+// File: src/app/api/auth/[...nextauth]/route.ts
+import NextAuth from "next-auth"
+import type { NextAuthOptions } from "next-auth"
+import GoogleProvider from "next-auth/providers/google"
+import type { JWT } from "next-auth/jwt"
+import type { Session, User } from "next-auth"
 
-// ⚠️ NextAuth requires Node.js runtime (not Edge) because it uses:
-// - crypto module
-// - http/https modules  
-// - Other Node.js APIs
-// 
-// This means:
-// ✅ Works on: Vercel, Railway, Render, fly.io
-// ❌ Limited on: Cloudflare Workers (Edge runtime only)
-//
-// For Cloudflare Workers, consider using:
-// - @auth/core with edge-compatible adapters
-// - Lucia auth (edge-native)
-// - Or deploy to Vercel instead
+// Extend the built-in session types
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string
+    refreshToken?: string
+    user: {
+      id?: string
+      email?: string
+      name?: string
+      image?: string
+      role?: string
+    }
+  }
+}
 
-export const authOptions: NextAuthOptions = {
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken?: string
+    refreshToken?: string
+    googleAccessToken?: string
+    googleRefreshToken?: string
+    googleIdToken?: string
+    googleExpiresAt?: number
+    backendAccessToken?: string
+    backendRefreshToken?: string
+    user?: {
+      id?: string
+      email?: string
+      name?: string
+      image?: string
+      role?: string
+    }
+  }
+}
+
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -30,298 +54,316 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
+  
   pages: {
     signIn: '/login',
     error: '/login',
+    signOut: '/login',
   },
-  callbacks: {
-    async signIn({ account, profile, user }) {
-      console.log("\n" + "=".repeat(60));
-      console.log("[NextAuth] 🔐 SIGN IN CALLBACK TRIGGERED");
-      console.log("=".repeat(60));
-      console.log("[NextAuth] Provider:", account?.provider);
-      console.log("[NextAuth] Account object:", JSON.stringify(account, null, 2));
-      console.log("[NextAuth] Profile object:", JSON.stringify(profile, null, 2));
-      console.log("[NextAuth] User object:", JSON.stringify(user, null, 2));
-      console.log("=".repeat(60) + "\n");
-      
-      if (account?.provider === "google") {
-        // Critical checks
-        if (!account.id_token) {
-          console.error("[NextAuth] ❌ CRITICAL: No ID token from Google!");
-          return false;
-        }
-        if (!account.access_token) {
-          console.warn("[NextAuth] ⚠️ WARNING: No access token from Google");
-        }
-        console.log("[NextAuth] ✅ Google sign-in successful");
-        console.log("[NextAuth] ID Token:", account.id_token ? `${account.id_token.substring(0, 20)}...` : "MISSING");
-        console.log("[NextAuth] Access Token:", account.access_token ? `${account.access_token.substring(0, 20)}...` : "MISSING");
-        return true;
-      }
-      
-      console.log("[NextAuth] ⚠️ Non-Google provider or no account");
-      return true;
-    },
-    async jwt({ token, account, profile, user }) {
-      console.log("\n" + "=".repeat(60));
-      console.log("[NextAuth] 🎫 JWT CALLBACK TRIGGERED");
-      console.log("=".repeat(60));
-      console.log("[NextAuth] Token (before):", JSON.stringify(token, null, 2));
-      console.log("[NextAuth] Account:", account ? JSON.stringify(account, null, 2) : "null");
-      console.log("[NextAuth] User:", user ? JSON.stringify(user, null, 2) : "null");
-      console.log("=".repeat(60) + "\n");
-      
-      // Initial sign in - exchange Google token with backend
-      if (account && user) {
-        console.log("[NextAuth] 🚀 NEW GOOGLE LOGIN - Exchanging with backend");
-        
-        // Prepare request body with multiple token formats for backend compatibility
-        const requestBody = {
-          // Try multiple field names for backend compatibility
-          token: account.id_token,           // Pattern A
-          idToken: account.id_token,         // Pattern B
-          googleToken: account.id_token,     // Pattern C
-          credential: account.id_token,      // Pattern D
-          accessToken: account.access_token, // Pattern E
-          email: user.email,
-          name: user.name,
-          picture: user.image,
-          image: user.image,
-          googleId: profile?.sub,
-          sub: profile?.sub
-        };
-        
-        console.log("[NextAuth] 📤 REQUEST TO BACKEND:");
-        console.log("[NextAuth] Endpoint:", `${API_BASE_URL}${API_PREFIX}/auth/google`);
-        console.log("[NextAuth] Method: POST");
-        console.log("[NextAuth] Headers:", { 'Content-Type': 'application/json' });
-        console.log("[NextAuth] Body:", JSON.stringify(requestBody, null, 2));
-        
-        // Backend exchange is now properly configured with /api/v1 prefix
-        const SKIP_BACKEND = false; // Backend endpoint is ready
-        
-        if (SKIP_BACKEND) {
-          console.log("[NextAuth] ⚠️ SKIPPING BACKEND - Using Google user directly (temporary)");
-          
-          // Create mock token for testing
-          const mockBackendToken = `google_${account.access_token?.substring(0, 20)}`;
-          
-          const updatedToken = {
-            ...token,
-            backendToken: mockBackendToken,
-            userId: user.email,
-            userData: {
-              id: user.email,
-              email: user.email,
-              name: user.name,
-              image: user.image,
-            },
-            googleAccessToken: account.access_token,
-            backendAuthenticated: false, // Mark as not backend authenticated
-            temporaryBypass: true
-          };
-          
-          console.log("[NextAuth] 💾 Updated token (temporary bypass):", JSON.stringify(updatedToken, null, 2));
-          return updatedToken;
-        }
-        
-        try {
-          const fetchStart = Date.now();
-          const response = await fetch(`${API_BASE_URL}${API_PREFIX}/auth/google`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            credentials: 'include',
-            mode: 'cors',
-            body: JSON.stringify(requestBody)
-	  });
-          const fetchDuration = Date.now() - fetchStart;
-
-          console.log("[NextAuth] 📥 BACKEND RESPONSE:");
-          console.log("[NextAuth] Status:", response.status, response.statusText);
-          console.log("[NextAuth] Duration:", fetchDuration, "ms");
-          console.log("[NextAuth] Headers:", JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error("[NextAuth] ❌ BACKEND AUTH FAILED:");
-            console.error("[NextAuth] Status:", response.status);
-            console.error("[NextAuth] Error body:", errorText);
-            throw new Error(`Backend authentication failed: ${response.status} - ${errorText}`);
-          }
-          
-          const data = await response.json();
-          console.log("[NextAuth] ✅ BACKEND AUTH SUCCESSFUL");
-          console.log("[NextAuth] Response data:", JSON.stringify(data, null, 2));
-          
-          // Store backend JWT and user data in token
-          const updatedToken = {
-            ...token,
-            backendToken: data.token || data.access_token || data.accessToken,
-            userId: data.userId || data.user_id || data.user?.id || data.id,
-            userData: data.user,
-            googleAccessToken: account.access_token,
-            backendAuthenticated: true
-          };
-          
-          console.log("[NextAuth] 💾 Updated token:", JSON.stringify(updatedToken, null, 2));
-          return updatedToken;
-        } catch (error) {
-          console.error("[NextAuth] ❌ BACKEND AUTH ERROR:");
-          console.error("[NextAuth] Error type:", error instanceof Error ? error.constructor.name : typeof error);
-          console.error("[NextAuth] Error message:", error instanceof Error ? error.message : String(error));
-          console.error("[NextAuth] Error stack:", error instanceof Error ? error.stack : "No stack trace");
-          
-          return { 
-            ...token, 
-            error: "BackendAuthError",
-            errorMessage: error instanceof Error ? error.message : 'Unknown error',
-            errorDetails: String(error)
-          };
-        }
-      }
-      
-      // Return previous token if not initial sign in
-      console.log("[NextAuth] ↩️ Returning existing token (not initial sign in)");
-      return token;
-    },
-    async session({ session, token }) {
-      console.log("\n" + "=".repeat(60));
-      console.log("[NextAuth] 📋 SESSION CALLBACK TRIGGERED");
-      console.log("=".repeat(60));
-      console.log("[NextAuth] Session (before):", JSON.stringify(session, null, 2));
-      console.log("[NextAuth] Token:", JSON.stringify(token, null, 2));
-      console.log("=".repeat(60) + "\n");
-      
-      // Check for backend auth error
-      if (token.error) {
-        console.error("[NextAuth] ❌ SESSION HAS ERROR:");
-        console.error("[NextAuth] Error:", token.error);
-        console.error("[NextAuth] Message:", token.errorMessage);
-        console.error("[NextAuth] Details:", token.errorDetails);
-        return { 
-          ...session, 
-          error: token.error,
-          errorMessage: token.errorMessage,
-          errorDetails: token.errorDetails
-        } as any;
-      }
-      
-      // Add backend token and user data to session
-      if (session.user) {
-        (session as any).backendToken = token.backendToken;
-        (session as any).userId = token.userId;
-        (session as any).backendAuthenticated = token.backendAuthenticated;
-        (session.user as any).id = token.userId;
-        
-        // Merge backend user data if available
-        if (token.userData) {
-          session.user = {
-            ...session.user,
-            ...(token.userData as any)
-          };
-        }
-        
-        console.log("[NextAuth] ✅ SESSION CONFIGURED");
-        console.log("[NextAuth] Backend Token:", token.backendToken ? `${String(token.backendToken).substring(0, 20)}...` : "MISSING");
-        console.log("[NextAuth] User ID:", token.userId || "MISSING");
-        console.log("[NextAuth] Backend Authenticated:", token.backendAuthenticated || false);
-      }
-      
-      console.log("[NextAuth] Session (after):", JSON.stringify(session, null, 2));
-      console.log("=".repeat(60) + "\n");
-      return session;
-    },
-    async redirect({ url, baseUrl }) {
-      console.log("[NextAuth] 🔀 Redirect callback");
-      console.log("[NextAuth] Requested URL:", url);
-      console.log("[NextAuth] Base URL:", baseUrl);
-      
-      // Prevent redirect loops
-      if (url.includes('/login') && url.includes('error=')) {
-        console.log("[NextAuth] ⚠️ Error in login, staying on login page");
-        return '/login';
-      }
-      
-      // If redirect to same site, allow
-      if (url.startsWith(baseUrl)) {
-        console.log("[NextAuth] ✅ Internal redirect:", url);
-        return url;
-      }
-      
-      // Default to dashboard after successful login
-      console.log("[NextAuth] ✅ Redirecting to dashboard");
-      return `${baseUrl}/dashboard`;
-    },
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+  
+  // Cookie configuration untuk Cloudflare Tunnel
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: `__Secure-next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        secure: true,
-        domain: '.notaku.cloud'
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.notaku.cloud' : undefined
       }
     },
     callbackUrl: {
-      name: `next-auth.callback-url`,
+      name: `__Secure-next-auth.callback-url`,
       options: {
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        secure: true,
-        domain: '.notaku.cloud'
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.notaku.cloud' : undefined
       }
     },
     csrfToken: {
-      name: `next-auth.csrf-token`,
+      name: `__Host-next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        secure: true,
-        domain: '.notaku.cloud'
+        secure: process.env.NODE_ENV === 'production',
+      }
+    },
+    pkceCodeVerifier: {
+      name: `__Secure-next-auth.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.notaku.cloud' : undefined
       }
     },
     state: {
-      name: `next-auth.state`,
+      name: `__Secure-next-auth.state`,
       options: {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        secure: true,
-        domain: '.notaku.cloud',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.notaku.cloud' : undefined,
         maxAge: 900
       }
-    }
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // Enable detailed logging
-  logger: {
-    error(code, metadata) {
-      console.error("[NextAuth] ❌ ERROR:", code);
-      console.error("[NextAuth] Metadata:", JSON.stringify(metadata, null, 2));
     },
-    warn(code) {
-      console.warn("[NextAuth] ⚠️ WARNING:", code);
-    },
-    debug(code, metadata) {
-      console.log("[NextAuth] 🐛 DEBUG:", code);
-      if (metadata) {
-        console.log("[NextAuth] Debug metadata:", metadata);
+    nonce: {
+      name: `__Secure-next-auth.nonce`,
+      options: {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
       }
     },
   },
-};
+  
+  callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log("[OAuth] Starting sign in for:", user.email)
+      
+      if (account?.provider === "google") {
+        try {
+          // Check if we have ID token
+          if (!account.id_token) {
+            console.error("[OAuth] No ID token received from Google")
+            return false
+          }
+          
+          // Backend expects only the ID token
+          const requestBody = {
+            token: account.id_token
+          }
+          
+          console.log("[OAuth] Calling backend API with Google ID token...")
+          
+          // Get backend URL
+          const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.notaku.cloud'
+          
+          // Call backend endpoint - CORRECT PATH: /api/v1/auth/google
+          const response = await fetch(`${backendUrl}/api/v1/auth/google`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+          })
+          
+          console.log("[Backend] Response status:", response.status)
+          
+          // Handle response
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error("[Backend] Error response:", errorText)
+            
+            // Log specific error types
+            if (response.status === 404) {
+              console.error("[Backend] Endpoint not found - check backend route")
+            } else if (response.status === 401) {
+              console.error("[Backend] Unauthorized - token validation failed")
+            } else if (response.status === 500) {
+              console.error("[Backend] Server error - check backend logs")
+            }
+            
+            // TODO: In production, return false here
+            // For now, allow sign in for testing
+            if (process.env.NODE_ENV === 'development') {
+              console.warn("[OAuth] Backend failed but allowing sign in for development")
+              return true
+            }
+            
+            return false
+          }
+          
+          // Parse successful response
+          const data = await response.json()
+          console.log("[Backend] Success! User authenticated")
+          
+          // Store backend tokens and user data
+          if (data.access_token) {
+            (account as any).backendAccessToken = data.access_token
+            console.log("[Backend] Access token received")
+          }
+          if (data.refresh_token) {
+            (account as any).backendRefreshToken = data.refresh_token
+            console.log("[Backend] Refresh token received")
+          }
+          if (data.user) {
+            (account as any).backendUser = data.user
+            console.log("[Backend] User data received:", data.user.email)
+          }
+          
+          console.log("[OAuth] Sign in completed successfully")
+          return true
+          
+        } catch (error: any) {
+          console.error("[OAuth] Exception during sign in:", error)
+          console.error("[OAuth] Error details:", {
+            message: error.message,
+            stack: error.stack
+          })
+          
+          // TODO: In production, return false here
+          // For now, allow sign in for testing
+          if (process.env.NODE_ENV === 'development') {
+            console.warn("[OAuth] Exception but allowing sign in for development")
+            return true
+          }
+          
+          return false
+        }
+      }
+      
+      // For other providers
+      return true
+    },
+    
+    async jwt({ token, account, user, profile, trigger, session }) {
+      // Initial sign in
+      if (account && user) {
+        console.log("[JWT] Creating initial token for:", user.email)
+        
+        return {
+          ...token,
+          // Store Google OAuth tokens
+          googleAccessToken: account.access_token,
+          googleRefreshToken: account.refresh_token,
+          googleIdToken: account.id_token,
+          googleExpiresAt: account.expires_at,
+          
+          // Store backend tokens
+          backendAccessToken: (account as any).backendAccessToken || null,
+          backendRefreshToken: (account as any).backendRefreshToken || null,
+          
+          // Store user data
+          user: {
+            id: (account as any).backendUser?.id || user.id || (profile as any)?.sub,
+            email: (account as any).backendUser?.email || user.email,
+            name: (account as any).backendUser?.name || user.name,
+            image: (account as any).backendUser?.image || user.image,
+            role: (account as any).backendUser?.role || 'user',
+            ...((account as any).backendUser || {})
+          }
+        }
+      }
+      
+      // Update token if requested
+      if (trigger === "update" && session) {
+        console.log("[JWT] Updating token with new session data")
+        return { ...token, ...session }
+      }
+      
+      // Return existing token
+      return token
+    },
+    
+    async session({ session, token }) {
+      console.log("[Session] Creating session for:", token.user?.email)
+      
+      // Pass backend access token to session
+      if (token.backendAccessToken) {
+        session.accessToken = token.backendAccessToken as string
+      }
+      
+      // Pass backend refresh token to session (if needed)
+      if (token.backendRefreshToken) {
+        session.refreshToken = token.backendRefreshToken as string
+      }
+      
+      // Pass user data to session
+      if (token.user) {
+        session.user = {
+          ...session.user,
+          ...(token.user as any)
+        }
+      }
+      
+      return session
+    },
+    
+    async redirect({ url, baseUrl }) {
+      console.log("[Redirect] Processing redirect - URL:", url, "BaseURL:", baseUrl)
+      
+      // Allow relative callback URLs
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`
+      }
+      
+      // Allow callback URLs on the same origin
+      try {
+        const urlObject = new URL(url)
+        const baseUrlObject = new URL(baseUrl)
+        
+        if (urlObject.origin === baseUrlObject.origin) {
+          return url
+        }
+      } catch (error) {
+        console.error("[Redirect] Invalid URL:", url)
+      }
+      
+      // After successful sign in, redirect to dashboard
+      if (url === `${baseUrl}/login` || url === '/login') {
+        return `${baseUrl}/dashboard`
+      }
+      
+      // Default redirect
+      return baseUrl
+    }
+  },
+  
+  // Events for monitoring
+  events: {
+    async signIn(message) {
+      console.log("[Event] User signed in:", message.user?.email)
+    },
+    async signOut(message) {
+      console.log("[Event] User signed out")
+    },
+    async createUser(message) {
+      console.log("[Event] User created:", message.user?.email)
+    },
+    async linkAccount(message) {
+      console.log("[Event] Account linked for user:", message.user?.email)
+    },
+    async session(message) {
+      // This can be noisy, uncomment only if needed
+      // console.log("[Event] Session accessed")
+    }
+  },
+  
+  // Session configuration
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+  
+  // JWT configuration
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  
+  // Required for Cloudflare Tunnel
+  trustHost: true,
+  
+  // Use secure cookies in production
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  
+  // Secret for JWT encryption
+  secret: process.env.NEXTAUTH_SECRET,
+  
+  // Enable debug logging
+  debug: process.env.NODE_ENV === 'development' || true,
+}
 
-const handler = NextAuth(authOptions);
+// Create NextAuth handler
+const handler = NextAuth(authOptions)
 
-export { handler as GET, handler as POST };
+// Export for App Router
+export { handler as GET, handler as POST }
