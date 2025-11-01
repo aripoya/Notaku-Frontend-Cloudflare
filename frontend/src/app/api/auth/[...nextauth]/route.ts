@@ -136,7 +136,8 @@ export const authOptions: NextAuthOptions = {
             },
             credentials: 'include',
             mode: 'cors'
-          });
+            body: JSON.stringify(requestBody)
+	  });
           const fetchDuration = Date.now() - fetchStart;
 
           console.log("[NextAuth] 📥 BACKEND RESPONSE:");
