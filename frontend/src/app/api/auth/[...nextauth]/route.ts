@@ -135,7 +135,7 @@ export const authOptions: NextAuthOptions = {
               'Accept': 'application/json'
             },
             credentials: 'include',
-            mode: 'cors'
+            mode: 'cors',
             body: JSON.stringify(requestBody)
 	  });
           const fetchDuration = Date.now() - fetchStart;
@@ -260,6 +260,48 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.notaku.cloud'
+      }
+    },
+    callbackUrl: {
+      name: `next-auth.callback-url`,
+      options: {
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.notaku.cloud'
+      }
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.notaku.cloud'
+      }
+    },
+    state: {
+      name: `next-auth.state`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.notaku.cloud',
+        maxAge: 900
+      }
+    }
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: true, // Enable detailed logging
