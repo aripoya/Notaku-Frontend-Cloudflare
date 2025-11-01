@@ -266,7 +266,7 @@ export const authOptions: NextAuthOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         secure: true,
         domain: '.notaku.cloud'
@@ -275,7 +275,7 @@ export const authOptions: NextAuthOptions = {
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         secure: true,
         domain: '.notaku.cloud'
@@ -285,7 +285,7 @@ export const authOptions: NextAuthOptions = {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         secure: true,
         domain: '.notaku.cloud'
@@ -295,7 +295,7 @@ export const authOptions: NextAuthOptions = {
       name: `next-auth.state`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         secure: true,
         domain: '.notaku.cloud',
