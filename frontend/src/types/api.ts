@@ -26,16 +26,26 @@ export interface BackendResponse<T = any> {
 export interface User {
   id: string;
   email: string;
-  name: string;
-  subscription_tier: 'free' | 'premium';
-  created_at: string;
-  is_active: boolean;
+  name?: string;
+  username?: string;
+  full_name?: string;
+  preferred_name?: string;
+  subscription_tier?: 'free' | 'premium' | 'starter' | 'pro' | string;
+  created_at?: string;
+  is_active?: boolean;
+  image?: string | null;
+  role?: string;
+  [key: string]: any;
 }
 
 export interface UserRegistration {
   email: string;
-  name: string;
   password: string;
+  name?: string;
+  username?: string;
+  full_name?: string;
+  preferred_name?: string;
+  [key: string]: any;
 }
 
 export interface UserLogin {
@@ -45,8 +55,12 @@ export interface UserLogin {
 
 export interface AuthResponse {
   user: User;
-  token: string;
-  token_type: 'bearer';
+  token?: string;
+  token_type?: 'bearer' | string;
+  access_token?: string;
+  refresh_token?: string;
+  message?: string;
+  [key: string]: any;
 }
 
 // Note Types
