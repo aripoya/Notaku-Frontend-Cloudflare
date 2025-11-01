@@ -1,5 +1,5 @@
 // File: src/app/layout.tsx
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'  // Import existing providers
@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: 'Platform untuk pengelolaan UMKM Indonesia',
   keywords: 'UMKM, management, Indonesia, bisnis, usaha kecil menengah',
   authors: [{ name: 'Notaku Team' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
     title: 'Notaku - UMKM Management System',
@@ -45,6 +44,11 @@ export const metadata: Metadata = {
     shortcut: '/favicon-16x16.png',
     apple: '/apple-touch-icon.png',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
