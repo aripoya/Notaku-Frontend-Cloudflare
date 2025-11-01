@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { OCRApiClient } from "@/lib/ocr-api";
 import { useAuth } from "@/hooks/useAuth";
 import { useImageCompression } from "@/hooks/useImageCompression";
-import { OcrStatusIndicator } from "@/components/OcrStatusIndicator";
 import { formatIndonesianDate, formatLongDate, formatCurrency } from "@/lib/formatters";
 import { SubscriptionAPI } from "@/lib/subscription-api";
 import { QuotaDisplay } from "@/components/QuotaDisplay";
@@ -632,11 +631,6 @@ export default function UploadPage() {
           <QuotaDisplay userId={user.id} />
         </div>
       )}
-
-      <div className="mb-6">
-        <OcrStatusIndicator />
-      </div>
-
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}

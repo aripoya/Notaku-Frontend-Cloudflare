@@ -375,25 +375,13 @@ No references found in frontend source (`grep "/pop/"` → 0 matches). Add clien
 
 **Notes:** Proxied via Next.js route for CORS/streaming. Ensure `api.notaku.cloud` resolves to RAG endpoint or adjust.
 
----
-
-### POST {NEXT_PUBLIC_OCR_API_URL}/api/v1/ocr/upload (OCR Service)
-
-**Status:** ⚠️ Not tested (requires OCR service running on separate host)
-
-**Referenced In:**
-- `src/components/ocr/OCRUpload.tsx` L101-L119
-
-**Notes:** Defaults to `http://172.16.1.7:8001`. Confirm env vars in production.
-
----
+--> Removed Nov 2025 — the legacy OCR dashboard and its endpoints have been retired. Upload Nota now calls `POST https://upload.notaku.cloud/api/v1/receipt/process` directly; no separate OCR status/result endpoints remain.
 
 ### POST {INTEGRATION_SERVICE_URL}/api/v1/receipt/process & GET /health (Integration Service)
 
 **Status:** ⚠️ Not tested
 
 **Referenced In:**
-- `src/lib/ocr-api.ts` L64-L226
 - `src/config/services.ts` L39-L185
 
 **Notes:** Handles OCR + analytics pipelines outside FastAPI core.
