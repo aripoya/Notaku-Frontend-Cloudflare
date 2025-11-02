@@ -32,7 +32,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
 import { AnalyticsAPI } from "@/lib/analytics-api";
 import type {
   AnalyticsSummary,
@@ -48,6 +47,7 @@ import {
   formatCurrencyCompact,
   formatDateShort,
 } from "@/types/analytics";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Chart colors
 const COLORS = [

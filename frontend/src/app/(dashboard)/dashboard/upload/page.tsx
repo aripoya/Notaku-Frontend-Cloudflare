@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, X, RotateCw, Check, Loader2, FileImage, Eye, AlertCircle, Sparkles, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { OCRApiClient } from "@/lib/ocr-api";
-import { useAuth } from "@/hooks/useAuth";
 import { useImageCompression } from "@/hooks/useImageCompression";
 import { formatIndonesianDate, formatLongDate, formatCurrency } from "@/lib/formatters";
 import { SubscriptionAPI } from "@/lib/subscription-api";
@@ -19,6 +18,7 @@ import { QuotaDisplay } from "@/components/QuotaDisplay";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import ReceiptEditForm from "@/components/ReceiptEditForm";
 import type { Receipt } from "@/types/receipt";
+import { useAuth } from "@/contexts/AuthContext";
 
 type UploadStage = "select" | "preview" | "uploading" | "processing" | "result";
 

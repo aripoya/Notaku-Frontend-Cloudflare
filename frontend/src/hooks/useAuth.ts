@@ -2,34 +2,43 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import ApiClient from "@/lib/api-client";
 
-interface User {
+export type Tier = "basic" | "starter" | "pro";
+
+export interface User {
   id: string;
   email: string;
   username?: string;
   name?: string;
   full_name?: string;
-  preferred_name?: string; // ✅ ADD THIS - Used by chat AI for personalization
-  tier?: "basic" | "starter" | "pro";
+  preferred_name?: string;
+  tier?: Tier;
   businessName?: string;
   createdAt?: string;
   lastLogin?: string;
   isActive?: boolean;
+  role?: string;
+  image?: string | null;
 }
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  token: string | null; // optional kalau backend juga kirim bearer
   isAuthenticated: boolean;
   isLoading: boolean;
 
-  // Actions
+  // Actions utama (dipakai Context & komponen)
   login: (email: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+
+  // Actions sinkronisasi (dipakai Context)
+  setAuthFromSession: (user: Partial<User>) => void;
+  setAuth: (user: Partial<User> | null, token?: string | null) => void;
+  clearAuth: () => void;
 }
 
-export const useAuth = create<AuthState>()(
+export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
@@ -37,90 +46,72 @@ export const useAuth = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
 
+      // --- Actions utama ---
       login: async (email, password) => {
         set({ isLoading: true });
         try {
-          // Call API login endpoint
-          const response = await ApiClient.login({ email, password });
-          
-          // Store token and user data
+          const res = await ApiClient.login({ email, password });
+          const user = (res?.user ?? null) as User | null;
+          const token = (res?.token ?? null) as string | null;
           set({
-            user: response.user,
-            token: response.token || null,
-            isAuthenticated: true,
+            user,
+            token,
+            isAuthenticated: !!user,
             isLoading: false,
           });
-          
-          console.log('[Auth] Login successful:', response.user?.email);
-        } catch (error) {
+        } catch (err) {
           set({ isLoading: false });
-          console.error('[Auth] Login failed:', error);
-          throw error;
+          throw err;
         }
       },
 
       register: async (data) => {
         set({ isLoading: true });
         try {
-          // Call API register endpoint
-          const response = await ApiClient.register(data);
-          
-          // Store token and user data
+          const res = await ApiClient.register(data);
+          const user = (res?.user ?? null) as User | null;
+          const token = (res?.token ?? null) as string | null;
+
           set({
-            user: response.user,
-            token: response.token || null,
-            isAuthenticated: true,
+            user,
+            token,
+            isAuthenticated: !!user,
             isLoading: false,
           });
-          
-          console.log('[Auth] Registration successful:', response.user?.email);
-        } catch (error) {
+          console.log("[AuthStore] register ok:", user?.email);
+        } catch (err) {
+          console.error("[AuthStore] register failed:", err);
           set({ isLoading: false });
-          console.error('[Auth] Registration failed:', error);
-          throw error;
+          throw err;
         }
       },
 
       logout: async () => {
         try {
-          // Call API logout endpoint to clear session
           await ApiClient.logout();
-          console.log('[Auth] Logout successful');
-        } catch (error) {
-          console.error('[Auth] Logout error:', error);
+          console.log("[AuthStore] logout ok");
+        } catch (err) {
+          console.error("[AuthStore] logout error:", err);
         } finally {
-          // Clear local state regardless of API call result
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-          });
+          set({ user: null, token: null, isAuthenticated: false });
         }
       },
 
       checkAuth: async () => {
-        // Skip check if already authenticated with user data
-        const currentState = get();
-        if (currentState.isAuthenticated && currentState.user) {
+        const cur = get();
+        if (cur.isAuthenticated && cur.user) {
           set({ isLoading: false });
           return;
         }
 
         set({ isLoading: true });
         try {
-          // Verify session with API
-          const user = await ApiClient.getCurrentUser();
-          set({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-        } catch (error: any) {
-          // Only log if it's not a 401 (which is expected when not logged in)
-          if (error?.statusCode !== 401) {
-            console.error('Auth check error:', error);
+          const u = (await ApiClient.getCurrentUser()) as User;
+          set({ user: u, isAuthenticated: true, isLoading: false });
+        } catch (err: any) {
+          if (err?.statusCode !== 401) {
+            console.error("[AuthStore] checkAuth error:", err);
           }
-          // Session invalid or expired, clear state
           set({
             user: null,
             token: null,
@@ -128,6 +119,37 @@ export const useAuth = create<AuthState>()(
             isLoading: false,
           });
         }
+      },
+
+      // --- Actions sinkronisasi ---
+      setAuthFromSession: (partial) => {
+        const user: User = {
+          id: String(partial.id ?? ""),
+          email: String(partial.email ?? ""),
+          name: partial.name,
+          full_name: partial.full_name,
+          preferred_name: partial.preferred_name,
+          username: partial.username,
+          tier: partial.tier,
+          businessName: partial.businessName,
+          role: partial.role ?? "user",
+          image: partial.image ?? null,
+        };
+        set({ user, isAuthenticated: true });
+      },
+
+      setAuth: (partial, token) => {
+        if (!partial) {
+          set({ user: null, token: null, isAuthenticated: false });
+          return;
+        }
+        const prev = get().user ?? ({} as User);
+        const user: User = { ...prev, ...(partial as User) };
+        set({ user, token: token ?? get().token, isAuthenticated: !!user });
+      },
+
+      clearAuth: () => {
+        set({ user: null, token: null, isAuthenticated: false });
       },
     }),
     {
@@ -137,7 +159,6 @@ export const useAuth = create<AuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
-      skipHydration: true,
     }
   )
 );

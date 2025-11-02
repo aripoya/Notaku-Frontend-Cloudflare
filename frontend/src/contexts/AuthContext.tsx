@@ -1,46 +1,32 @@
-// src/contexts/AuthContext.tsx
-'use client'
+'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import ApiClient from '@/lib/api-client'
-
-interface User {
-  id?: string
-  email?: string
-  name?: string
-  image?: string | null
-  role?: string
-  username?: string
-  full_name?: string
-  preferred_name?: string
-  subscription_tier?: string | null
-  businessName?: string | null
-  [key: string]: any
-}
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import ApiClient from '@/lib/api-client';
+import { useAuthStore, type User } from '@/hooks/useAuth';
 
 type RegisterPayload = {
-  email: string
-  password: string
-  username?: string
-  name?: string
-  full_name?: string
-  preferred_name?: string
-  [key: string]: any
-}
+  email: string;
+  password: string;
+  username?: string;
+  name?: string;
+  full_name?: string;
+  preferred_name?: string;
+  [key: string]: any;
+};
 
 interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  error: string | null
-  login: (email: string, password: string) => Promise<void>
-  register: (data: RegisterPayload) => Promise<void>
-  logout: () => Promise<void>
-  refreshUser: () => Promise<void>
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: RegisterPayload) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
-const noop = async () => {}
+const noop = async () => {};
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -51,20 +37,32 @@ const AuthContext = createContext<AuthContextType>({
   register: noop,
   logout: noop,
   refreshUser: noop,
-})
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession()
-  const [user, setUser] = useState<User | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: session, status } = useSession();
 
-  const mapUser = useCallback((raw: any): User | null => {
-    if (!raw) return null
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const storeLoading = useAuthStore((s) => s.isLoading);
+
+  const storeLogin = useAuthStore((s) => s.login);
+  const storeRegister = useAuthStore((s) => s.register);
+  const storeLogout = useAuthStore((s) => s.logout);
+  const storeCheckAuth = useAuthStore((s) => s.checkAuth);
+
+  const setAuthFromSession = useAuthStore((s) => s.setAuthFromSession);
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+
+  const [error, setError] = useState<string | null>(null);
+  const triedLocalRef = useRef(false);
+
+  // Helper: mapping aman dari apa pun bentuk user
+  const mapUser = useCallback((raw: any): Partial<User> | null => {
+    if (!raw) return null;
     return {
-      ...raw,
-      id: raw.id ?? raw.user_id ?? raw.sub ?? undefined,
+      id: String(raw.id ?? raw.user_id ?? raw.sub ?? ''),
       email: raw.email ?? undefined,
       name:
         raw.preferred_name ??
@@ -77,119 +75,101 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       preferred_name: raw.preferred_name ?? undefined,
       username: raw.username ?? undefined,
       role: raw.role ?? raw.user_role ?? 'user',
-      subscription_tier: raw.subscription_tier ?? raw.tier ?? null,
+      tier: raw.subscription_tier ?? raw.tier ?? undefined,
       image: raw.image ?? raw.avatar ?? null,
-      businessName: raw.businessName ?? raw.business_name ?? null,
-    }
-  }, [])
+      businessName: raw.businessName ?? raw.business_name ?? undefined,
+    };
+  }, []);
 
   const refreshUser = useCallback(async () => {
-    setIsLoading(true)
     try {
-      const current = await ApiClient.getCurrentUser()
-      const mapped = mapUser(current)
-      setUser(mapped)
-      setIsAuthenticated(!!mapped)
-      setError(null)
+      const current = await ApiClient.getCurrentUser();
+      const mapped = mapUser(current);
+      setAuth(mapped);
+      setError(null);
     } catch (err: any) {
       if (err?.statusCode !== 401) {
-        console.error('[AuthContext] refreshUser error:', err)
+        console.error('[AuthContext] refreshUser error:', err);
       }
-      setUser(null)
-      setIsAuthenticated(false)
-      setError(err?.message ?? null)
-    } finally {
-      setIsLoading(false)
+      clearAuth();
+      setError(err?.message ?? null);
     }
-  }, [mapUser])
+  }, [mapUser, setAuth, clearAuth]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      const response = await ApiClient.login({ email, password })
-      const mapped = mapUser(response.user)
-      setUser(mapped)
-      setIsAuthenticated(true)
-      setError(null)
-      if (!mapped?.email) {
-        await refreshUser()
+  // Delegasi aksi utama ke store (supaya satu sumber kebenaran)
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        await storeLogin(email, password);
+        setError(null);
+      } catch (err: any) {
+        setError(err?.message ?? 'Login failed');
+        throw err;
       }
-    } catch (err: any) {
-      setError(err?.message ?? 'Login failed')
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [mapUser, refreshUser])
+    },
+    [storeLogin]
+  );
 
-  const register = useCallback(async (data: RegisterPayload) => {
-    setIsLoading(true)
-    try {
-      const response = await ApiClient.register(data)
-      const mapped = mapUser(response.user)
-      setUser(mapped)
-      setIsAuthenticated(true)
-      setError(null)
-      if (!mapped?.email) {
-        await refreshUser()
+  const register = useCallback(
+    async (data: RegisterPayload) => {
+      try {
+        await storeRegister(data);
+        setError(null);
+      } catch (err: any) {
+        setError(err?.message ?? 'Registration failed');
+        throw err;
       }
-    } catch (err: any) {
-      setError(err?.message ?? 'Registration failed')
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [mapUser, refreshUser])
+    },
+    [storeRegister]
+  );
 
   const logout = useCallback(async () => {
-    setIsLoading(true)
     try {
-      await ApiClient.logout()
+      await storeLogout();
       if (status === 'authenticated') {
-        await signOut({ redirect: false })
+        await signOut({ redirect: false });
       }
     } catch (err) {
-      console.error('[AuthContext] logout error:', err)
+      console.error('[AuthContext] logout error:', err);
     } finally {
-      setUser(null)
-      setIsAuthenticated(false)
-      setIsLoading(false)
-      setError(null)
+      setError(null);
+      triedLocalRef.current = false;
     }
-  }, [])
+  }, [storeLogout, status]);
 
+  // Bootstrapping: NextAuth → Store → (fallback) Backend session
   useEffect(() => {
-    console.log('[AuthContext] Session status:', status)
-    console.log('[AuthContext] Session data:', session)
-    
-    if (status === 'loading') {
-      setIsLoading(true)
-      return
-    }
+    if (status === 'loading') return;
 
     if (status === 'authenticated' && session?.user) {
-      // Sync NextAuth session with AuthContext
-      const userData = mapUser({
+      const u = mapUser({
         id: (session.user as any).id || '',
         email: session.user.email || '',
         name: session.user.name || '',
         image: session.user.image || '',
         role: (session.user as any).role || 'user',
-      })
-      
-      console.log('[AuthContext] Setting user from NextAuth:', userData)
-      setUser(userData)
-      setIsAuthenticated(true)
-      setIsLoading(false)
-      setError(null)
-    } else if (status === 'unauthenticated') {
-      console.log('[AuthContext] User not authenticated via NextAuth, falling back to local session')
-      refreshUser()
+      });
+      setAuthFromSession(u ?? {});
+      setError(null);
+      triedLocalRef.current = false; // reset flag
+      return;
     }
-  }, [mapUser, refreshUser, session, status])
+
+    // unauthenticated → coba local session SEKALI
+    if (!triedLocalRef.current) {
+      triedLocalRef.current = true;
+      // Jangan block UI berlebihan; store punya isLoading sendiri
+      storeCheckAuth().catch(() => {
+        // ignore; store sudah set flag ke false
+      });
+    }
+  }, [status, session, mapUser, setAuthFromSession, storeCheckAuth]);
+
+  // Loading gabungan: tunggu NextAuth atau proses store
+  const isLoading = status === 'loading' || storeLoading;
 
   return (
-    <AuthContext.Provider 
+    <AuthContext.Provider
       value={{
         user,
         isAuthenticated,
@@ -203,13 +183,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return context
-}
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+};

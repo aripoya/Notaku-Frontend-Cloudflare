@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Menu, Moon, Sun, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -29,7 +29,6 @@ export default function Header({ onMenuToggle }: HeaderProps) {
 
   // Hydrate on mount
   useEffect(() => {
-    useAuth.persist.rehydrate();
     setMounted(true);
   }, []);
 

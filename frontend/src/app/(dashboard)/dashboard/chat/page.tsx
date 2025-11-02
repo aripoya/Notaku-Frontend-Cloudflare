@@ -5,12 +5,11 @@ import { MessageSquare, Sparkles, Bot, User, Send, Loader2, Zap } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useAuth";
 import { SubscriptionAPI } from "@/lib/subscription-api";
 import { API_BASE_URL } from "@/lib/api-config";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { toast } from "sonner";
-// Removed RAG service imports - now using Backend API for Diajeng chat
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -32,52 +31,72 @@ export default function ChatPage() {
 
   // Auto scroll to bottom
   useEffect(() => {
+    console.log("[Chat] User from AuthContext:", user);
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, user]);
 
   // Thinking text animation with contextual messages
   useEffect(() => {
     if (isLoading) {
-      // Get the last user message to determine context
-      const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content.toLowerCase() || '';
-      
+      const lastUserMessage =
+        messages.filter((m) => m.role === "user").pop()?.content.toLowerCase() || "";
+
       let thinkingStates = [
         "Sedang berpikir...",
         "Sedang mengumpulkan data...",
         "Sedang menganalisa...",
         "Menyiapkan jawaban...",
       ];
-      
-      // Contextual messages based on question type
-      if (lastUserMessage.includes('berapa') || lastUserMessage.includes('total') || lastUserMessage.includes('jumlah')) {
+
+      if (
+        lastUserMessage.includes("berapa") ||
+        lastUserMessage.includes("total") ||
+        lastUserMessage.includes("jumlah")
+      ) {
         thinkingStates = [
           "Sedang menghitung...",
           "Sedang mengumpulkan data transaksi...",
           "Sedang menganalisa angka...",
           "Menyiapkan laporan...",
         ];
-      } else if (lastUserMessage.includes('supplier') || lastUserMessage.includes('merchant') || lastUserMessage.includes('toko')) {
+      } else if (
+        lastUserMessage.includes("supplier") ||
+        lastUserMessage.includes("merchant") ||
+        lastUserMessage.includes("toko")
+      ) {
         thinkingStates = [
           "Sedang mencari data supplier...",
           "Sedang mengumpulkan informasi merchant...",
           "Sedang menganalisa pola belanja...",
           "Menyiapkan rekomendasi...",
         ];
-      } else if (lastUserMessage.includes('bandingkan') || lastUserMessage.includes('vs') || lastUserMessage.includes('dibanding')) {
+      } else if (
+        lastUserMessage.includes("bandingkan") ||
+        lastUserMessage.includes("vs") ||
+        lastUserMessage.includes("dibanding")
+      ) {
         thinkingStates = [
           "Sedang membandingkan data...",
           "Sedang mengumpulkan periode...",
           "Sedang menganalisa perbedaan...",
           "Menyiapkan perbandingan...",
         ];
-      } else if (lastUserMessage.includes('tips') || lastUserMessage.includes('saran') || lastUserMessage.includes('rekomendasi')) {
+      } else if (
+        lastUserMessage.includes("tips") ||
+        lastUserMessage.includes("saran") ||
+        lastUserMessage.includes("rekomendasi")
+      ) {
         thinkingStates = [
           "Sedang menganalisa pola...",
           "Sedang mencari peluang hemat...",
           "Sedang menyusun strategi...",
           "Menyiapkan rekomendasi...",
         ];
-      } else if (lastUserMessage.includes('tren') || lastUserMessage.includes('trend') || lastUserMessage.includes('grafik')) {
+      } else if (
+        lastUserMessage.includes("tren") ||
+        lastUserMessage.includes("trend") ||
+        lastUserMessage.includes("grafik")
+      ) {
         thinkingStates = [
           "Sedang menganalisa tren...",
           "Sedang mengumpulkan data historis...",
@@ -85,24 +104,22 @@ export default function ChatPage() {
           "Menyiapkan visualisasi...",
         ];
       }
-      
+
       let index = 0;
       setThinkingText(thinkingStates[0]);
-      
+
       const interval = setInterval(() => {
         index = (index + 1) % thinkingStates.length;
         setThinkingText(thinkingStates[index]);
-      }, 1500); // Change every 1.5 seconds
-      
+      }, 1500);
+
       return () => clearInterval(interval);
     }
   }, [isLoading, messages]);
 
-  // Fetch AI queries remaining
   useEffect(() => {
     const fetchAIQueries = async () => {
       if (!user?.id) return;
-      
       try {
         const remaining = await SubscriptionAPI.getRemainingAIQueries(user.id);
         setAiQueriesRemaining(remaining);
@@ -110,64 +127,73 @@ export default function ChatPage() {
         console.error("[Chat] Error fetching AI queries:", error);
       }
     };
-    
+
     fetchAIQueries();
-    
-    // Refresh every 30 seconds
     const interval = setInterval(fetchAIQueries, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
   const handleSendMessage = async (message: string) => {
-    console.log('[Chat] 🚀 Starting handleSendMessage');
-    console.log('[Chat] Message:', message);
-    
-    // Fetch fresh session to avoid closure issue
+    console.log("[Chat] 🚀 Starting handleSendMessage");
+    console.log("[Chat] Message:", message);
+
     let currentToken: string | undefined;
     try {
-      const freshSession = await fetch('/api/auth/session').then(r => r.json());
-      currentToken = freshSession?.accessToken;
-      console.log('[Chat] Token dari session:', currentToken ? 'ada' : 'tidak ada');
+      const res = await fetch(`/api/auth/session`, { credentials: "include" });
+      const freshSession = res.status === 200 ? await res.json() : null;
+      currentToken =
+        freshSession?.backendAccessToken || freshSession?.accessToken || undefined;
+      console.log(
+        "[Chat] Token dari session:",
+        currentToken ? "ada" : "tidak ada (akan pakai cookie)"
+      );
     } catch (err) {
-      console.error('[Chat] Error fetch session:', err);
+      console.warn(
+        "[Chat] Tidak bisa baca /api/auth/session, lanjut pakai cookie saja:",
+        err
+      );
     }
 
     const currentUser = user;
 
-    if (!currentToken) {
-      throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
-    }
-    console.log('[Chat] User:', currentUser?.id);
-    console.log('[Chat] Current messages count:', messages.length);
-    
+    // ❌ HAPUS: jangan mewajibkan token
+    // if (!currentToken) {
+    //   throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
+    // }
+
+    console.log("[Chat] User:", currentUser?.id);
+    console.log("[Chat] Current messages count:", messages.length);
+
     if (!message.trim() || isLoading) {
-      console.log('[Chat] ⚠️ Message empty or already loading, aborting');
+      console.log("[Chat] ⚠️ Message empty or already loading, aborting");
       return;
     }
 
-    // Check AI permission BEFORE sending (skip if API not available)
     if (currentUser?.id) {
       try {
-        console.log('[Chat] Checking AI permission...');
+        console.log("[Chat] Checking AI permission...");
         const permission = await SubscriptionAPI.checkAIPermission(currentUser.id);
-        console.log('[Chat] Permission result:', permission);
-        
+        console.log("[Chat] Permission result:", permission);
+
         if (!permission.allowed) {
-          console.warn('[Chat] ⚠️ AI permission denied:', permission.message);
-          setUpgradeReason(permission.message || "AI query limit reached. Please upgrade your plan.");
+          console.warn("[Chat] ⚠️ AI permission denied:", permission.message);
+          setUpgradeReason(
+            permission.message || "AI query limit reached. Please upgrade your plan."
+          );
           setShowUpgradeModal(true);
           toast.error("AI Limit Reached", {
-            description: permission.message || "Upgrade to continue using AI chat"
+            description: permission.message || "Upgrade to continue using AI chat",
           });
           return;
         }
-        
-        // Update remaining queries
+
         setAiQueriesRemaining(permission.remaining);
-        console.log('[Chat] ✅ Permission granted, remaining:', permission.remaining);
+        console.log("[Chat] ✅ Permission granted, remaining:", permission.remaining);
       } catch (error: any) {
-        console.warn("[Chat] AI permission check failed (API not available), allowing chat:", error.message);
-        // Continue anyway if check fails - allows app to work without subscription backend
+        console.warn(
+          "[Chat] AI permission check failed (API not available), allowing chat:",
+          error?.message
+        );
       }
     }
 
@@ -186,153 +212,130 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      // ✅ Use Backend API for chat with Diajeng
-      // This connects to the new backend with proper authentication
-      console.log('[Chat] 🤖 Diajeng Chat Configuration:');
-      console.log('[Chat] Using Backend API for chat with Diajeng');
-      console.log('[Chat] User:', currentUser?.name || currentUser?.email);
-      
+      // Request body
       const requestBody = {
-        message: message,
-        conversationId: `user-${user?.id || 'anonymous'}`,
+        message,
+        conversationId: `user-${user?.id || "anonymous"}`,
         context: {
-          userName: currentUser?.name || currentUser?.email?.split('@')[0] || 'User',
-          timestamp: new Date().toISOString()
-        }
+          userName:
+            currentUser?.name || currentUser?.email?.split("@")[0] || "User",
+          timestamp: new Date().toISOString(),
+        },
       };
-      
-      console.log('[Chat] Request body:', requestBody);
-      console.log('[Chat] Message to Diajeng:', requestBody.message);
-      
-      // Use Backend API streaming chat endpoint
-      console.log('[Chat] Sending chat request to Backend API...');
-      
+      console.log("[Chat] Request body:", currentToken);
       const response = await fetch(`${API_BASE_URL}/api/v1/chat/`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "text/event-stream",
-          "Authorization": currentToken ? `Bearer ${currentToken}` : '',
+          Accept: "text/event-stream",
+          ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
+          "X-Requested-With": "fetch", 
         },
         body: JSON.stringify(requestBody),
       });
 
-      console.log('[Chat] ✅ Response received from Backend API');
-      console.log('[Chat] Response status:', response.status);
-      console.log('[Chat] Response statusText:', response.statusText);
-      console.log('[Chat] Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log("[Chat] ✅ Response received from Backend API");
+      console.log("[Chat] Response status:", response.status);
+      console.log("[Chat] Response statusText:", response.statusText);
+      console.log("[Chat] Response headers:", Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        let errorData;
-        const contentType = response.headers.get('content-type') || '';
-        
+        let errorData: any;
+        const contentType = response.headers.get("content-type") || "";
+
         try {
-          if (contentType.includes('application/json')) {
+          if (contentType.includes("application/json")) {
             errorData = await response.json();
           } else {
             errorData = { error: await response.text() };
           }
         } catch (e) {
-          errorData = { error: 'Failed to parse error response' };
+          errorData = { error: "Failed to parse error response" };
         }
-        
-        console.error('[Chat] ❌ Error response:', errorData);
-        
-        // Handle specific error codes
+
+        console.error("[Chat] ❌ Error response:", errorData);
+
         if (response.status === 503 && errorData.fallback_response) {
-          // RAG service is down, show fallback message
-          console.log('[Chat] 🔄 Using fallback response for service unavailable');
-          
           setMessages((prev) => {
             const newMessages = [...prev];
             const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage && lastMessage.role === 'assistant') {
+            if (lastMessage && lastMessage.role === "assistant") {
               lastMessage.content = errorData.fallback_response;
               lastMessage.isStreaming = false;
               lastMessage.isError = true;
             }
             return newMessages;
           });
-          
-          toast.error('Layanan AI Tidak Tersedia', {
-            description: 'Silakan coba lagi dalam beberapa menit'
+
+          toast.error("Layanan AI Tidak Tersedia", {
+            description: "Silakan coba lagi dalam beberapa menit",
           });
-          
-          return; // Don't throw error, we handled it gracefully
+          return;
         } else if (response.status === 401) {
-          throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
+          throw new Error("Sesi Anda telah berakhir. Silakan login kembali.");
         } else if (response.status === 403) {
-          throw new Error('Akses ditolak. Periksa izin Anda.');
+          throw new Error("Akses ditolak. Periksa izin Anda.");
         } else if (response.status === 500) {
-          throw new Error('Server error. Silakan coba lagi.');
+          throw new Error("Server error. Silakan coba lagi.");
         } else if (response.status === 404) {
-          throw new Error('Endpoint tidak ditemukan. Periksa konfigurasi API.');
+          throw new Error("Endpoint tidak ditemukan. Periksa konfigurasi API.");
         } else {
-          throw new Error(errorData.details || errorData.error || `API error ${response.status}`);
+          throw new Error(
+            errorData.details || errorData.error || `API error ${response.status}`
+          );
         }
       }
 
-      // ✅ Handle Server-Sent Events (SSE) streaming
-      console.log('[Chat] 📡 Reading SSE stream...');
+      console.log("[Chat] 📡 Reading SSE stream...");
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      
+
       if (!reader) {
-        throw new Error('No response body for streaming');
+        throw new Error("No response body for streaming");
       }
-      
+
       let fullResponse = "";
       let buffer = "";
-      
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
-          console.log('[Chat] Stream ended');
+          console.log("[Chat] Stream ended");
           break;
         }
-        
+
         const chunk = decoder.decode(value, { stream: true });
         buffer += chunk;
-        console.log('[Chat] 📦 Raw chunk received:', chunk.substring(0, 100) + '...');
-        
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ""; // Keep incomplete line in buffer
-        
+        console.log("[Chat] 📦 Raw chunk received:", chunk.substring(0, 100) + "...");
+
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; 
+
         for (const line of lines) {
-          console.log('[Chat] 📝 Processing line:', line.substring(0, 100));
-          
-          if (line.startsWith('data: ')) {
+          console.log("[Chat] 📝 Processing line:", line.substring(0, 100));
+
+          if (line.startsWith("data: ")) {
             const jsonStr = line.slice(6).trim();
-            console.log('[Chat] 🔍 JSON string:', jsonStr);
-            
+            console.log("[Chat] 🔍 JSON string:", jsonStr);
+
             try {
               const data = JSON.parse(jsonStr);
-              console.log('[Chat] ✅ Parsed data:', data);
-              console.log('[Chat] Data type:', data.type);
-              console.log('[Chat] Available fields:', Object.keys(data));
-              
-              // Handle different message types from Backend API (Diajeng)
-              if (data.type === 'metadata') {
-                console.log('[Chat] 📊 Metadata received:', {
-                  sources: data.sources,
-                  question: data.question
-                });
-                // Just log metadata, don't add to response
+              console.log("[Chat] ✅ Parsed data:", data);
+
+              if (data.type === "metadata") {
+                // ignore: hanya log
                 continue;
               }
-              
-              if (data.type === 'done') {
-                console.log('[Chat] ✅ Stream marked as done by backend');
-                // Backend signals completion
+
+              if (data.type === "done") {
+                // backend menandai selesai
                 break;
               }
-              
-              // ✅ Handle 'chunk' type - THIS IS THE FORMAT BACKEND USES!
-              if (data.type === 'chunk' && data.content) {
-                console.log('[Chat] 📝 Chunk received from Diajeng:', data.content);
+
+              // Format utama dari backend kita
+              if (data.type === "chunk" && data.content) {
                 fullResponse += data.content;
-                
-                // Update message in real-time
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
@@ -342,24 +345,21 @@ export default function ChatPage() {
                   };
                   return newMessages;
                 });
-                continue; // Move to next line
+                continue;
               }
-              
-              // Handle token/chunk streaming (fallback)
-              // Try different field names for token/content from Diajeng
-              const token = data.token || 
-                           data.content || 
-                           data.text || 
-                           data.chunk || 
-                           data.delta ||
-                           data.message ||  // Backend might use 'message'
-                           data.response;   // Or 'response'
-              
+
+              // Fallback field name
+              const token =
+                data.token ||
+                data.content ||
+                data.text ||
+                data.chunk ||
+                data.delta ||
+                data.message ||
+                data.response;
+
               if (token) {
-                console.log('[Chat] 📝 Token received:', token);
                 fullResponse += token;
-                
-                // Update message in real-time
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
@@ -370,13 +370,10 @@ export default function ChatPage() {
                   return newMessages;
                 });
               }
-              
-              // Handle complete response (non-streaming)
+
               if (data.response || data.answer) {
                 const completeResponse = data.response || data.answer;
-                console.log('[Chat] 🎯 Complete response received:', completeResponse.substring(0, 100) + '...');
                 fullResponse = completeResponse;
-                
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
@@ -387,22 +384,11 @@ export default function ChatPage() {
                   return newMessages;
                 });
               }
-              
-              // Log context/sources if available
-              if (data.context) {
-                console.log('[Chat] 📚 Context used:', data.context.length, 'sources');
-              }
-              if (data.sources && typeof data.sources === 'number') {
-                console.log('[Chat] 📚 Number of sources:', data.sources);
-              }
             } catch (e) {
-              console.warn('[Chat] ⚠️ Failed to parse JSON:', jsonStr, e);
-              // If not JSON, treat as plain text
+              // Not JSON; treat as plain text
               const text = line.slice(6).trim();
-              if (text && text !== '[DONE]') {
-                console.log('[Chat] 📝 Plain text token:', text);
+              if (text && text !== "[DONE]") {
                 fullResponse += text;
-                
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
@@ -417,13 +403,10 @@ export default function ChatPage() {
           }
         }
       }
-      
+
       // Mark streaming as complete
       const finalContent = fullResponse || "Maaf, tidak ada response dari AI.";
-      console.log('[Chat] ✅ Streaming complete');
-      console.log('[Chat] Full response length:', fullResponse.length, 'chars');
-      console.log('[Chat] Final content:', finalContent.substring(0, 200) + '...');
-      
+      console.log("[Chat] ✅ Streaming complete");
       setMessages((prev) => {
         const newMessages = [...prev];
         newMessages[newMessages.length - 1] = {
@@ -433,43 +416,34 @@ export default function ChatPage() {
         };
         return newMessages;
       });
-      
+
       if (!fullResponse) {
-        console.error('[Chat] ⚠️ WARNING: No tokens received from stream!');
+        console.error("[Chat] ⚠️ WARNING: No tokens received from stream!");
       }
     } catch (error: any) {
-      console.error('[Chat] ❌ Chat error:', error);
-      console.error('[Chat] Error type:', error.constructor.name);
-      console.error('[Chat] Error message:', error.message);
-      console.error('[Chat] Error stack:', error.stack);
-      
-      // Determine error message
+      console.error("[Chat] ❌ Chat error:", error);
+
       let errorMessage = "Maaf, terjadi kesalahan. Silakan coba lagi.";
-      
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet.';
-        console.error('[Chat] Network error - cannot reach server');
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        errorMessage = "Tidak dapat terhubung ke server. Periksa koneksi internet.";
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
-      console.error('[Chat] Final error message shown to user:', errorMessage);
-      
+
       setMessages((prev) => {
         const newMessages = [...prev];
         newMessages[newMessages.length - 1] = {
           role: "assistant",
           content: errorMessage,
+          isStreaming: false,
+          isError: true,
         };
         return newMessages;
       });
-      
-      // Show toast notification
-      toast.error('Chat Error', {
-        description: errorMessage
-      });
+
+      toast.error("Chat Error", { description: errorMessage });
     } finally {
-      console.log('[Chat] 🏁 handleSendMessage complete, setting isLoading to false');
+      console.log("[Chat] 🏁 handleSendMessage complete, setting isLoading to false");
       setIsLoading(false);
     }
   };
@@ -479,9 +453,7 @@ export default function ChatPage() {
     handleSendMessage(inputValue);
   };
 
-  // Format message content (simple markdown-like formatting)
   const formatMessage = (content: string) => {
-    // Split by ** for bold
     const parts = content.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, index) => {
       if (part.startsWith("**") && part.endsWith("**")) {
@@ -501,9 +473,7 @@ export default function ChatPage() {
       <div className="border-b p-4 bg-white dark:bg-slate-900">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              Chat AI
-            </h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Chat AI</h1>
             <p className="text-sm text-muted-foreground">
               Tanya apapun tentang keuangan bisnis Anda
             </p>
@@ -515,18 +485,16 @@ export default function ChatPage() {
               size="sm"
               onClick={async () => {
                 const healthEndpoint = `${API_BASE_URL}/health`;
-                console.log('[Chat] 🔍 Testing Backend API:', healthEndpoint);
+                console.log("[Chat] 🔍 Testing Backend API:", healthEndpoint);
                 try {
                   const response = await fetch(healthEndpoint);
                   const data = await response.json();
-                  console.log('[Chat] ✅ Backend API healthy:', data);
-                  toast.success('Backend API OK', {
-                    description: `Status: ${data.status || 'healthy'}\nDiajeng ready for chat`
+                  toast.success("Backend API OK", {
+                    description: `Status: ${data.status || "healthy"}\nDiajeng ready for chat`,
                   });
                 } catch (error: any) {
-                  console.error('[Chat] ❌ Backend API check failed:', error);
-                  toast.error('Backend API Failed', {
-                    description: `Cannot connect to ${API_BASE_URL}`
+                  toast.error("Backend API Failed", {
+                    description: `Cannot connect to ${API_BASE_URL}`,
                   });
                 }
               }}
@@ -534,19 +502,23 @@ export default function ChatPage() {
             >
               Test Backend
             </Button>
-            
+
             {/* AI Queries Remaining Badge */}
             {aiQueriesRemaining !== null && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={`flex items-center gap-1 ${
-                  aiQueriesRemaining === 0 ? 'border-red-500 text-red-600' : 
-                  aiQueriesRemaining < 5 ? 'border-orange-500 text-orange-600' : 
-                  'border-blue-500 text-blue-600'
+                  aiQueriesRemaining === 0
+                    ? "border-red-500 text-red-600"
+                    : aiQueriesRemaining < 5
+                    ? "border-orange-500 text-orange-600"
+                    : "border-blue-500 text-blue-600"
                 }`}
               >
                 <Zap className="h-3 w-3" />
-                {aiQueriesRemaining === -1 ? 'Unlimited' : `${aiQueriesRemaining} queries left`}
+                {aiQueriesRemaining === -1
+                  ? "Unlimited"
+                  : `${aiQueriesRemaining} queries left`}
               </Badge>
             )}
           </div>
@@ -557,7 +529,11 @@ export default function ChatPage() {
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        currentTier={user && 'subscription_tier' in user ? (user as any).subscription_tier : 'free'}
+        currentTier={
+          user && "subscription_tier" in (user as any)
+            ? ((user as any).subscription_tier as string)
+            : "free"
+        }
         reason={upgradeReason}
       />
 
@@ -573,11 +549,10 @@ export default function ChatPage() {
               Mulai percakapan dengan AI
             </h2>
             <p className="text-muted-foreground mb-6">
-              Tanyakan tentang pengeluaran, supplier, atau minta rekomendasi
-              untuk menghemat biaya
+              Tanyakan tentang pengeluaran, supplier, atau minta rekomendasi untuk
+              menghemat biaya
             </p>
 
-            {/* Suggested questions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
               {[
                 "Berapa total belanja bulan ini?",
@@ -678,11 +653,7 @@ export default function ChatPage() {
             disabled={isLoading || !inputValue.trim()}
             className="bg-blue-600 hover:bg-blue-700"
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </form>
         <p className="text-xs text-muted-foreground mt-2 text-center">
