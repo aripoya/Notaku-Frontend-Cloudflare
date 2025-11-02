@@ -121,7 +121,23 @@ export default function ChatPage() {
   const handleSendMessage = async (message: string) => {
     console.log('[Chat] 🚀 Starting handleSendMessage');
     console.log('[Chat] Message:', message);
-    console.log('[Chat] User:', user?.id);
+    
+    // Fetch fresh session to avoid closure issue
+    let currentToken: string | undefined;
+    try {
+      const freshSession = await fetch('/api/auth/session').then(r => r.json());
+      currentToken = freshSession?.accessToken;
+      console.log('[Chat] Token dari session:', currentToken ? 'ada' : 'tidak ada');
+    } catch (err) {
+      console.error('[Chat] Error fetch session:', err);
+    }
+
+    const currentUser = user;
+
+    if (!currentToken) {
+      throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
+    }
+    console.log('[Chat] User:', currentUser?.id);
     console.log('[Chat] Current messages count:', messages.length);
     
     if (!message.trim() || isLoading) {
@@ -130,10 +146,10 @@ export default function ChatPage() {
     }
 
     // Check AI permission BEFORE sending (skip if API not available)
-    if (user?.id) {
+    if (currentUser?.id) {
       try {
         console.log('[Chat] Checking AI permission...');
-        const permission = await SubscriptionAPI.checkAIPermission(user.id);
+        const permission = await SubscriptionAPI.checkAIPermission(currentUser.id);
         console.log('[Chat] Permission result:', permission);
         
         if (!permission.allowed) {
@@ -174,13 +190,13 @@ export default function ChatPage() {
       // This connects to the new backend with proper authentication
       console.log('[Chat] 🤖 Diajeng Chat Configuration:');
       console.log('[Chat] Using Backend API for chat with Diajeng');
-      console.log('[Chat] User:', user?.name || user?.email);
+      console.log('[Chat] User:', currentUser?.name || currentUser?.email);
       
       const requestBody = {
         message: message,
         conversationId: `user-${user?.id || 'anonymous'}`,
         context: {
-          userName: user?.name || user?.email?.split('@')[0] || 'User',
+          userName: currentUser?.name || currentUser?.email?.split('@')[0] || 'User',
           timestamp: new Date().toISOString()
         }
       };
@@ -190,14 +206,13 @@ export default function ChatPage() {
       
       // Use Backend API streaming chat endpoint
       console.log('[Chat] Sending chat request to Backend API...');
-      const token = localStorage.getItem('auth_token');
       
       const response = await fetch(`${API_BASE_URL}/api/v1/chat/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "text/event-stream",
-          "Authorization": token ? `Bearer ${token}` : '',
+          "Authorization": currentToken ? `Bearer ${currentToken}` : '',
         },
         body: JSON.stringify(requestBody),
       });
