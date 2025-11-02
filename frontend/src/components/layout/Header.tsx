@@ -3,8 +3,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Menu, Moon, Sun, LogOut, User } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,15 +23,8 @@ interface HeaderProps {
 export default function Header({ onMenuToggle }: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
-
-  // Hydrate on mount
-  useEffect(() => {
-    useAuth.persist.rehydrate();
-    setMounted(true);
-  }, []);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -77,7 +70,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar>
                     <AvatarFallback className="bg-blue-600 text-white">
-                      {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                      {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -106,7 +99,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
+          ) : !isLoading ? (
             <nav className="hidden sm:flex items-center gap-6 text-sm">
               <Link href="/pricing">Harga</Link>
               <Link href="/about">Tentang</Link>
@@ -114,12 +107,16 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 Masuk
               </Link>
             </nav>
+          ) : (
+            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+              Memuat...
+            </div>
           )}
         </div>
       </div>
 
       {/* Mobile Menu for Non-Authenticated Users */}
-      {!isAuthenticated && mobileMenuOpen && (
+      {!isAuthenticated && !isLoading && mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <nav className="px-4 py-3 space-y-3">
             <Link 

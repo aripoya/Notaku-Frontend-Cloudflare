@@ -122,10 +122,21 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  // Get token from localStorage if available
+  // Resolve token preference: NextAuth session accessToken > localStorage
   let token: string | null = null;
   if (typeof window !== "undefined") {
-    token = localStorage.getItem(TOKEN_KEY);
+    try {
+      const sessionResp = await fetch('/api/auth/session');
+      if (sessionResp.ok) {
+        const sess = await sessionResp.json().catch(() => null);
+        token = sess?.accessToken || null;
+      }
+    } catch (_) {
+      // Ignore and fallback to localStorage
+    }
+    if (!token) {
+      token = localStorage.getItem(TOKEN_KEY);
+    }
   }
 
   const headers: Record<string, string> = {
@@ -233,55 +244,78 @@ export class ApiClient {
   }
   
   static async getCurrentUser(): Promise<User> {
-    console.log('[Auth] Getting current user from localStorage');
-    
-    if (typeof window !== "undefined") {
-      // Try new format first
+    console.log('[Auth] Resolving current user (session preferred)');
+    // Prefer NextAuth session user
+    if (typeof window !== 'undefined') {
+      try {
+        const resp = await fetch('/api/auth/session');
+        if (resp.ok) {
+          const sess = await resp.json();
+          if (sess?.user) {
+            return sess.user as User;
+          }
+        }
+      } catch (_) {
+        // ignore
+      }
+      // Fallback to stored user
       const stored = localStorage.getItem('current_user');
       if (stored) {
-        return JSON.parse(stored);
+        try {
+          return JSON.parse(stored) as User;
+        } catch (_) {
+          // ignore parse error and continue
+        }
       }
-      
-      // Fallback to old mock format for migration
-      const mockStored = localStorage.getItem('mock_user');
-      if (mockStored) {
-        const mockUser = JSON.parse(mockStored);
-        // Convert mock format to new format
-        const convertedUser: User = {
-          id: mockUser.id,
-          email: mockUser.email,
-          name: mockUser.username || mockUser.name || mockUser.email.split('@')[0],
-          subscription_tier: 'free',
-          created_at: mockUser.createdAt || new Date().toISOString(),
-          is_active: mockUser.isActive !== false,
-        };
-        // Store in new format and remove old
-        localStorage.setItem('current_user', JSON.stringify(convertedUser));
-        localStorage.removeItem('mock_user');
-        return convertedUser;
+
+      // Legacy mock_user fallback
+      const legacy = localStorage.getItem('mock_user');
+      if (legacy) {
+        try {
+          const mockUser = JSON.parse(legacy);
+          const convertedUser: User = {
+            id: mockUser.id || mockUser.user_id || mockUser.sub || '',
+            email: mockUser.email || '',
+            name:
+              mockUser.preferred_name ||
+              mockUser.full_name ||
+              mockUser.name ||
+              mockUser.username ||
+              mockUser.email ||
+              'User',
+            subscription_tier: mockUser.subscription_tier || mockUser.tier || 'free',
+            businessName: mockUser.businessName || mockUser.business_name || null,
+          };
+
+          localStorage.setItem('current_user', JSON.stringify(convertedUser));
+          localStorage.removeItem('mock_user');
+          return convertedUser;
+        } catch (_) {
+          // ignore parse error and continue
+        }
       }
     }
-    
+
     throw new ApiClientError('Not authenticated', 401);
   }
-  
+
   static async refreshToken(): Promise<AuthResponse> {
     console.log('[Auth] ⚠️ Token refresh not implemented yet');
-    
-    // For now, just return current user with existing token
+
+    // For now, return the current user with existing token
     const user = await this.getCurrentUser();
     const token = this.getToken();
-    
+
     if (!token) {
       throw new ApiClientError('No token to refresh', 401);
     }
-    
+
     return {
       user,
       token,
       token_type: 'bearer',
     };
-    
+
     /* TODO: Implement when backend supports token refresh
     return request<AuthResponse>(`${API_PREFIX}/auth/refresh`, {
       method: "POST",
