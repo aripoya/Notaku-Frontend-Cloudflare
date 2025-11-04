@@ -37,6 +37,7 @@ export default function UploadPage() {
   const [processingText, setProcessingText] = useState<string>("Membaca nota...");
   const [jobId, setJobId] = useState<string>("");
   const [result, setResult] = useState<any>(null);
+  const [editReceiptId, setEditReceiptId] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [usePremiumOCR, setUsePremiumOCR] = useState<boolean>(false);
   const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
@@ -232,6 +233,15 @@ export default function UploadPage() {
         });
       }
       
+      // Derive a stable receipt ID (fallback when backend missing id)
+      const derivedId =
+        response.job_id ||
+        response.id ||
+        response.receipt_id ||
+        `receipt_${Date.now()}`;
+
+      setEditReceiptId(derivedId);
+
       // Set result and show success
       setResult(response);
       setStage("result");
@@ -350,7 +360,7 @@ export default function UploadPage() {
     if (!result) {
       console.warn("[MapResult] ⚠️ No result data, returning empty receipt");
       return {
-        id: "",
+        id: editReceiptId || "",
         user_id: user?.id || "",
         merchant: null,
         total_amount: null,
@@ -510,8 +520,15 @@ export default function UploadPage() {
     console.log("[MapResult] 👁️ Display image path:", displayImagePath);
     console.log("[MapResult] ⚠️ Using blob URL for preview:", !backendImagePath && !!previewUrl);
     
+    const fallbackReceiptId =
+      editReceiptId ||
+      result.job_id ||
+      result.id ||
+      result.receipt_id ||
+      "";
+
     const mappedReceipt = {
-      id: result.job_id || result.id || result.receipt_id || "",
+      id: fallbackReceiptId,
       user_id: user?.id || "",
       merchant: useMerchant,
       total_amount: useAmount,
@@ -562,7 +579,7 @@ export default function UploadPage() {
       const totalAmount = receipt.total_amount || 0;
       
       const receiptToSave = {
-        id: receipt.id || result?.receipt_id || `receipt_${Date.now()}`,
+        id: editReceiptId || receipt.id || result?.receipt_id || `receipt_${Date.now()}`,
         user_id: receipt.user_id || user?.id || '',
         merchant: merchantName,  // Keep as 'merchant' for consistency
         merchant_name: merchantName,  // Also save as 'merchant_name' for ReceiptCard
@@ -616,6 +633,21 @@ export default function UploadPage() {
   const handleCancelEdit = () => {
     handleReset();
   };
+
+  useEffect(() => {
+    if (!result) {
+      setEditReceiptId("");
+      return;
+    }
+
+    const providedId = result.job_id || result.id || result.receipt_id;
+
+    if (providedId) {
+      setEditReceiptId((prev) => (prev === providedId ? prev : providedId));
+    } else if (!editReceiptId) {
+      setEditReceiptId(`receipt_${Date.now()}`);
+    }
+  }, [result, editReceiptId]);
 
   return (
     <div className="container mx-auto py-6 max-w-4xl">
@@ -856,23 +888,20 @@ export default function UploadPage() {
           </Card>
 
           {/* Conditional rendering based on receipt ID */}
-          {(result.job_id || result.id || result.receipt_id) ? (
+          {editReceiptId ? (
             <ReceiptEditForm
-              receiptId={result.job_id || result.id || result.receipt_id || ""}
+              receiptId={editReceiptId}
               initialData={mapResultToReceipt()}
               onSave={handleSaveReceipt}
               onCancel={handleCancelEdit}
             />
           ) : (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <p className="font-bold mb-2">Error: Receipt ID tidak ditemukan</p>
-                <pre className="text-xs overflow-auto max-h-40">
-                  {JSON.stringify(result, null, 2)}
-                </pre>
-              </AlertDescription>
-            </Alert>
+            <Card className="p-6">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Menyiapkan formulir edit nota...</span>
+              </div>
+            </Card>
           )}
         </div>
       )}

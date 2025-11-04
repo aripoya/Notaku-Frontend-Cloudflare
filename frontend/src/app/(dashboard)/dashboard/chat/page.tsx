@@ -10,6 +10,7 @@ import { API_BASE_URL } from "@/lib/api-config";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import type { ChatRequest } from "@/types/api";
 
 interface Message {
   role: "user" | "assistant";
@@ -137,15 +138,15 @@ export default function ChatPage() {
     console.log("[Chat] 🚀 Starting handleSendMessage");
     console.log("[Chat] Message:", message);
 
-    let currentToken: string | undefined;
+    let bearerToken: string | undefined;
     try {
       const res = await fetch(`/api/auth/session`, { credentials: "include" });
       const freshSession = res.status === 200 ? await res.json() : null;
-      currentToken =
+      bearerToken =
         freshSession?.backendAccessToken || freshSession?.accessToken || undefined;
       console.log(
         "[Chat] Token dari session:",
-        currentToken ? "ada" : "tidak ada (akan pakai cookie)"
+        bearerToken ? "ada" : "tidak ada (akan pakai cookie)"
       );
     } catch (err) {
       console.warn(
@@ -213,23 +214,25 @@ export default function ChatPage() {
 
     try {
       // Request body
-      const requestBody = {
+      const recentContext = messages
+        .slice(-6)
+        .filter((entry) => entry.content)
+        .map((entry) => ({ role: entry.role, content: entry.content }));
+
+      const requestBody: ChatRequest = {
         message,
         conversationId: `user-${user?.id || "anonymous"}`,
-        context: {
-          userName:
-            currentUser?.name || currentUser?.email?.split("@")[0] || "User",
-          timestamp: new Date().toISOString(),
-        },
+        context: recentContext,
       };
-      console.log("[Chat] Request body:", currentToken);
+
+      console.log("[Chat] Request body:", requestBody);
       const response = await fetch(`${API_BASE_URL}/api/v1/chat/`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "text/event-stream",
-          ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
+          ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
           "X-Requested-With": "fetch", 
         },
         body: JSON.stringify(requestBody),
