@@ -3,46 +3,35 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Receipt, PieChart as PieChartIcon, ArrowUp, Upload, MessageSquare, BarChart3, Eye, Edit, Loader2 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, PieChart, Pie, Cell, Legend } from "recharts";
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, PieChart, Pie, Cell } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
+import {
+  fetchAnalyticsSummary,
+  fetchAnalyticsTrend,
+  fetchCategoryData,
+  fetchMerchantsData,
+  type AnalyticsSummary,
+  type AnalyticsTrend,
+  type CategoryData,
+  type MerchantsData,
+} from "@/lib/api/analytics";
 
-// Generate 30 days of spending data
-const spendingData = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
-  amount: Math.floor(Math.random() * 300000) + 200000,
-}));
-
-// Summary data
-const summaryData = {
-  totalSpending: 12450000,
-  receiptCount: 127,
-  topCategory: { name: "Bahan Baku", amount: 5200000, percentage: 42 },
-  changeVsPrevious: { amount: 1200000, percentage: 18 },
-};
-
-const recentReceipts = [
-  { id: "1", supplier: "Toko Sumber Rezeki", total: 250000, date: "Hari ini" },
-  { id: "2", supplier: "Gudang Bahan", total: 780000, date: "Hari ini" },
-  { id: "3", supplier: "PT Kertas", total: 120000, date: "Kemarin" },
-  { id: "4", supplier: "CV Plastik Jaya", total: 450000, date: "Kemarin" },
-  { id: "5", supplier: "PT Transport", total: 330000, date: "2 hari lalu" },
-];
-
-// Category breakdown data
-const categoryData = [
-  { name: "Bahan Baku", value: 42, amount: 5200000, color: "#3b82f6" },
-  { name: "Operasional", value: 25, amount: 3100000, color: "#10b981" },
-  { name: "Marketing", value: 19, amount: 2360000, color: "#a855f7" },
-  { name: "Transportasi", value: 14, amount: 1740000, color: "#f97316" },
-];
+// Colors for category pie
+const CAT_COLORS = ["#3b82f6", "#10b981", "#a855f7", "#f97316", "#ef4444", "#14b8a6", "#6366f1"]; 
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading, error } = useAuth();
   const router = useRouter();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
+  const [trend, setTrend] = useState<AnalyticsTrend | null>(null);
+  const [categories, setCategories] = useState<CategoryData | null>(null);
+  const [merchants, setMerchants] = useState<MerchantsData | null>(null);
+  const [dataError, setDataError] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('[Dashboard] Auth state:', { isLoading, isAuthenticated, error, user });
@@ -55,8 +44,39 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, isLoading, router, hasRedirected, error, user]);
 
+  // Date range: last 30 days
+  const endDate = new Date().toISOString().split("T")[0];
+  const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  // Load real analytics data
+  useEffect(() => {
+    async function loadAnalytics() {
+      if (!user?.id) return;
+      try {
+        setLoadingData(true);
+        setDataError(null);
+        const [s, t, c, m] = await Promise.all([
+          fetchAnalyticsSummary(user.id, startDate, endDate),
+          fetchAnalyticsTrend(user.id, startDate, endDate),
+          fetchCategoryData(user.id, startDate, endDate),
+          fetchMerchantsData(user.id, startDate, endDate),
+        ]);
+
+        setSummary(s);
+        setTrend(t);
+        setCategories(c);
+        setMerchants(m);
+      } catch (e: any) {
+        setDataError(e?.message || "Gagal memuat analitik");
+      } finally {
+        setLoadingData(false);
+      }
+    }
+    loadAnalytics();
+  }, [user?.id, startDate, endDate]);
+
   // Loading state - IMPORTANT to prevent blank page
-  if (isLoading) {
+  if (isLoading || loadingData) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-4">
@@ -98,6 +118,21 @@ export default function DashboardPage() {
     );
   }
 
+  if (dataError) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-red-600">Gagal memuat analitik</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-muted-foreground">{dataError}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Authenticated - show dashboard
   return (
     <div className="space-y-6">
@@ -119,13 +154,13 @@ export default function DashboardPage() {
             <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">Rp 12.450.000</div>
+            <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">Rp {summary?.total_spending?.toLocaleString("id-ID")}</div>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-600 dark:text-green-400">
               <ArrowUp className="h-3 w-3" />
-              <span className="font-medium">+18%</span>
-              <span className="text-blue-700 dark:text-blue-300">vs bulan lalu</span>
+              <span className="font-medium">{(trend as any)?.percentage_change ?? 0}%</span>
+              <span className="text-blue-700 dark:text-blue-300">vs periode sebelumnya</span>
             </div>
-            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">+Rp 1.2 juta dari bulan lalu</p>
+            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Rp {(trend as any)?.period_change?.toLocaleString("id-ID") ?? 0}</p>
           </CardContent>
         </Card>
 
@@ -136,10 +171,10 @@ export default function DashboardPage() {
             <Receipt className="h-4 w-4 text-purple-600 dark:text-purple-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">127 nota</div>
+            <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{summary?.receipt_count ?? 0} nota</div>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-600 dark:text-green-400">
               <ArrowUp className="h-3 w-3" />
-              <span className="font-medium">+12 dari minggu lalu</span>
+              <span className="font-medium">{merchants?.merchants?.reduce((acc, m) => acc + (m.count || 0), 0) ?? 0} transaksi terindeks</span>
             </div>
           </CardContent>
         </Card>
@@ -148,13 +183,13 @@ export default function DashboardPage() {
         <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800 hover:scale-105 transition-transform duration-200 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">Kategori Teratas</CardTitle>
-            <PieChart className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            <PieChartIcon className="h-4 w-4 text-orange-600 dark:text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">Bahan Baku</div>
+            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{categories?.categories?.[0]?.name || "-"}</div>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-lg font-semibold text-orange-700 dark:text-orange-300">Rp 5.2M</span>
-              <span className="text-xs text-orange-600 dark:text-orange-400">(42%)</span>
+              <span className="text-lg font-semibold text-orange-700 dark:text-orange-300">Rp {(categories?.categories?.[0]?.amount ?? 0).toLocaleString("id-ID")}</span>
+              <span className="text-xs text-orange-600 dark:text-orange-400">({categories?.categories?.[0]?.percentage ?? 0}%)</span>
             </div>
           </CardContent>
         </Card>
@@ -166,10 +201,10 @@ export default function DashboardPage() {
             <TrendingUp className="h-4 w-4 text-red-600 dark:text-red-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-900 dark:text-red-100">Naik Rp 850K</div>
+            <div className="text-2xl font-bold text-red-900 dark:text-red-100">{((trend as any)?.period_change ?? 0) >= 0 ? 'Naik' : 'Turun'} Rp {Math.abs((trend as any)?.period_change ?? 0).toLocaleString("id-ID")}</div>
             <div className="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400">
               <ArrowUp className="h-3 w-3" />
-              <span className="font-medium">+8.5%</span>
+              <span className="font-medium">{(trend as any)?.percentage_change ?? 0}%</span>
               <span>vs periode sebelumnya</span>
             </div>
           </CardContent>
@@ -184,7 +219,7 @@ export default function DashboardPage() {
         <CardContent>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={spendingData}>
+              <AreaChart data={(trend?.trend || []).map(d => ({ date: new Date(d.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" }), amount: d.total }))}>
                 <defs>
                   <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -228,25 +263,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {recentReceipts.map((receipt) => (
-                  <div key={receipt.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <div className="flex-1">
-                      <p className="font-medium">{receipt.supplier}</p>
-                      <p className="text-xs text-muted-foreground">{receipt.date}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p className="font-semibold">Rp {receipt.total.toLocaleString("id-ID")}</p>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                <div className="text-sm text-muted-foreground">Terhubung ke analitik. Integrasi "Nota Terbaru" akan ditambahkan.</div>
               </div>
             </CardContent>
           </Card>
@@ -263,17 +280,17 @@ export default function DashboardPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={categoryData}
+                      data={(categories?.categories || []).map((c, i) => ({ name: c.name, value: c.percentage, amount: c.amount, color: CAT_COLORS[i % CAT_COLORS.length] }))}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value }) => `${value}%`}
+                      label={({ value }) => `${value}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      {(categories?.categories || []).map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CAT_COLORS[index % CAT_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip
@@ -286,13 +303,13 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
               <div className="mt-4 space-y-2">
-                {categoryData.map((category) => (
+                {(categories?.categories || []).map((category, idx) => (
                   <div key={category.name} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CAT_COLORS[idx % CAT_COLORS.length] }} />
                       <span>{category.name}</span>
                     </div>
-                    <span className="font-medium">{category.value}%</span>
+                    <span className="font-medium">{category.percentage}%</span>
                   </div>
                 ))}
               </div>
