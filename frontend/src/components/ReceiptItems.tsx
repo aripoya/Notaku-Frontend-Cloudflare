@@ -59,12 +59,24 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
   // Form state for add/edit
   const [formData, setFormData] = useState({
     item_name: '',
-    quantity: 1,
-    unit_price: 0,
+    quantity: '',
+    unit_price: '',
   });
 
+  const toNumber = (v: string): number => {
+    if (v === undefined || v === null) return 0;
+    const cleaned = String(v).replace(/[^0-9.]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const normalizeNumericString = (v: string): string => {
+    const cleaned = (v || '').replace(/[^0-9.]/g, '');
+    return cleaned.replace(/^0+(?=\d)/, '');
+  };
+
   // Calculate total price
-  const calculatedTotal = formData.quantity * formData.unit_price;
+  const calculatedTotal = toNumber(formData.quantity) * toNumber(formData.unit_price);
 
   // Fetch items from localStorage
   const fetchItems = async () => {
@@ -121,12 +133,15 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
       return;
     }
 
-    if (formData.quantity <= 0) {
+    const q = toNumber(formData.quantity);
+    const p = toNumber(formData.unit_price);
+
+    if (q <= 0) {
       toast.error('Error', { description: 'Jumlah harus lebih dari 0' });
       return;
     }
 
-    if (formData.unit_price < 0) {
+    if (p < 0) {
       toast.error('Error', { description: 'Harga tidak boleh negatif' });
       return;
     }
@@ -147,9 +162,9 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
       const newItem = {
         id: `item_${Date.now()}`,
         item_name: formData.item_name.trim(),
-        quantity: formData.quantity,
-        unit_price: formData.unit_price,
-        total_price: calculatedTotal,
+        quantity: q,
+        unit_price: p,
+        total_price: q * p,
         ocr_extracted: false,
         created_at: new Date().toISOString(),
       };
@@ -168,7 +183,7 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
       await fetchItems();
 
       // Reset form
-      setFormData({ item_name: '', quantity: 1, unit_price: 0 });
+      setFormData({ item_name: '', quantity: '', unit_price: '' });
       setShowAddForm(false);
 
       toast.success('Berhasil', {
@@ -201,46 +216,75 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
     try {
       const payload = {
         item_name: formData.item_name.trim(),
-        quantity: Number(formData.quantity),
-        unit_price: Number(formData.unit_price),
+        quantity: toNumber(formData.quantity),
+        unit_price: toNumber(formData.unit_price),
       };
       console.log('[ReceiptItems] ▶️ Update payload:', itemId, payload);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/items/${itemId}` , {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      // If item is local-only (id starts with 'item_' or missing receipt_id), update localStorage only
+      const existing = items.find((it) => it.id === itemId);
+      const isLocalOnly = itemId.startsWith('item_') || !existing?.receipt_id;
 
-      if (!response.ok) {
-        let detail = '';
-        try {
-          const errJson = await response.json();
-          detail = errJson?.detail || errJson?.message || JSON.stringify(errJson);
-        } catch {}
-        console.error('[ReceiptItems] ❌ Update failed:', response.status, detail);
-        throw new Error(detail || 'Gagal mengupdate item');
+      if (isLocalOnly) {
+        // Update localStorage copy
+        const saved = localStorage.getItem('notaku_receipts');
+        if (!saved) throw new Error('Tidak ada data nota lokal');
+        const receipts = JSON.parse(saved);
+        const receiptIndex = receipts.findIndex((r: any) => r.id === receiptId);
+        if (receiptIndex === -1) throw new Error('Nota tidak ditemukan');
+        const list = receipts[receiptIndex].items || [];
+        const idx = list.findIndex((x: any) => x.id === itemId);
+        if (idx === -1) throw new Error('Item tidak ditemukan');
+
+        const updated = {
+          ...list[idx],
+          item_name: payload.item_name,
+          quantity: payload.quantity,
+          unit_price: payload.unit_price,
+          total_price: payload.quantity * payload.unit_price,
+          updated_at: new Date().toISOString(),
+        };
+        list[idx] = updated;
+        receipts[receiptIndex].items = list;
+        localStorage.setItem('notaku_receipts', JSON.stringify(receipts));
+        console.log('[ReceiptItems] 💾 Local item updated');
+      } else {
+        // Call backend for server-side item
+        const response = await fetch(`${API_BASE_URL}/api/v1/receipts/items/${itemId}` , {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          let detail = '';
+          try {
+            const errJson = await response.json();
+            detail = errJson?.detail || errJson?.message || JSON.stringify(errJson);
+          } catch {}
+          console.error('[ReceiptItems] ❌ Update failed:', response.status, detail);
+          throw new Error(detail || 'Gagal mengupdate item');
+        }
+        console.log('[ReceiptItems] ✅ Item updated on server');
       }
-
-      console.log('[ReceiptItems] ✅ Item updated');
 
       // Refresh items list
       await fetchItems();
 
       // Reset form
-      setFormData({ item_name: '', quantity: 1, unit_price: 0 });
+      setFormData({ item_name: '', quantity: '', unit_price: '' });
       setEditingItemId(null);
 
       toast.success('Berhasil', {
-        description: 'Item berhasil diupdate',
+        description: 'Item berhasil disimpan',
       });
     } catch (err) {
       console.error('[ReceiptItems] ❌ Error updating item:', err);
       toast.error('Error', {
-        description: 'Gagal mengupdate item',
+        description: err instanceof Error ? err.message : 'Gagal mengupdate item',
       });
     }
   };
@@ -301,8 +345,8 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
     setEditingItemId(item.id);
     setFormData({
       item_name: item.item_name,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
+      quantity: String(item.quantity ?? ''),
+      unit_price: String(item.unit_price ?? ''),
     });
     setShowAddForm(false); // Close add form if open
   };
@@ -310,13 +354,13 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
   // Cancel edit
   const cancelEdit = () => {
     setEditingItemId(null);
-    setFormData({ item_name: '', quantity: 1, unit_price: 0 });
+    setFormData({ item_name: '', quantity: '', unit_price: '' });
   };
 
   // Cancel add
   const cancelAdd = () => {
     setShowAddForm(false);
-    setFormData({ item_name: '', quantity: 1, unit_price: 0 });
+    setFormData({ item_name: '', quantity: '', unit_price: '' });
   };
 
   // Show delete confirmation
@@ -352,10 +396,11 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
           </Label>
           <Input
             id={isEdit ? "edit-qty" : "add-qty"}
-            type="number"
-            min="1"
+            type="text"
+            inputMode="numeric"
             value={formData.quantity}
-            onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+            onBlur={(e) => setFormData({ ...formData, quantity: normalizeNumericString(e.target.value) })}
             className="mt-1"
           />
         </div>
@@ -366,10 +411,11 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
           </Label>
           <Input
             id={isEdit ? "edit-price" : "add-price"}
-            type="number"
-            min="0"
+            type="text"
+            inputMode="decimal"
             value={formData.unit_price}
-            onChange={(e) => setFormData({ ...formData, unit_price: parseFloat(e.target.value) || 0 })}
+            onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
+            onBlur={(e) => setFormData({ ...formData, unit_price: normalizeNumericString(e.target.value) })}
             className="mt-1"
             placeholder="0"
           />
