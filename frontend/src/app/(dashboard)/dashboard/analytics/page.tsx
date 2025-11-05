@@ -106,10 +106,29 @@ export default function AnalyticsPage() {
         interval
       );
 
-      setSummary(data.summary);
-      setTrendData(data.trend.data);
-      setCategoryData(data.categories.categories);
-      setMerchantData(data.merchants.merchants);
+      // Normalize summary to ensure merchant string is present
+      const normalizedSummary = data.summary
+        ? {
+            ...data.summary,
+            biggest_expense: {
+              ...data.summary.biggest_expense,
+              merchant: data.summary?.biggest_expense?.merchant || "Unknown",
+            },
+          }
+        : null;
+
+      // Normalize merchants to ensure non-null names
+      const normalizedMerchants = Array.isArray(data.merchants?.merchants)
+        ? data.merchants.merchants.map((m: any) => ({
+            ...m,
+            name: m?.name || "Unknown",
+          }))
+        : [];
+
+      setSummary(normalizedSummary);
+      setTrendData(data.trend.data || []);
+      setCategoryData(data.categories.categories || []);
+      setMerchantData(normalizedMerchants);
 
     } catch (err: any) {
       console.error("[Analytics] Error fetching data:", err);
@@ -358,7 +377,7 @@ export default function AnalyticsPage() {
                     Pengeluaran Terbesar
                   </p>
                   <h3 className="text-lg font-bold mt-2 truncate">
-                    {summary.biggest_expense.merchant}
+                    {summary?.biggest_expense?.merchant || "Unknown"}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatCurrencyCompact(summary.biggest_expense.amount)}
