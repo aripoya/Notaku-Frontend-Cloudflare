@@ -226,7 +226,7 @@ export default function ChatPage() {
       };
 
       console.log("[Chat] Request body:", requestBody);
-      const response = await fetch(`${API_BASE_URL}/api/v1/chat/`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/chat/stream`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -301,6 +301,8 @@ export default function ChatPage() {
       let fullResponse = "";
       let buffer = "";
 
+      let streamCompleted = false;
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
@@ -316,94 +318,63 @@ export default function ChatPage() {
         buffer = lines.pop() || ""; 
 
         for (const line of lines) {
-          console.log("[Chat] 📝 Processing line:", line.substring(0, 100));
-
-          if (line.startsWith("data: ")) {
-            const jsonStr = line.slice(6).trim();
-            console.log("[Chat] 🔍 JSON string:", jsonStr);
-
-            try {
-              const data = JSON.parse(jsonStr);
-              console.log("[Chat] ✅ Parsed data:", data);
-
-              if (data.type === "metadata") {
-                // ignore: hanya log
-                continue;
-              }
-
-              if (data.type === "done") {
-                // backend menandai selesai
-                break;
-              }
-
-              // Format utama dari backend kita
-              if (data.type === "chunk" && data.content) {
-                fullResponse += data.content;
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  newMessages[newMessages.length - 1] = {
-                    role: "assistant",
-                    content: fullResponse,
-                    isStreaming: true,
-                  };
-                  return newMessages;
-                });
-                continue;
-              }
-
-              // Fallback field name
-              const token =
-                data.token ||
-                data.content ||
-                data.text ||
-                data.chunk ||
-                data.delta ||
-                data.message ||
-                data.response;
-
-              if (token) {
-                fullResponse += token;
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  newMessages[newMessages.length - 1] = {
-                    role: "assistant",
-                    content: fullResponse,
-                    isStreaming: true,
-                  };
-                  return newMessages;
-                });
-              }
-
-              if (data.response || data.answer) {
-                const completeResponse = data.response || data.answer;
-                fullResponse = completeResponse;
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  newMessages[newMessages.length - 1] = {
-                    role: "assistant",
-                    content: fullResponse,
-                    isStreaming: true,
-                  };
-                  return newMessages;
-                });
-              }
-            } catch (e) {
-              // Not JSON; treat as plain text
-              const text = line.slice(6).trim();
-              if (text && text !== "[DONE]") {
-                fullResponse += text;
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  newMessages[newMessages.length - 1] = {
-                    role: "assistant",
-                    content: fullResponse,
-                    isStreaming: true,
-                  };
-                  return newMessages;
-                });
-              }
-            }
+          const trimmedLine = line.trim();
+          if (!trimmedLine) {
+            continue;
           }
+
+          console.log("[Chat] 📝 Processing line:", trimmedLine.substring(0, 100));
+
+          if (!trimmedLine.startsWith("data:")) {
+            continue;
+          }
+
+          const jsonStr = trimmedLine.slice(5).trim().replace(/^:\s*/, "");
+          if (!jsonStr || jsonStr === "[DONE]") {
+            continue;
+          }
+
+          const payload = jsonStr.startsWith("{") ? jsonStr : trimmedLine.slice(6).trim();
+          console.log("[Chat] 🔍 JSON string:", payload);
+
+          try {
+            const data = JSON.parse(payload);
+            console.log("[Chat] ✅ Parsed data:", data);
+
+            if (data.done) {
+              streamCompleted = true;
+              break;
+            }
+
+            const token =
+              data.token ??
+              data.content ??
+              data.text ??
+              data.chunk ??
+              data.delta ??
+              data.message ??
+              data.response;
+
+            if (token) {
+              fullResponse += token;
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1] = {
+                  role: "assistant",
+                  content: fullResponse,
+                  isStreaming: true,
+                };
+                return newMessages;
+              });
+            }
+          } catch (e) {
+            console.warn("[Chat] ⚠️ Failed to parse SSE payload:", e);
+          }
+        }
+
+        if (streamCompleted) {
+          console.log("[Chat] ✅ Received done flag from stream");
+          break;
         }
       }
 
