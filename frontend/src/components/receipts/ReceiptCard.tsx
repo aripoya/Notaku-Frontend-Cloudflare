@@ -112,7 +112,7 @@ export default function ReceiptCard({
               className={`w-16 h-16 rounded-full ${categoryColors.bg} flex items-center justify-center`}
             >
               <span className={`text-2xl font-bold ${categoryColors.text}`}>
-                {getInitials(receipt.merchant_name)}
+                {getInitials(receipt.merchant_name || "Unknown")}
               </span>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function ReceiptCard({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
-              {receipt.merchant_name}
+              {receipt.merchant_name || "Unknown"}
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">
               {formatDate(receipt.transaction_date)}

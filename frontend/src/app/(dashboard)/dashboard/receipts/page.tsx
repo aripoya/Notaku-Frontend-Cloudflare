@@ -52,24 +52,63 @@ export default function ReceiptsPage() {
       setError(null);
 
       console.log('[ReceiptsList] 📂 Loading receipts from multiple sources');
-      
+
+      const normalizeReceipt = (source: any) => {
+        const merchantName =
+          source?.merchant_name ||
+          source?.merchant ||
+          source?.vendor ||
+          source?.store ||
+          'Unknown';
+
+        const totalAmountRaw =
+          source?.total_amount ?? source?.total ?? source?.amount ?? 0;
+        const totalAmount =
+          typeof totalAmountRaw === 'string'
+            ? parseFloat(totalAmountRaw) || 0
+            : totalAmountRaw ?? 0;
+
+        const transactionDate =
+          source?.transaction_date ||
+          source?.date ||
+          source?.created_at ||
+          new Date().toISOString();
+
+        return {
+          ...source,
+          id:
+            source?.id ||
+            source?.receipt_id ||
+            `receipt_${Date.now()}_${Math.random()}`,
+          merchant: merchantName,
+          merchant_name: merchantName,
+          total_amount: totalAmount,
+          currency: source?.currency || 'IDR',
+          transaction_date: transactionDate,
+        };
+      };
+
       // 1. Load from localStorage (immediate)
       const saved = localStorage.getItem('notaku_receipts');
       let localReceipts: any[] = [];
       if (saved) {
-        localReceipts = JSON.parse(saved);
+        localReceipts = JSON.parse(saved).map((item: any) => normalizeReceipt(item));
         console.log('[ReceiptsList] 📱 Local receipts:', localReceipts.length);
       }
-      
+
       // 2. Try to fetch from RAG Service (indexed receipts)
       let ragReceipts: any[] = [];
       try {
         console.log('[ReceiptsList] 🔍 Fetching indexed receipts from RAG...');
         const ragUrl = getRAGUrl('SEARCH');
+        const authToken =
+          typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         const ragResponse = await fetch(ragUrl, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
           },
           body: JSON.stringify({
             query: '*', // Get all receipts
@@ -78,16 +117,16 @@ export default function ReceiptsPage() {
             include_metadata: true,
           }),
         });
-        
+
         if (ragResponse.ok) {
           const ragData = await ragResponse.json();
           console.log('[ReceiptsList] 🎯 RAG response:', ragData);
-          
+
           // Extract receipts from RAG response
           if (ragData.results && Array.isArray(ragData.results)) {
             ragReceipts = ragData.results.map((item: any) => {
               const metadata = item.metadata || {};
-              return {
+              return normalizeReceipt({
                 id: metadata.receipt_id || metadata.id || `rag_${Date.now()}_${Math.random()}`,
                 merchant_name: metadata.merchant || metadata.merchant_name || 'Unknown',
                 total_amount: metadata.total || metadata.total_amount || 0,
@@ -99,7 +138,7 @@ export default function ReceiptsPage() {
                 notes: metadata.notes || null,
                 ocr_data: metadata,
                 source: 'rag', // Mark as RAG source
-              };
+              });
             });
             console.log('[ReceiptsList] 🗂️ RAG receipts processed:', ragReceipts.length);
           }
@@ -109,41 +148,44 @@ export default function ReceiptsPage() {
       } catch (ragError) {
         console.warn('[ReceiptsList] ⚠️ RAG service unavailable:', ragError);
       }
-      
+
       // 3. Merge and deduplicate receipts
       const allReceipts = [...localReceipts, ...ragReceipts];
       const uniqueReceipts = allReceipts.reduce((acc: any[], receipt: any) => {
         // Check if receipt already exists (by ID or merchant+amount+date)
+        const normalizedReceipt = normalizeReceipt(receipt);
         const exists = acc.find(r => 
-          r.id === receipt.id || 
-          (r.merchant_name === receipt.merchant_name && 
-           r.total_amount === receipt.total_amount && 
-           r.transaction_date?.split('T')[0] === receipt.transaction_date?.split('T')[0])
+          r.id === normalizedReceipt.id || 
+          ((r.merchant_name || r.merchant || 'Unknown') === (normalizedReceipt.merchant_name || 'Unknown') && 
+           r.total_amount === normalizedReceipt.total_amount && 
+           (r.transaction_date?.split('T')[0] || '') === (normalizedReceipt.transaction_date?.split('T')[0] || ''))
         );
-        
+
         if (!exists) {
-          acc.push(receipt);
+          acc.push(normalizedReceipt);
         } else {
           // Prefer local version over RAG version
-          if (receipt.source !== 'rag') {
+          if (normalizedReceipt.source !== 'rag') {
             const index = acc.findIndex(r => r.id === exists.id);
-            if (index >= 0) acc[index] = receipt;
+            if (index >= 0) acc[index] = normalizedReceipt;
           }
         }
         return acc;
       }, []);
-      
+
       console.log('[ReceiptsList] 🔄 Total unique receipts:', uniqueReceipts.length);
       console.log('[ReceiptsList] 📊 Sources - Local:', localReceipts.length, 'RAG:', ragReceipts.length, 'Unique:', uniqueReceipts.length);
-      
+
       // Sort by date (newest first)
-      const sorted = uniqueReceipts.sort((a: any, b: any) => {
-        return new Date(b.saved_at || b.created_at || b.transaction_date).getTime() - 
-               new Date(a.saved_at || a.created_at || a.transaction_date).getTime();
-      });
-      
+      const sorted = uniqueReceipts
+        .map((item: any) => normalizeReceipt(item))
+        .sort((a: any, b: any) => {
+          return new Date(b.saved_at || b.created_at || b.transaction_date).getTime() - 
+                 new Date(a.saved_at || a.created_at || a.transaction_date).getTime();
+        });
+
       setReceipts(sorted);
-      
+
       if (sorted.length === 0) {
         console.log('[ReceiptsList] 📭 No receipts found from any source');
       }
@@ -182,8 +224,9 @@ export default function ReceiptsPage() {
   const filteredReceipts = receipts
     .filter((receipt) => {
       // Search filter
+      const merchantName = (receipt.merchant_name || "Unknown").toLowerCase();
       const matchesSearch =
-        receipt.merchant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        merchantName.includes(searchQuery.toLowerCase()) ||
         (receipt.category && receipt.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (receipt.notes && receipt.notes.toLowerCase().includes(searchQuery.toLowerCase()));
 

@@ -63,7 +63,7 @@ export const API_CONFIG = {
       QUERY_STREAM: '/query/stream',
       
       // Search endpoint (retrieve only, no LLM)
-      SEARCH: '/search',
+      SEARCH: '/api/v1/rag/search',
       
       // Health check
       HEALTH: '/health',
