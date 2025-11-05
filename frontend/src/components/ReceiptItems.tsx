@@ -199,25 +199,30 @@ export default function ReceiptItems({ receiptId }: ReceiptItemsProps) {
     console.log('[ReceiptItems] ✏️ Updating item:', itemId);
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/receipts/items/${itemId}`,
-        {
-          method: 'PUT',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            item_name: formData.item_name.trim(),
-            quantity: formData.quantity,
-            unit_price: formData.unit_price,
-            total_price: calculatedTotal,
-          }),
-        }
-      );
+      const payload = {
+        item_name: formData.item_name.trim(),
+        quantity: Number(formData.quantity),
+        unit_price: Number(formData.unit_price),
+      };
+      console.log('[ReceiptItems] ▶️ Update payload:', itemId, payload);
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/receipts/items/${itemId}` , {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
-        throw new Error('Gagal mengupdate item');
+        let detail = '';
+        try {
+          const errJson = await response.json();
+          detail = errJson?.detail || errJson?.message || JSON.stringify(errJson);
+        } catch {}
+        console.error('[ReceiptItems] ❌ Update failed:', response.status, detail);
+        throw new Error(detail || 'Gagal mengupdate item');
       }
 
       console.log('[ReceiptItems] ✅ Item updated');
