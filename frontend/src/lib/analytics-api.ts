@@ -79,7 +79,22 @@ async function request<T>(
   params?: Record<string, string>,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getAuthToken();
+  // Resolve token same way as ApiClient: NextAuth session accessToken > localStorage
+  let token: string | null = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const sessionResp = await fetch('/api/auth/session');
+      if (sessionResp.ok) {
+        const sess = await sessionResp.json().catch(() => null);
+        token = (sess && (sess as any).accessToken) || null;
+      }
+    } catch (_) {
+      // ignore and fallback to localStorage
+    }
+    if (!token) {
+      token = getAuthToken();
+    }
+  }
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
