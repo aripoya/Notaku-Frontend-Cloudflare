@@ -99,12 +99,21 @@ async function request<T>(
       if (sessionResp.ok) {
         const sess = await sessionResp.json().catch(() => null);
         token = (sess && (sess as any).accessToken) || null;
+        if (DEBUG && token) {
+          console.log('[Analytics API] Token from session:', token.substring(0, 20) + '...');
+        }
       }
     } catch (_) {
       // ignore and fallback to localStorage
     }
     if (!token) {
       token = getAuthToken();
+      if (DEBUG && token) {
+        console.log('[Analytics API] Token from localStorage:', token.substring(0, 20) + '...');
+      }
+    }
+    if (DEBUG && !token) {
+      console.warn('[Analytics API] No token found in session or localStorage!');
     }
   }
 
@@ -117,6 +126,8 @@ async function request<T>(
   // Add Authorization header if token exists
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
+  } else if (DEBUG) {
+    console.warn('[Analytics API] Making request WITHOUT Authorization header');
   }
 
   const config: RequestInit = {

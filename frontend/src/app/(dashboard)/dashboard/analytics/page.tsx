@@ -64,6 +64,12 @@ const COLORS = [
 export default function AnalyticsPage() {
   const { user } = useAuth();
   
+  // Debug: Log user object
+  useEffect(() => {
+    console.log("[Analytics Page] User object:", user);
+    console.log("[Analytics Page] User ID:", user?.id);
+  }, [user]);
+  
   // State
   const [datePreset, setDatePreset] = useState<DateRangePreset>("this_month");
   const [customStartDate, setCustomStartDate] = useState("");
@@ -79,7 +85,12 @@ export default function AnalyticsPage() {
 
   // Fetch all analytics data
   const fetchAnalytics = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.warn("[Analytics] No user.id available, skipping fetch");
+      setLoading(false);
+      setError("User not authenticated");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -96,7 +107,7 @@ export default function AnalyticsPage() {
       );
       const interval: TrendInterval = daysDiff > 90 ? "monthly" : daysDiff > 30 ? "weekly" : "daily";
 
-      console.log("[Analytics] Fetching data:", { dateRange, interval });
+      console.log("[Analytics] Fetching data:", { userId: user.id, dateRange, interval });
 
       // Fetch all data
       const data = await AnalyticsAPI.getAllData(

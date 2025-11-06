@@ -184,12 +184,18 @@ const authOptions: NextAuthOptions = {
           // Parse successful response
           const data = await response.json()
           console.log("[Backend] Success! User authenticated")
+          console.log("[Backend] Response data:", JSON.stringify(data, null, 2))
           
           // Store backend tokens and user data
-          if (data.access_token) {
-            (account as any).backendAccessToken = data.access_token
-            console.log("[Backend] Access token received")
+          // Backend may send 'token' or 'access_token'
+          const accessToken = data.access_token || data.token
+          if (accessToken) {
+            (account as any).backendAccessToken = accessToken
+            console.log("[Backend] Access token received:", accessToken.substring(0, 20) + "...")
+          } else {
+            console.warn("[Backend] No access token in response!")
           }
+          
           if (data.refresh_token) {
             (account as any).backendRefreshToken = data.refresh_token
             console.log("[Backend] Refresh token received")

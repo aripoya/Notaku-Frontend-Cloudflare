@@ -129,6 +129,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (status === 'authenticated') {
         await signOut({ redirect: false });
       }
+      // Clear token from localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('current_user');
+      }
     } catch (err) {
       console.error('[AuthContext] logout error:', err);
     } finally {
@@ -150,6 +155,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: (session.user as any).role || 'user',
       });
       setAuthFromSession(u ?? {});
+      
+      // Store backend accessToken to localStorage and zustand for analytics API
+      if ((session as any).accessToken) {
+        const token = (session as any).accessToken;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('auth_token', token);
+          console.log('[AuthContext] Stored accessToken to localStorage');
+        }
+        // Also update zustand store with token
+        setAuth(u ?? {}, token);
+      }
+      
       setError(null);
       triedLocalRef.current = false; // reset flag
       return;
