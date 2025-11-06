@@ -28,6 +28,18 @@ export class AnalyticsAPIError extends Error {
 // Helper Functions
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
+  // Prefer token stored in zustand persist 'auth-storage'
+  try {
+    const persisted = localStorage.getItem('auth-storage');
+    if (persisted) {
+      const parsed = JSON.parse(persisted);
+      const token = parsed?.state?.token ?? null;
+      if (token) return token;
+    }
+  } catch {
+    // ignore JSON error
+  }
+  // Fallback to legacy key
   return localStorage.getItem("auth_token");
 }
 
