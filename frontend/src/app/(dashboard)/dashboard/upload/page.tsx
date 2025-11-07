@@ -602,52 +602,18 @@ export default function UploadPage() {
         
       } catch (apiError: any) {
         console.error("[Save] ❌ Backend API error:", apiError);
-        console.log("[Save] 💾 Falling back to localStorage...");
         
-        // Fallback: Save to localStorage
-        const savedReceipts = JSON.parse(
-          localStorage.getItem('notaku_receipts') || '[]'
-        );
-        
-        const receiptToSave = {
-          id: editReceiptId || receipt.id || result?.receipt_id || `receipt_${Date.now()}`,
-          user_id: receipt.user_id || user?.id || '',
-          merchant: merchantName,
-          merchant_name: merchantName,
-          total_amount: totalAmount,
-          date: transactionDate,
-          transaction_date: transactionDate,
-          currency: receipt.currency || "IDR",
-          category: receipt.category || null,
-          notes: receipt.notes || null,
-          ocr_text: receipt.ocr_text || '',
-          ocr_confidence: receipt.ocr_confidence || 0,
-          image_path: receipt.image_path || '',
-          image_base64: receipt.image_base64 || imageBase64 || '',
-          items: receipt.items || [],
-          is_edited: true,
-          created_at: receipt.created_at || new Date().toISOString(),
-          saved_at: new Date().toISOString(),
-        };
-        
-        const existingIndex = savedReceipts.findIndex((r: any) => r.id === receiptToSave.id);
-        if (existingIndex >= 0) {
-          savedReceipts[existingIndex] = receiptToSave;
-        } else {
-          savedReceipts.push(receiptToSave);
-        }
-        
-        localStorage.setItem('notaku_receipts', JSON.stringify(savedReceipts));
-        console.log("[Save] ✅ Saved to localStorage! Total receipts:", savedReceipts.length);
-        
-        toast.warning("Nota disimpan secara lokal", {
-          description: "Backend tidak tersedia, data tersimpan di browser",
+        // Show error to user - don't fallback to localStorage to avoid quota issues
+        toast.error("Gagal menyimpan nota ke server", {
+          description: apiError.message || "Backend tidak tersedia. Silakan coba lagi atau hubungi admin.",
         });
         
-        // Navigate to receipts list after short delay
-        setTimeout(() => {
-          router.push('/dashboard/receipts');
-        }, 1500);
+        // Log the full error for debugging
+        console.error("[Save] Full error details:", {
+          message: apiError.message,
+          statusCode: apiError.statusCode,
+          details: apiError.details
+        });
       }
       
     } catch (error) {
