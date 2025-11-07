@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, X, RotateCw, Check, Loader2, FileImage, Eye, AlertCircle, Sparkles, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { OCRApiClient } from "@/lib/ocr-api";
+import { ReceiptsAPI } from "@/lib/receipts-api";
 import { useImageCompression } from "@/hooks/useImageCompression";
 import { formatIndonesianDate, formatLongDate, formatCurrency } from "@/lib/formatters";
 import { SubscriptionAPI } from "@/lib/subscription-api";
@@ -564,66 +565,93 @@ export default function UploadPage() {
     return mappedReceipt;
   };
 
-  const handleSaveReceipt = (receipt: Receipt) => {
-    console.log("[Save] 💾 Saving receipt to localStorage:", receipt);
+  const handleSaveReceipt = async (receipt: Receipt) => {
+    console.log("[Save] 💾 Starting save process:", receipt);
     
     try {
-      // Get existing receipts from localStorage
-      const savedReceipts = JSON.parse(
-        localStorage.getItem('notaku_receipts') || '[]'
-      );
-      console.log("[Save] 📂 Existing receipts:", savedReceipts.length);
-      
-      // Prepare receipt to save (normalize field names for localStorage)
-      const merchantName = receipt.merchant || 'Unknown';
+      // Prepare data for backend API
+      const merchantName = receipt.merchant || receipt.merchant_name || 'Unknown';
       const totalAmount = receipt.total_amount || 0;
+      const transactionDate = receipt.date || receipt.transaction_date || new Date().toISOString().split('T')[0];
       
-      const receiptToSave = {
-        id: editReceiptId || receipt.id || result?.receipt_id || `receipt_${Date.now()}`,
-        user_id: receipt.user_id || user?.id || '',
-        merchant: merchantName,  // Keep as 'merchant' for consistency
-        merchant_name: merchantName,  // Also save as 'merchant_name' for ReceiptCard
+      const apiData = {
+        merchant_name: merchantName,
         total_amount: totalAmount,
-        date: receipt.date || new Date().toISOString().split('T')[0],
+        currency: receipt.currency || "IDR",
+        transaction_date: transactionDate,
         category: receipt.category || null,
         notes: receipt.notes || null,
-        ocr_text: receipt.ocr_text || '',
-        ocr_confidence: receipt.ocr_confidence || 0,
-        image_path: receipt.image_path || '',
-        image_base64: receipt.image_base64 || imageBase64 || '',  // ✅ SAVE base64 for display
-        items: receipt.items || [],  // ✅ SAVE items array
-        is_edited: true,
-        created_at: receipt.created_at || new Date().toISOString(),
-        saved_at: new Date().toISOString(),
       };
       
-      console.log("[Save] 📝 Receipt to save:", receiptToSave);
+      console.log("[Save] 📤 Saving to backend API:", apiData);
       
-      // Check if already exists (update) or new (add)
-      const existingIndex = savedReceipts.findIndex((r: any) => r.id === receiptToSave.id);
-      if (existingIndex >= 0) {
-        console.log("[Save] 🔄 Updating existing receipt at index:", existingIndex);
-        savedReceipts[existingIndex] = receiptToSave;
-      } else {
-        console.log("[Save] ➕ Adding new receipt");
-        savedReceipts.push(receiptToSave);
+      // Try to save to backend first
+      let savedReceipt: Receipt | null = null;
+      try {
+        savedReceipt = await ReceiptsAPI.createReceipt(apiData);
+        console.log("[Save] ✅ Successfully saved to backend:", savedReceipt);
+        
+        toast.success("Nota berhasil disimpan ke server!", {
+          description: `${merchantName} - Rp ${totalAmount.toLocaleString('id-ID')}`,
+        });
+        
+        // Navigate to receipts list after short delay
+        setTimeout(() => {
+          router.push('/dashboard/receipts');
+        }, 1500);
+        
+      } catch (apiError: any) {
+        console.error("[Save] ❌ Backend API error:", apiError);
+        console.log("[Save] 💾 Falling back to localStorage...");
+        
+        // Fallback: Save to localStorage
+        const savedReceipts = JSON.parse(
+          localStorage.getItem('notaku_receipts') || '[]'
+        );
+        
+        const receiptToSave = {
+          id: editReceiptId || receipt.id || result?.receipt_id || `receipt_${Date.now()}`,
+          user_id: receipt.user_id || user?.id || '',
+          merchant: merchantName,
+          merchant_name: merchantName,
+          total_amount: totalAmount,
+          date: transactionDate,
+          transaction_date: transactionDate,
+          currency: receipt.currency || "IDR",
+          category: receipt.category || null,
+          notes: receipt.notes || null,
+          ocr_text: receipt.ocr_text || '',
+          ocr_confidence: receipt.ocr_confidence || 0,
+          image_path: receipt.image_path || '',
+          image_base64: receipt.image_base64 || imageBase64 || '',
+          items: receipt.items || [],
+          is_edited: true,
+          created_at: receipt.created_at || new Date().toISOString(),
+          saved_at: new Date().toISOString(),
+        };
+        
+        const existingIndex = savedReceipts.findIndex((r: any) => r.id === receiptToSave.id);
+        if (existingIndex >= 0) {
+          savedReceipts[existingIndex] = receiptToSave;
+        } else {
+          savedReceipts.push(receiptToSave);
+        }
+        
+        localStorage.setItem('notaku_receipts', JSON.stringify(savedReceipts));
+        console.log("[Save] ✅ Saved to localStorage! Total receipts:", savedReceipts.length);
+        
+        toast.warning("Nota disimpan secara lokal", {
+          description: "Backend tidak tersedia, data tersimpan di browser",
+        });
+        
+        // Navigate to receipts list after short delay
+        setTimeout(() => {
+          router.push('/dashboard/receipts');
+        }, 1500);
       }
       
-      // Save to localStorage
-      localStorage.setItem('notaku_receipts', JSON.stringify(savedReceipts));
-      console.log("[Save] ✅ Saved! Total receipts:", savedReceipts.length);
-      
-      toast.success("Nota berhasil disimpan!", {
-        description: `${merchantName} - Rp ${totalAmount.toLocaleString('id-ID')}`,
-      });
-      
-      // Navigate to receipts list after short delay
-      setTimeout(() => {
-        router.push('/dashboard/receipts');
-      }, 1500);
-      
     } catch (error) {
-      console.error("[Save] ❌ Save error:", error);
+      console.error("[Save] ❌ Critical save error:", error);
       toast.error("Gagal menyimpan nota", {
         description: "Silakan coba lagi"
       });
