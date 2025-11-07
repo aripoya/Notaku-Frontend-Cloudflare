@@ -33,6 +33,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { AnalyticsAPI } from "@/lib/analytics-api";
+import { exportAnalyticsToPDF } from "@/lib/pdf-export";
 import type {
   AnalyticsSummary,
   TrendDataPoint,
@@ -199,9 +200,38 @@ export default function AnalyticsPage() {
 
   // Export PDF handler
   const handleExportPDF = () => {
-    toast.success("Export PDF", {
-      description: "Laporan analitik sedang diproses",
-    });
+    try {
+      // Check if we have data
+      if (!summary && trendData.length === 0 && categoryData.length === 0 && merchantData.length === 0) {
+        toast.error("Tidak ada data untuk diekspor", {
+          description: "Silakan tunggu data selesai dimuat terlebih dahulu",
+        });
+        return;
+      }
+
+      // Get current date range
+      const dateRange = datePreset === "custom" && customStartDate && customEndDate
+        ? { start: customStartDate, end: customEndDate }
+        : getDateRangeFromPreset(datePreset);
+
+      // Export to PDF
+      exportAnalyticsToPDF({
+        summary,
+        trendData,
+        categoryData,
+        merchantData,
+        dateRange,
+      });
+
+      toast.success("PDF berhasil diekspor", {
+        description: "Laporan analitik telah diunduh",
+      });
+    } catch (error) {
+      console.error("[Analytics] Error exporting PDF:", error);
+      toast.error("Gagal mengekspor PDF", {
+        description: "Terjadi kesalahan saat membuat laporan",
+      });
+    }
   };
 
   // Loading state
