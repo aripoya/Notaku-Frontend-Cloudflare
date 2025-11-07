@@ -567,6 +567,7 @@ export default function UploadPage() {
 
   const handleSaveReceipt = async (receipt: Receipt) => {
     console.log("[Save] 💾 Starting save process:", receipt);
+    console.log("[Save] 📦 Full receipt data:", JSON.stringify(receipt, null, 2));
     
     try {
       // Prepare data for backend API
@@ -574,6 +575,7 @@ export default function UploadPage() {
       const totalAmount = receipt.total_amount || 0;
       const transactionDate = receipt.date || receipt.transaction_date || new Date().toISOString().split('T')[0];
       
+      // Include ALL receipt data for backend
       const apiData = {
         merchant_name: merchantName,
         total_amount: totalAmount,
@@ -581,9 +583,23 @@ export default function UploadPage() {
         transaction_date: transactionDate,
         category: receipt.category || null,
         notes: receipt.notes || null,
+        // Include OCR data
+        ocr_text: receipt.ocr_text || null,
+        ocr_confidence: receipt.ocr_confidence || null,
+        // Include image (base64 or path)
+        image_base64: receipt.image_base64 || imageBase64 || null,
+        image_path: receipt.image_path || null,
+        // Include items array
+        items: receipt.items || [],
+        // Include receipt_id from OCR result
+        receipt_id: editReceiptId || receipt.id || result?.receipt_id || null,
       };
       
-      console.log("[Save] 📤 Saving to backend API:", apiData);
+      console.log("[Save] 📤 Saving to backend API:", {
+        ...apiData,
+        image_base64: apiData.image_base64 ? `${apiData.image_base64.substring(0, 50)}... (${apiData.image_base64.length} chars)` : null,
+        items_count: apiData.items?.length || 0
+      });
       
       // Try to save to backend first
       let savedReceipt: Receipt | null = null;

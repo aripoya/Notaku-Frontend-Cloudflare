@@ -141,13 +141,34 @@ export class ReceiptsAPI {
   }
 
   /**
-   * Create a new receipt
+   * Create a new receipt with full OCR data
    */
-  static async createReceipt(data: { merchant_name: string; total_amount: number; currency?: string; transaction_date: string; category?: string; notes?: string; }): Promise<Receipt> {
+  static async createReceipt(data: { 
+    merchant_name: string; 
+    total_amount: number; 
+    currency?: string; 
+    transaction_date: string; 
+    category?: string; 
+    notes?: string;
+    // OCR data
+    ocr_text?: string | null;
+    ocr_confidence?: number | null;
+    // Image data
+    image_base64?: string | null;
+    image_path?: string | null;
+    // Items
+    items?: any[];
+    // Receipt ID from OCR
+    receipt_id?: string | null;
+  }): Promise<Receipt> {
     console.log('[ReceiptsAPI] 📝 Creating new receipt');
     console.log('[ReceiptsAPI] API_BASE_URL:', API_BASE_URL);
     console.log('[ReceiptsAPI] Full URL:', `${API_BASE_URL}${API_PREFIX}/receipts`);
-    console.log('[ReceiptsAPI] Request data:', data);
+    console.log('[ReceiptsAPI] Request data:', {
+      ...data,
+      image_base64: data.image_base64 ? `[${data.image_base64.length} chars]` : null,
+      items_count: data.items?.length || 0
+    });
     
     const response = await request<Receipt>(`${API_PREFIX}/receipts`, {
       method: "POST",
